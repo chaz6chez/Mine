@@ -1,0 +1,39 @@
+# wm-api-core
+
+***
+A simple API framework for WorkerMan
+
+**wm-api核心部分**
+***
+
+## 简单介绍
+1) 以WorkerMan为核心开发的HttpServer。
+2) 提供轻量级Route及加载方式。
+3) 提供享元模式的单例容器管理实例，内置GC方案：
+    - **Model类**：负责管理模型类单例
+    - **Instance类**：负责管理其他单例
+4) 提供RabbitMQ的生产者服务与消费者组件。
+5) 框架提供**Redis**、**Mysql类**，并对常驻内存进行了适配和调整。
+6) 框架提供轻量级验证器structure。
+7) 框架提供内置组件（**Service类**）及统一输入输出方式（**Output类**、**Result类**）。
+8) 框架提供助手类：
+    - **Apcu类**：基于Apcu的进程间通讯助手
+    - **Template类**：模板工具助手
+    - **Arr类**：数组助手
+9) 框架使用**Composer PSR-4**自动加载，灵活性高。
+
+
+## 支持
+
+|拓展名|说明|
+|:---:|:---|
+|PDO|用于Mysql的支撑|
+|amqp|用于RabbitMQ的支撑|
+|redis|用于Redis的支撑|
+|grpc|用于gRPC的支撑|
+|protobuf|用于提高Linux下gRPC数据转换的效率，win下使用protobuf库|
+|sockets|用于基础服务的支撑|
+|openssl|用于基础服务的支撑|
+|event|用于提高workerman在Linux下的处理能力
+|apcu|用于用户进程间数据共享|
+

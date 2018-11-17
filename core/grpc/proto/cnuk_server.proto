@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+import  "header.proto";
+import  "withdrawal_interface.proto";
+import  "exchange_interface.proto";
+import	"transfer_interface.proto";
+import	"deposit_interface.proto";
+import	"c2c_interface.proto";
+import	"statistic_server_interface.proto";
+
+package CnukServer.Route;
+
+
+service CnukServices {
+
+		// withdreawal
+    rpc Withdrawal(CnukServer.Withdrawal.Request) returns (CnukServer.Withdrawal.Response){
+
+    }
+
+		rpc ConfirWithdrawal(CnukServer.Withdrawal.Request) returns (CnukServer.Withdrawal.Response){
+
+	  }
+
+		// trade V2V V2L  L2L L2V
+		rpc Trade(CnukServer.Exchange.Request) returns (CnukServer.Exchange.Response){
+
+		}
+
+		// V2V  L2L
+		rpc Transfer(CnukServer.Transfer.Request) returns (CnukServer.Transfer.Response){
+
+		}
+	
+	 // V2V
+	  rpc Deposit(CnukServer.Deposit.Request) returns (CnukServer.Deposit.Response){
+
+		}
+		
+   // V2V or V2L
+		rpc SubmitC2cOrd(CnukServer.C2C.Request) returns (CnukServer.C2C.Response){
+		
+		}
+
+	  rpc ConfirC2cOrd(CnukServer.C2C.Request) returns (CnukServer.C2C.Response){
+		
+		}
+
+	  rpc CancleC2cOrd(CnukServer.C2C.Request) returns (CnukServer.C2C.Response){
+		
+		}
+	
+		// server state
+		rpc StatisticServer(CnukServer.StatisticServer.Request) returns (CnukServer.StatisticServer.Response){
+	
+   }
+}

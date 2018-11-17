@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package CnukServer.StatisticClient;
+
+message Request {
+	uint64 time = 1;
+}
+
+message Response {
+	bool client_connect = 1;
+	uint64	send_bytes = 2;
+	uint64	recv_bytes = 3;
+	uint64	request_cost = 4;
+	int64	send_count = 5;
+	int64 send_err = 6;
+	int64	recv_count = 7;
+	int64	recv_err = 8;
+}
+

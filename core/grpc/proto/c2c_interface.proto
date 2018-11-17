@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package CnukServer.C2C;
+
+import "header.proto";
+
+message Request {
+  CnukServer.Header.Request header = 1;
+  int64  creat_time = 2;
+  int64  end_time = 3;
+  string order_num = 4;
+  string user_id = 5;
+  string acquire_user_id = 6;
+  string currency = 7;
+  string fee_id = 8;
+  string amount = 9;
+  int64 status = 10 ;
+  string maket_maker_ord = 11;
+	string fee = 12;
+}
+
+message Response {
+	CnukServer.Header.Response header = 1;
+}

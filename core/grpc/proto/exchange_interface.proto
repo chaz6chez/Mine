@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "header.proto";
+
+package CnukServer.Exchange;
+
+
+message Request {
+	CnukServer.Header.Request header = 1;
+	uint64 time = 2;
+	string user_id  = 3;
+	string trade_pair = 5;
+	string amount = 6;
+	string rate = 7;
+	string fee = 8;
+	string order_number = 9;
+	uint64 type = 10;
+	uint64 order_status = 11;
+	string fee_uid = 12;
+}
+
+
+message Response {
+	CnukServer.Header.Response header = 1;
+}

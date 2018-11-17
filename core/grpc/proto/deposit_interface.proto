@@ -1,0 +1,23 @@
+/* recharge server struct. there include four ways to recharge.
+ * 1.use the virtual coin to recharge virtual coin. just like 
+ * use the btc change to buc.
+ * 2. use the legal currency to recharge virtual coin.like USD
+ * to btc.
+ * 3. use the legal currency to legal currency. like USD to RMB.
+ */
+syntax = "proto3";
+
+package CnukServer.Deposit;
+
+import "header.proto";
+
+
+message Request {
+	CnukServer.Header.Request header = 1;
+	string order_number = 2;
+}
+
+
+message Response {
+	CnukServer.Header.Response header = 1;
+}
