@@ -217,7 +217,7 @@ abstract class Instance{
     /**
      * 获取输出器对象
      * @param string $pattern
-     * @return Output
+     * @return array|Output|mixed
      */
     protected function output($pattern = 'arr') {
         if (!$this->_output or !$this->_output instanceof Output) {

@@ -14,69 +14,45 @@ use Google\Protobuf\Internal\GPBUtil;
 class Response extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>int64 accept = 1;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic withdrawal_submit = 1;</code>
      */
-    private $accept = 0;
+    private $withdrawal_submit = null;
     /**
-     * Generated from protobuf field <code>int64 accept_fail = 2;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic withdrawal_configure = 2;</code>
      */
-    private $accept_fail = 0;
+    private $withdrawal_configure = null;
     /**
-     * Generated from protobuf field <code>int64 request_count = 3;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic trade = 3;</code>
      */
-    private $request_count = 0;
+    private $trade = null;
     /**
-     * Generated from protobuf field <code>int64 response_count = 4;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.WorkerThreadeStatistic trade_worker = 4;</code>
      */
-    private $response_count = 0;
+    private $trade_worker = null;
     /**
-     * Generated from protobuf field <code>uint64 send_bytes = 5;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic transfer = 5;</code>
      */
-    private $send_bytes = 0;
+    private $transfer = null;
     /**
-     * Generated from protobuf field <code>uint64 recv_bytes = 6;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.WorkerThreadeStatistic transfer_worker = 6;</code>
      */
-    private $recv_bytes = 0;
+    private $transfer_worker = null;
     /**
-     * Generated from protobuf field <code>uint64 request_cost = 7;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic deposit = 7;</code>
      */
-    private $request_cost = 0;
+    private $deposit = null;
     /**
-     * Generated from protobuf field <code>int64 read_err = 8;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_submit = 8;</code>
      */
-    private $read_err = 0;
+    private $c2c_submit = null;
     /**
-     * Generated from protobuf field <code>int64 send_err = 9;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_configure = 9;</code>
      */
-    private $send_err = 0;
+    private $c2c_configure = null;
     /**
-     * Generated from protobuf field <code>int64 out_of_queue = 10;</code>
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_cancle = 10;</code>
      */
-    private $out_of_queue = 0;
-    /**
-     * Generated from protobuf field <code>int64 queue_delay_cost = 11;</code>
-     */
-    private $queue_delay_cost = 0;
-    /**
-     * Generated from protobuf field <code>int64 fast_reject_after_accept = 12;</code>
-     */
-    private $fast_reject_after_accept = 0;
-    /**
-     * Generated from protobuf field <code>int64 fast_reject_after_read = 13;</code>
-     */
-    private $fast_reject_after_read = 0;
-    /**
-     * Generated from protobuf field <code>int64 worker_in_queue_time_out = 14;</code>
-     */
-    private $worker_in_queue_time_out = 0;
-    /**
-     * Generated from protobuf field <code>uint64 wait_in_inqueue = 15;</code>
-     */
-    private $wait_in_inqueue = 0;
-    /**
-     * Generated from protobuf field <code>uint64 wait_in_outqueue = 16;</code>
-     */
-    private $wait_in_outqueue = 0;
+    private $c2c_cancle = null;
 
     /**
      * Constructor.
@@ -84,22 +60,16 @@ class Response extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type int|string $accept
-     *     @type int|string $accept_fail
-     *     @type int|string $request_count
-     *     @type int|string $response_count
-     *     @type int|string $send_bytes
-     *     @type int|string $recv_bytes
-     *     @type int|string $request_cost
-     *     @type int|string $read_err
-     *     @type int|string $send_err
-     *     @type int|string $out_of_queue
-     *     @type int|string $queue_delay_cost
-     *     @type int|string $fast_reject_after_accept
-     *     @type int|string $fast_reject_after_read
-     *     @type int|string $worker_in_queue_time_out
-     *     @type int|string $wait_in_inqueue
-     *     @type int|string $wait_in_outqueue
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $withdrawal_submit
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $withdrawal_configure
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $trade
+     *     @type \CnukServer\StatisticServer\WorkerThreadeStatistic $trade_worker
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $transfer
+     *     @type \CnukServer\StatisticServer\WorkerThreadeStatistic $transfer_worker
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $deposit
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $c2c_submit
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $c2c_configure
+     *     @type \CnukServer\StatisticServer\ServiceStatistic $c2c_cancle
      * }
      */
     public function __construct($data = NULL) {
@@ -108,353 +78,221 @@ class Response extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int64 accept = 1;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic withdrawal_submit = 1;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getAccept()
+    public function getWithdrawalSubmit()
     {
-        return $this->accept;
+        return $this->withdrawal_submit;
     }
 
     /**
-     * Generated from protobuf field <code>int64 accept = 1;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic withdrawal_submit = 1;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setAccept($var)
+    public function setWithdrawalSubmit($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->accept = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->withdrawal_submit = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int64 accept_fail = 2;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic withdrawal_configure = 2;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getAcceptFail()
+    public function getWithdrawalConfigure()
     {
-        return $this->accept_fail;
+        return $this->withdrawal_configure;
     }
 
     /**
-     * Generated from protobuf field <code>int64 accept_fail = 2;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic withdrawal_configure = 2;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setAcceptFail($var)
+    public function setWithdrawalConfigure($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->accept_fail = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->withdrawal_configure = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int64 request_count = 3;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic trade = 3;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getRequestCount()
+    public function getTrade()
     {
-        return $this->request_count;
+        return $this->trade;
     }
 
     /**
-     * Generated from protobuf field <code>int64 request_count = 3;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic trade = 3;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setRequestCount($var)
+    public function setTrade($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->request_count = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->trade = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int64 response_count = 4;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.WorkerThreadeStatistic trade_worker = 4;</code>
+     * @return \CnukServer\StatisticServer\WorkerThreadeStatistic
      */
-    public function getResponseCount()
+    public function getTradeWorker()
     {
-        return $this->response_count;
+        return $this->trade_worker;
     }
 
     /**
-     * Generated from protobuf field <code>int64 response_count = 4;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.WorkerThreadeStatistic trade_worker = 4;</code>
+     * @param \CnukServer\StatisticServer\WorkerThreadeStatistic $var
      * @return $this
      */
-    public function setResponseCount($var)
+    public function setTradeWorker($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->response_count = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\WorkerThreadeStatistic::class);
+        $this->trade_worker = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>uint64 send_bytes = 5;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic transfer = 5;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getSendBytes()
+    public function getTransfer()
     {
-        return $this->send_bytes;
+        return $this->transfer;
     }
 
     /**
-     * Generated from protobuf field <code>uint64 send_bytes = 5;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic transfer = 5;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setSendBytes($var)
+    public function setTransfer($var)
     {
-        GPBUtil::checkUint64($var);
-        $this->send_bytes = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->transfer = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>uint64 recv_bytes = 6;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.WorkerThreadeStatistic transfer_worker = 6;</code>
+     * @return \CnukServer\StatisticServer\WorkerThreadeStatistic
      */
-    public function getRecvBytes()
+    public function getTransferWorker()
     {
-        return $this->recv_bytes;
+        return $this->transfer_worker;
     }
 
     /**
-     * Generated from protobuf field <code>uint64 recv_bytes = 6;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.WorkerThreadeStatistic transfer_worker = 6;</code>
+     * @param \CnukServer\StatisticServer\WorkerThreadeStatistic $var
      * @return $this
      */
-    public function setRecvBytes($var)
+    public function setTransferWorker($var)
     {
-        GPBUtil::checkUint64($var);
-        $this->recv_bytes = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\WorkerThreadeStatistic::class);
+        $this->transfer_worker = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>uint64 request_cost = 7;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic deposit = 7;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getRequestCost()
+    public function getDeposit()
     {
-        return $this->request_cost;
+        return $this->deposit;
     }
 
     /**
-     * Generated from protobuf field <code>uint64 request_cost = 7;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic deposit = 7;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setRequestCost($var)
+    public function setDeposit($var)
     {
-        GPBUtil::checkUint64($var);
-        $this->request_cost = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->deposit = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int64 read_err = 8;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_submit = 8;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getReadErr()
+    public function getC2CSubmit()
     {
-        return $this->read_err;
+        return $this->c2c_submit;
     }
 
     /**
-     * Generated from protobuf field <code>int64 read_err = 8;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_submit = 8;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setReadErr($var)
+    public function setC2CSubmit($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->read_err = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->c2c_submit = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int64 send_err = 9;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_configure = 9;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getSendErr()
+    public function getC2CConfigure()
     {
-        return $this->send_err;
+        return $this->c2c_configure;
     }
 
     /**
-     * Generated from protobuf field <code>int64 send_err = 9;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_configure = 9;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setSendErr($var)
+    public function setC2CConfigure($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->send_err = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->c2c_configure = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>int64 out_of_queue = 10;</code>
-     * @return int|string
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_cancle = 10;</code>
+     * @return \CnukServer\StatisticServer\ServiceStatistic
      */
-    public function getOutOfQueue()
+    public function getC2CCancle()
     {
-        return $this->out_of_queue;
+        return $this->c2c_cancle;
     }
 
     /**
-     * Generated from protobuf field <code>int64 out_of_queue = 10;</code>
-     * @param int|string $var
+     * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_cancle = 10;</code>
+     * @param \CnukServer\StatisticServer\ServiceStatistic $var
      * @return $this
      */
-    public function setOutOfQueue($var)
+    public function setC2CCancle($var)
     {
-        GPBUtil::checkInt64($var);
-        $this->out_of_queue = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 queue_delay_cost = 11;</code>
-     * @return int|string
-     */
-    public function getQueueDelayCost()
-    {
-        return $this->queue_delay_cost;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 queue_delay_cost = 11;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setQueueDelayCost($var)
-    {
-        GPBUtil::checkInt64($var);
-        $this->queue_delay_cost = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 fast_reject_after_accept = 12;</code>
-     * @return int|string
-     */
-    public function getFastRejectAfterAccept()
-    {
-        return $this->fast_reject_after_accept;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 fast_reject_after_accept = 12;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setFastRejectAfterAccept($var)
-    {
-        GPBUtil::checkInt64($var);
-        $this->fast_reject_after_accept = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 fast_reject_after_read = 13;</code>
-     * @return int|string
-     */
-    public function getFastRejectAfterRead()
-    {
-        return $this->fast_reject_after_read;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 fast_reject_after_read = 13;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setFastRejectAfterRead($var)
-    {
-        GPBUtil::checkInt64($var);
-        $this->fast_reject_after_read = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 worker_in_queue_time_out = 14;</code>
-     * @return int|string
-     */
-    public function getWorkerInQueueTimeOut()
-    {
-        return $this->worker_in_queue_time_out;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 worker_in_queue_time_out = 14;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setWorkerInQueueTimeOut($var)
-    {
-        GPBUtil::checkInt64($var);
-        $this->worker_in_queue_time_out = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 wait_in_inqueue = 15;</code>
-     * @return int|string
-     */
-    public function getWaitInInqueue()
-    {
-        return $this->wait_in_inqueue;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 wait_in_inqueue = 15;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setWaitInInqueue($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->wait_in_inqueue = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 wait_in_outqueue = 16;</code>
-     * @return int|string
-     */
-    public function getWaitInOutqueue()
-    {
-        return $this->wait_in_outqueue;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 wait_in_outqueue = 16;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setWaitInOutqueue($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->wait_in_outqueue = $var;
+        GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
+        $this->c2c_cancle = $var;
 
         return $this;
     }

@@ -7,6 +7,9 @@
 namespace core\db;
 
 abstract class Driver{
+    /**
+     * @var \Redis
+     */
     protected $handler = null;
     protected $options = [];
     protected $tag;
@@ -71,6 +74,13 @@ abstract class Driver{
      * @return boolean
      */
     abstract public function clear($tag = null);
+
+    /**
+     * 检查连接
+     * @access public
+     * @return boolean
+     */
+    abstract public function call();
 
     /**
      * 获取实际的缓存标识

@@ -59,6 +59,14 @@ class Request extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string fee_uid = 12;</code>
      */
     private $fee_uid = '';
+    /**
+     * Generated from protobuf field <code>string tx_id = 13;</code>
+     */
+    private $tx_id = '';
+    /**
+     * Generated from protobuf field <code>int64 tx_height = 14;</code>
+     */
+    private $tx_height = 0;
 
     /**
      * Constructor.
@@ -78,6 +86,8 @@ class Request extends \Google\Protobuf\Internal\Message
      *     @type int|string $order_status
      *           initial 0 
      *     @type string $fee_uid
+     *     @type string $tx_id
+     *     @type int|string $tx_height
      * }
      */
     public function __construct($data = NULL) {
@@ -327,6 +337,50 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->fee_uid = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string tx_id = 13;</code>
+     * @return string
+     */
+    public function getTxId()
+    {
+        return $this->tx_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string tx_id = 13;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTxId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->tx_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>int64 tx_height = 14;</code>
+     * @return int|string
+     */
+    public function getTxHeight()
+    {
+        return $this->tx_height;
+    }
+
+    /**
+     * Generated from protobuf field <code>int64 tx_height = 14;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTxHeight($var)
+    {
+        GPBUtil::checkInt64($var);
+        $this->tx_height = $var;
 
         return $this;
     }

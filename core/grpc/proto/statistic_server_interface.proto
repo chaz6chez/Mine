@@ -1,30 +1,43 @@
 syntax = "proto3";
 
-
 package CnukServer.StatisticServer;
+
 
 message Request {
 	uint64 time = 1;
 }
 
 
-
-message Response {
-	int64 accept = 1;
-	int64 accept_fail = 2;
-	int64 request_count = 3;
-	int64 response_count = 4;
-	uint64 send_bytes = 5;
-	uint64	recv_bytes = 6;
-	uint64	request_cost = 7;
-	int64	read_err = 8;
-	int64	send_err = 9;
-	int64	out_of_queue = 10;
-	int64	queue_delay_cost = 11;
-	int64	fast_reject_after_accept = 12;
-	int64	fast_reject_after_read = 13;
-	int64 worker_in_queue_time_out = 14;
-	uint64 wait_in_inqueue = 15;
-	uint64	wait_in_outqueue = 16;
+message ServiceStatistic{
+     int64 service_num_per_second = 1;
+     int64 service_cost_per_second = 2;
+     int64 service_sucess_num = 3;
+     int64 service_fail_num = 4;
+     int64 service_cost_per_period = 5;
+     uint64 service_num = 6;
+     uint64 total_cost = 7;
 }
 
+message WorkerThreadeStatistic{
+     int64 total_worker_num  = 1;
+     int64 free_worker_num = 2;
+     map<int32, int32> worker_deal_count = 3;
+     map<int32, int32> worker_all_count = 4;
+     map<int32, int32> task_wait_time_in_queue = 5;
+		 map<int32, int32> total_cost = 6;
+     int64  worker_cost_per_period = 7;
+}
+
+
+message Response{
+     ServiceStatistic withdrawal_submit = 1;
+     ServiceStatistic withdrawal_configure = 2;
+     ServiceStatistic trade = 3;
+     WorkerThreadeStatistic trade_worker = 4;
+     ServiceStatistic transfer = 5;
+     WorkerThreadeStatistic transfer_worker = 6;
+     ServiceStatistic deposit = 7;
+     ServiceStatistic c2c_submit = 8;
+     ServiceStatistic c2c_configure = 9;
+     ServiceStatistic c2c_cancle = 10;
+}

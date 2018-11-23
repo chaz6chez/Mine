@@ -10,16 +10,16 @@ namespace CnukServer\Header;
 class TradeStatus
 {
     /**
-     * Generated from protobuf enum <code>Pending = 0;</code>
+     * Generated from protobuf enum <code>Fail = 0;</code>
      */
-    const Pending = 0;
+    const Fail = 0;
     /**
-     * Generated from protobuf enum <code>Success = 1;</code>
+     * Generated from protobuf enum <code>Pending = 1;</code>
      */
-    const Success = 1;
+    const Pending = 1;
     /**
-     * Generated from protobuf enum <code>Fail = 2;</code>
+     * Generated from protobuf enum <code>Success = 2;</code>
      */
-    const Fail = 2;
+    const Success = 2;
 }
 

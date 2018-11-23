@@ -22,10 +22,6 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $creat_time = 0;
     /**
-     * Generated from protobuf field <code>int64 end_time = 3;</code>
-     */
-    private $end_time = 0;
-    /**
      * Generated from protobuf field <code>string order_num = 4;</code>
      */
     private $order_num = '';
@@ -54,13 +50,21 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $status = 0;
     /**
-     * Generated from protobuf field <code>string maket_maker_ord = 11;</code>
-     */
-    private $maket_maker_ord = '';
-    /**
      * Generated from protobuf field <code>string fee = 12;</code>
      */
     private $fee = '';
+    /**
+     * Generated from protobuf field <code>string money = 13;</code>
+     */
+    private $money = '';
+    /**
+     * Generated from protobuf field <code>string ads_ord = 14;</code>
+     */
+    private $ads_ord = '';
+    /**
+     * Generated from protobuf field <code>string market_maker_id = 15;</code>
+     */
+    private $market_maker_id = '';
 
     /**
      * Constructor.
@@ -70,7 +74,6 @@ class Request extends \Google\Protobuf\Internal\Message
      *
      *     @type \CnukServer\Header\Request $header
      *     @type int|string $creat_time
-     *     @type int|string $end_time
      *     @type string $order_num
      *     @type string $user_id
      *     @type string $acquire_user_id
@@ -78,8 +81,10 @@ class Request extends \Google\Protobuf\Internal\Message
      *     @type string $fee_id
      *     @type string $amount
      *     @type int|string $status
-     *     @type string $maket_maker_ord
      *     @type string $fee
+     *     @type string $money
+     *     @type string $ads_ord
+     *     @type string $market_maker_id
      * }
      */
     public function __construct($data = NULL) {
@@ -127,28 +132,6 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt64($var);
         $this->creat_time = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 end_time = 3;</code>
-     * @return int|string
-     */
-    public function getEndTime()
-    {
-        return $this->end_time;
-    }
-
-    /**
-     * Generated from protobuf field <code>int64 end_time = 3;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setEndTime($var)
-    {
-        GPBUtil::checkInt64($var);
-        $this->end_time = $var;
 
         return $this;
     }
@@ -308,28 +291,6 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string maket_maker_ord = 11;</code>
-     * @return string
-     */
-    public function getMaketMakerOrd()
-    {
-        return $this->maket_maker_ord;
-    }
-
-    /**
-     * Generated from protobuf field <code>string maket_maker_ord = 11;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setMaketMakerOrd($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->maket_maker_ord = $var;
-
-        return $this;
-    }
-
-    /**
      * Generated from protobuf field <code>string fee = 12;</code>
      * @return string
      */
@@ -347,6 +308,72 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->fee = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string money = 13;</code>
+     * @return string
+     */
+    public function getMoney()
+    {
+        return $this->money;
+    }
+
+    /**
+     * Generated from protobuf field <code>string money = 13;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setMoney($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->money = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string ads_ord = 14;</code>
+     * @return string
+     */
+    public function getAdsOrd()
+    {
+        return $this->ads_ord;
+    }
+
+    /**
+     * Generated from protobuf field <code>string ads_ord = 14;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setAdsOrd($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->ads_ord = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string market_maker_id = 15;</code>
+     * @return string
+     */
+    public function getMarketMakerId()
+    {
+        return $this->market_maker_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string market_maker_id = 15;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setMarketMakerId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->market_maker_id = $var;
 
         return $this;
     }

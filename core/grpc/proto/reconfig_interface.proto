@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package CnukServer.Config;
+
+import "header.proto";
+
+message Request {
+  CnukServer.Header.Request header = 1;
+
+//server
+	string bind_ip = 2;
+	uint64 port = 3;
+
+// log
+	string log_dir = 4;
+	uint64 log_level = 5;
+
+// mysql
+	string mysql_address = 6;
+	int64 mysql_port = 7;
+	string mysql_db_name = 8;
+	string mysql_db_user_name = 9;
+	string mysql_db_password = 10;
+	uint64 mysql_connect_max_num = 11;
+	uint64 mysql_connect_pool_wait_time = 12;
+
+// redis
+	string redis_address = 13;
+ 	uint64 redis_port = 14;
+	uint64 redis_connect_max_num = 15;
+	uint64 redis_connect_pool_wait_time = 16;
+
+// elasticsearch
+	string es_host_url = 17;
+	uint64 es_time_out = 18;
+	uint64 es_client_num = 19;
+	uint64 es_connect_pool_wait_time = 20;
+
+// service 
+	uint64 trade_service_worker_num = 21;
+	uint64 transfer_service_worker_num=22;
+}
+
+message Response {
+	CnukServer.Header.Response header = 1;
+}

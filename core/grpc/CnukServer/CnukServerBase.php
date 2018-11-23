@@ -108,7 +108,7 @@ class CnukServerBase extends BaseStub{
      * @return \Grpc\UnaryCall
      */
     public function SubmitC2cOrd( C2CRequest $argument, $metadata = [], $options = []) {
-        return $this->_simpleRequest('/CnukServer.Route.CnukServices/C2C',
+        return $this->_simpleRequest('/CnukServer.Route.CnukServices/SubmitC2cOrd',
             $argument,
             ['CnukServer\C2C\Response', 'decode'],
             $metadata, $options);
@@ -121,7 +121,7 @@ class CnukServerBase extends BaseStub{
      * @return \Grpc\UnaryCall
      */
     public function ConfirC2cOrd( C2CRequest $argument, $metadata = [], $options = []) {
-        return $this->_simpleRequest('/CnukServer.Route.CnukServices/C2C',
+        return $this->_simpleRequest('/CnukServer.Route.CnukServices/ConfirC2cOrd',
             $argument,
             ['CnukServer\C2C\Response', 'decode'],
             $metadata, $options);
@@ -134,7 +134,7 @@ class CnukServerBase extends BaseStub{
      * @return \Grpc\UnaryCall
      */
     public function CancleC2cOrd( C2CRequest $argument, $metadata = [], $options = []) {
-        return $this->_simpleRequest('/CnukServer.Route.CnukServices/C2C',
+        return $this->_simpleRequest('/CnukServer.Route.CnukServices/CancleC2cOrd',
             $argument,
             ['CnukServer\C2C\Response', 'decode'],
             $metadata, $options);

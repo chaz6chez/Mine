@@ -8,9 +8,9 @@ package CnukServer.Header;
 //import "google/protobuf/empty.proto";
 
 enum TradeStatus {
-	Pending = 0;
-	Success = 1;
-	Fail = 2;
+	Fail = 0;
+	Pending = 1;
+	Success = 2;
 }
 
 

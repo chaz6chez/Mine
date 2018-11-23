@@ -19,7 +19,9 @@ message Request {
 	string fee = 9;
 	string order_number = 10;
 	uint64 order_status = 11; // initial 0 
-  string fee_uid = 12;
+  	string fee_uid = 12;
+	string tx_id = 13;
+	int64  tx_height = 14;
 }
 
 message Response {

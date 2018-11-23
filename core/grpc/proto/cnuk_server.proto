@@ -7,6 +7,7 @@ import	"transfer_interface.proto";
 import	"deposit_interface.proto";
 import	"c2c_interface.proto";
 import	"statistic_server_interface.proto";
+import  "reconfig_interface.proto";
 
 package CnukServer.Route;
 
@@ -15,7 +16,6 @@ service CnukServices {
 
 		// withdreawal
     rpc Withdrawal(CnukServer.Withdrawal.Request) returns (CnukServer.Withdrawal.Response){
-
     }
 
 		rpc ConfirWithdrawal(CnukServer.Withdrawal.Request) returns (CnukServer.Withdrawal.Response){
@@ -54,4 +54,10 @@ service CnukServices {
 		rpc StatisticServer(CnukServer.StatisticServer.Request) returns (CnukServer.StatisticServer.Response){
 	
    }
+
+	 rpc ExitServer(CnukServer.Header.Request) returns (CnukServer.Header.Response){
+	}
+
+	rpc ReConfigure(CnukServer.Config.Request) returns (CnukServer.Config.Response){
+  }
 }

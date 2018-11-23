@@ -2,13 +2,16 @@
 
 namespace core\db;
 
+use core\helper\Tools;
 use core\lib\Config;
-use core\helper\Exception;
 
 /**
  * Redis是单例模式
  *  1.$_instance并不是一个容器
  *  2.不需要关注其内存问题
+ *
+ *  2018-11-22
+ *      1.解决10054问题
  *
  * Class Redis
  * @package core\db
@@ -17,7 +20,7 @@ class Redis extends Driver {
 
     protected $options = [];
     /**
-     * @var \Redis
+     * @var Redis
      */
     private static $_instance = null;
 
@@ -31,20 +34,19 @@ class Redis extends Driver {
         if (!empty($options)) {
             $this->options = array_merge($this->options, $options);
         }
-        if (!self::$_instance instanceof Redis) {
-            self::$_instance = new \Redis();
+        if (!$this->handler or !$this->handler instanceof \Redis) {
+            $this->handler = new \Redis();
         }
-        $this->handler = self::$_instance;
         if ($this->options['persistent']) {
-            self::$_instance = $this->handler->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
+            $this->handler->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
         } else {
-            self::$_instance = $this->handler->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
+            $this->handler->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
         }
         if ('' != $this->options['password']) {
-            self::$_instance = $this->handler->auth($this->options['password']);
+            $this->handler->auth($this->options['password']);
         }
         if (0 != $this->options['select']) {
-            self::$_instance = $this->handler->select($this->options['select']);
+            $this->handler->select($this->options['select']);
         }
     }
 
@@ -66,7 +68,7 @@ class Redis extends Driver {
      * @return Redis|bool|null
      */
     final public static function instance() {
-        if (!isset(self::$_instance)) {
+        if (!isset(self::$_instance) or !self::$_instance instanceof Redis) {
             self::$_instance = new self();
         }
         return self::$_instance;
@@ -80,6 +82,7 @@ class Redis extends Driver {
      */
     public function has($name) {
         $this->_ext();
+        $this->call();
         return $this->handler->exists($this->getCacheKey($name));
     }
 
@@ -89,16 +92,8 @@ class Redis extends Driver {
      */
     public function keys($name){
         $this->_ext();
+        $this->call();
         return $this->handler->keys($this->getCacheKey($name));
-    }
-
-    /**
-     * @param $name
-     * @return bool
-     */
-    public function getKeys($name){
-        $this->_ext();
-        return $this->handler->getKeys($this->getCacheKey($name));
     }
 
     /**
@@ -120,6 +115,81 @@ class Redis extends Driver {
     }
 
     /**
+     * @param $name
+     * @return array
+     */
+    public function hGetAll($name){
+        $this->_ext();
+        $this->call();
+        $h = $this->handler->hGetAll($this->getCacheKey($name));
+        if($h){
+            foreach ($h as &$value){
+                $value = ($json = is_json($value,true)) ? $json : $value;
+            }
+        }
+        return $h;
+    }
+
+    /**
+     * @param $name
+     * @param $key
+     * @return string
+     */
+    public function hGet($name,$key){
+        $this->_ext();
+        $this->call();
+        $value = $this->handler->hGet($this->getCacheKey($name),$key);
+        $value = ($json = is_json($value,true)) ? $json : $value;
+        return $value;
+    }
+
+    /**
+     * @param $name
+     * @param array $array
+     * @return bool
+     */
+    public function hSetArray($name,array $array){
+        $this->_ext();
+        $this->call();
+        foreach ($array as $key => $value){
+            $v = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
+            $this->handler->hSet($this->getCacheKey($name),$key,$v);
+        }
+        return true;
+    }
+
+    /**
+     * @param $name
+     * @param $key
+     * @param $value
+     * @return bool|int
+     */
+    public function hSet($name,$key,$value){
+        $this->_ext();
+        $this->call();
+        $v = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
+        return $this->handler->hSet($this->getCacheKey($name),$key,$v);
+    }
+
+    /**
+     * @param $name
+     * @param array|string $keys
+     * @return bool|int
+     */
+    public function hDel($name,$keys){
+        $this->_ext();
+        $this->call();
+        if(is_array($keys)){
+            foreach ($keys as $key){
+                $this->handler->hDel($this->getCacheKey($name),$key);
+            }
+            return true;
+        }
+        return $this->handler->hDel($this->getCacheKey($name),$keys);
+    }
+
+
+    /**
      * 读取缓存
      * @access public
      * @param string $name 缓存变量名
@@ -128,12 +198,13 @@ class Redis extends Driver {
      */
     public function get($name, $default = false) {
         $this->_ext();
+        $this->call();
         $value = $this->handler->get($this->getCacheKey($name));
         if (is_null($value) || false === $value) {
             return $default;
         }
         try {
-            $result = 0 === strpos($value, 'wm_serialize:') ? unserialize(substr($value, 13)) : $value;
+            $result = ($json = json_decode($value,true)) ? $json : $value;
         } catch (\Exception $e) {
             $result = $default;
         }
@@ -150,6 +221,7 @@ class Redis extends Driver {
      */
     public function set($name, $value, $expire = null) {
         $this->_ext();
+        $this->call();
         if (is_null($expire)) {
             $expire = $this->options['expire'];
         }
@@ -160,7 +232,7 @@ class Redis extends Driver {
             $first = true;
         }
         $key = $this->getCacheKey($name);
-        $value = is_scalar($value) ? $value : 'wm_serialize:' . serialize($value);
+        $value = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
         if ($expire) {
             $result = $this->handler->setex($key, $expire, $value);
         } else {
@@ -179,6 +251,7 @@ class Redis extends Driver {
      */
     public function inc($name, $step = 1) {
         $this->_ext();
+        $this->call();
         $key = $this->getCacheKey($name);
         return $this->handler->incrby($key, $step);
     }
@@ -192,6 +265,7 @@ class Redis extends Driver {
      */
     public function dec($name, $step = 1) {
         $this->_ext();
+        $this->call();
         $key = $this->getCacheKey($name);
         return $this->handler->decrby($key, $step);
     }
@@ -204,6 +278,7 @@ class Redis extends Driver {
      */
     public function rm($name) {
         $this->_ext();
+        $this->call();
         return $this->handler->delete($this->getCacheKey($name));
     }
 
@@ -215,6 +290,7 @@ class Redis extends Driver {
      */
     public function clear($tag = null) {
         $this->_ext();
+        $this->call();
         if ($tag) {
             // 指定标签清除
             $keys = $this->getTagItem($tag);
@@ -225,5 +301,27 @@ class Redis extends Driver {
             return true;
         }
         return $this->handler->flushDB();
+    }
+
+    /**
+     * 检查连接
+     * @return bool|string
+     */
+    public function call(){
+        try{
+            $this->handler->ping();
+        }catch (\RedisException $e){
+            if(Tools::isRedisTimeout($e)){
+                if($this->options['persistent']){
+                    $this->handler->close();
+                }
+                $this->handler = null;
+                self::$_instance = null;
+                self::$_instance = new self();
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
 }

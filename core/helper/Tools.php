@@ -17,12 +17,21 @@ class Tools{
     }
 
     /**
-     * 判断是否是被踢出
+     * 判断MYSQL是否是被踢出
      * @param \PDOException $e
      * @return bool
      */
     public static function isGoneAwayError(\PDOException $e) {
         return ($e->errorInfo[1] == 2006 or $e->errorInfo[1] == 2013);
+    }
+
+    /**
+     * 判断REDIS是否超时
+     * @param \RedisException $e
+     * @return bool
+     */
+    public static function isRedisTimeout(\RedisException $e){
+        return ($e->getCode() == 10054 or $e->getMessage() == 10054);
     }
 
 }

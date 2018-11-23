@@ -10,7 +10,15 @@ namespace core\helper;
 
 /**
  * 进程间共享数据组件
- * todo 更多的方法
+ *
+ *  1.$expire 过期时间仅在进程上下文切换的时候执行(下一次请求之前判断删除)
+ *  2.WorkerMan 子进程为睡眠状态，并不会激发清除，但建议还是传入，可保证子进程因意外重启时清理内存现场
+ *
+ *      1.More Function：
+ *          http://php.net/manual/en/book.apcu.php
+ *      2.PHP.ini Config：
+ *          http://php.net/manual/en/apcu.configuration.php
+ *
  * Class Apcu
  * @package core\helper
  */
@@ -93,7 +101,7 @@ final class Apcu{
      * @return array|bool
      */
     public function set($key, $value, $expire = null) {
-        $value = is_scalar($value) ? $value : serialize($value);
+        $value = serialize($value);
         if (!\is_array($key)) {
             return apcu_store($key, $value, $expire);
         }
@@ -114,7 +122,7 @@ final class Apcu{
      * @return array|bool
      */
     public function add($key, $value, $expire = null) {
-        $value = is_scalar($value) ? $value : 'wm_serialize:' . serialize($value);
+        $value = serialize($value);
         if (!is_array($key)) {
             return apcu_add($key, $value, $expire);
         }
@@ -150,4 +158,13 @@ final class Apcu{
     public function clear() {
         return apcu_clear_cache();
     }
+
+    public function info(){
+        return apc_cache_info();
+    }
+
+    public function samaInfo(){
+        return apcu_sma_info();
+    }
+
 }
