@@ -9,6 +9,15 @@ namespace core\lib;
 use core\helper\Arr;
 use core\helper\Exception;
 
+/**
+ * 配置类
+ *
+ *  1.配置项的内容保存在静态变量中,进程不退出则变量无法释放
+ *  2.任意一次变更则会在当前主进程的所有子进程中生效
+ *  3.init()的更新为完整覆盖，load()的更新为更新覆盖
+ * Class Config
+ * @package core\lib
+ */
 class Config {
 
     /**
@@ -21,6 +30,7 @@ class Config {
      * 加载系统配置,环境配置
      */
     public static function init() {
+        self::$_config = null;
         self::$_config = require COMMON_PATH . '/configs.php';
     }
 

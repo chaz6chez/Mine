@@ -10,6 +10,13 @@ use core\lib\Config;
 use core\lib\Autoload;
 use core\lib\Route;
 
+/**
+ *  1._configInit() 每一次有请求时都会require Common下的config文件
+ *  2._funcInit() 仅会在第一次请求时require加载公共函数，随后的请求都会直接调用进程加载好的公共函数
+ *
+ * Class App
+ * @package core
+ */
 class App{
 
     private $_allowedRoute   = [];  # 授权的路由

@@ -38,11 +38,11 @@ class Output {
     /**
      * 失败
      * @param string $msg
-     * @param int $code
+     * @param string $code
      * @param string $data
      * @return array|mixed
      */
-    public function error($msg = '', $code = 4004, $data = '') {
+    public function error($msg = '', $code = '4004', $data = '') {
         if (!$msg) {
             $this->output($code, '系统繁忙,请重试', $data);
         } else {
@@ -67,12 +67,12 @@ class Output {
      * @return array|mixed
      */
     public function success($data = '',$msg = 'success') {
-        return $this->output(0, $msg, $data);
+        return $this->output('0', $msg, $data);
     }
 
     /**
      * 输出
-     * @param $code
+     * @param string $code
      * @param $msg
      * @param array $data
      * @param int $timestamp
@@ -89,6 +89,7 @@ class Output {
         if(!empty($code)){
             $status = 0;
         }
+        $code = (string)$code;
         $json = array_merge(self::$_data, compact('status','code', 'msg', 'data', 'timestamp'));
         switch ($this->pattern) {
             case 'arr':

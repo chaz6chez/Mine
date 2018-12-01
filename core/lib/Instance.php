@@ -12,7 +12,11 @@ namespace core\lib;
  *  1.使用享元模式开发，所有子类公用一个容器，共同管理
  *  2.内部实现计数GC，自动控制其单例容器释放内存
  *  3.instanceClean()、instanceRemove()方法可主动释放内存
- *  4.getInstance()方法可获取当前容器情况
+ *  4.getInstances()方法可获取当前容器情况
+ *
+ * todo GC容器设置 常驻单例、预加载单例
+ *  todo 1.常驻单例：一旦实例保存，不会被GC掉
+ *  todo 2.预加载单例：第一次加载Instance类时触发生成单例，可选常驻 or 普通
  *
  *  注.以上所说的内存释放在PHP GC前提下实现
  *
@@ -210,7 +214,7 @@ abstract class Instance{
         if (!$this->_result or !$this->_result instanceof Result) {
             $this->_result = new Result($result);
         }
-        $this->_result->setPattern('arr');
+        $this->_result->setPattern('arr')->reload($result);
         return $this->_result;
     }
 

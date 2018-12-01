@@ -17,11 +17,36 @@ class Result {
      * @param $data
      */
     public function __construct($data) {
-        if (!isset($data['code']) || !isset($data['msg']) || !isset($data['data'])) {
+        if (
+            !isset($data['code']) ||
+            !isset($data['msg']) ||
+            !isset($data['data']) ||
+            is_object($data)
+        ) {
             wm_500('数据获取失败,格式错误');
         }
         $this->_data = $data;
         $this->_output = new Output();
+    }
+
+    /**
+     * @param $data
+     * @return $this
+     */
+    public function reload($data){
+        if (
+            !isset($data['code']) ||
+            !isset($data['msg']) ||
+            !isset($data['data']) ||
+            is_object($data)
+        ) {
+            wm_500('数据获取失败,格式错误');
+        }
+        $this->_data = $data;
+        if(!$this->_output instanceof Output){
+            $this->_output = new Output();
+        }
+        return $this;
     }
 
     /**

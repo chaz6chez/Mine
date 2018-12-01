@@ -92,7 +92,7 @@ abstract class Controller {
         if(!$this->_result or !$this->_output instanceof Result){
             $this->_result = new Result($result);
         }
-        $this->_result->setPattern('json');
+        $this->_result->setPattern('json')->reload($result);
         return $this->_result;
     }
 }
