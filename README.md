@@ -20,6 +20,7 @@ A simple API framework for WorkerMan
     - **Apcu类**：基于Apcu的进程间通讯助手
     - **Template类**：模板工具助手
     - **Arr类**：数组助手
+    - **Language类**：语言包输出助手
 9) 框架使用**Composer PSR-4**自动加载，灵活性高。
 
 
