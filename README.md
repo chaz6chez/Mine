@@ -6,6 +6,12 @@ A simple API framework for WorkerMan
 **wm-api核心部分**
 ***
 
+## 更新
+**2018-12-05**
+1) 调整框架加载内容方法；
+2) 使用CoreServer替代HttpServer，提升性能；
+3) 修复框架加载BUG可能导致内存溢出问题；
+
 ## 简单介绍
 1) 以**WorkerMan**为核心开发的**HttpServer**。
 2) 提供轻量级Route及加载方式。

@@ -102,6 +102,9 @@ abstract class Instance{
      * @param int $limit
      */
     final private static function GC($limit = 10){
+        if(defined('INSTANCES_LIMIT')){
+            $limit = INSTANCES_LIMIT;
+        }
         # 判断容器容量
         if(!$limit){
             return;
