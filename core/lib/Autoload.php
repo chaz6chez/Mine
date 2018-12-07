@@ -6,7 +6,25 @@
 # -------------------------- #
 namespace core\lib;
 
-class Autoload{
+final class Autoload{
+
+    private static $_instance;
+
+    /**
+     * Autoload constructor.
+     */
+    final public function __construct(){}
+
+    /**
+     * 单例
+     * @return Autoload
+     */
+    final public static function instance(){
+        if(!self::$_instance or !self::$_instance instanceof Autoload){
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
 
     /**
      * 注册

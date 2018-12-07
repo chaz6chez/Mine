@@ -19,7 +19,7 @@ use core\helper\Arr;
  * Class Route
  * @package core\lib
  */
-class Route{
+final class Route{
 
     public $_base    = 'Api';
     public $_path    = [];
@@ -28,6 +28,23 @@ class Route{
     public $_action  = 'Index';
     private $_allowed    = [];
     private $_forbidden  = ['Common'];
+    private static $_instance;
+
+    /**
+     * Route constructor.
+     */
+    final public function __construct(){}
+
+    /**
+     * 单例
+     * @return Route
+     */
+    final public static function instance(){
+        if(!self::$_instance or !self::$_instance instanceof Route){
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
 
     /**
      * todo Route 可参考hands-off类型的框架的Route类拓展，如pinatra/framework
@@ -111,6 +128,12 @@ class Route{
         $this->_ctrl = ucfirst($this->_ctrl);
         # \项目基目录\模块目录\控制器目录\文件名
         $c = "\\{$this->_base}\\{$this->_mode}\Controller\\{$this->_ctrl}";
+
+        $preg = preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/',$this->_ctrl);
+        if($preg > 1){
+            wm_404("{$this->_ctrl} Not Found");
+        }
+
         $obj = new $c();
         $methodName = $this->_action;
         $obj->$methodName();

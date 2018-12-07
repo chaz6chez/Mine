@@ -13,6 +13,7 @@ use core\lib\Route;
 /**
  *  1._configInit() 每一次有请求时都会require Common下的config文件
  *  2._funcInit() 仅会在第一次请求时require加载公共函数，随后的请求都会直接调用进程加载好的公共函数
+ *  3.请在服务启动时加载 composer autoload
  *
  * Class App
  * @package core
@@ -25,27 +26,27 @@ class App{
 
     /**
      * 加载
+     * @return $this
      */
     public function init(){
-        //引入composer自动载入
-        $this->_init();
         //载入公共方法
         $this->_funcInit();
         //设置头
         $this->_setHeader();
         //载入配置
         $this->_configInit();
-        //自动载入函数
-        $this->_setAutoload();
-        //设置路由
-        $this->_setRoute();
+
+        return $this;
     }
 
     /**
-     * 载入初始化
+     * 运行
      */
-    private function _init(){
-        require_once ROOT_PATH . '/vendor/autoload.php';
+    public function run(){
+        //自动载入函数
+        $this->_setAutoload();
+        //设置路由 并执行
+        $this->_setRoute();
     }
 
     /**
@@ -72,14 +73,14 @@ class App{
      * 自动载入(异常补充)
      */
     private function _setAutoload(){
-        $autoload = new Autoload();
+        $autoload = Autoload::instance();
         $autoload->register();
     }
     /**
      * 设置路由
      */
     private function _setRoute(){
-        $routeObj = new Route();
+        $routeObj = Route::instance();
         if($this->_defaultPath){
             $routeObj->setDefaultRoute($this->_defaultPath);
         }
