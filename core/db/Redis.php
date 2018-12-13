@@ -131,6 +131,33 @@ class Redis extends Driver {
     }
 
     /**
+     * @param $key
+     * @return array
+     */
+    public function hGetAllNew($key) {
+        $this->_ext();
+        $this->call();
+        $key = $this->getCacheKey($key);
+        $keys = $this->handler->hKeys($key);
+        $data = [];
+        if(!$keys) return $data;
+        $data = $this->handler->hMGet($key, $keys);
+        return $data ? $data : [];
+    }
+
+//    public function hGetAll_test($key){
+//        $it = NULL;
+//        $this->handler->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
+//        $data = [];
+//        while($arr = $this->handler->hScan($this->getCacheKey($key),null)) {
+//            foreach($arr as $k => $v) {
+//                $data[$k] = $v;
+//            }
+//        }
+//        return $data;
+//    }
+
+    /**
      * @param $name
      * @param $key
      * @return string
