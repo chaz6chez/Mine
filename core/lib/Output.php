@@ -71,6 +71,19 @@ class Output {
     }
 
     /**
+     * @return $this
+     */
+    public function cross(){
+        if ($this->pattern != 'arr') {
+            wm_header('Content-Type: application/json;charset=utf-8');
+            wm_header('Access-Control-Allow-Origin: *');
+            wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
+            wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+        }
+        return $this;
+    }
+
+    /**
      * 输出
      * @param string $code
      * @param $msg
@@ -109,9 +122,12 @@ class Output {
         if ($this->_apiRequestId) {
             //todo 接口数据默认给记录
         }
-        # debug 下的控制台输出
-        if(defined('DEBUG') and DEBUG){
-            dump($json);
+        # debug
+        if (
+            defined('DEBUG') and
+            DEBUG
+        ){
+            cli_echo($json,'RESPONSE');
         }
         # worker man 主动断开连接
         if($this->_end){
