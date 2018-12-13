@@ -303,6 +303,21 @@ if(!function_exists('wm_end')){
 }
 
 /**
+ * WorkerMan 控制台输出
+ */
+if(!function_exists('cli_echo')){
+
+    function cli_echo($msg = '',$tag = '#'){
+        if(is_array($msg)){
+            \Workerman\Worker::safeEcho("[{$tag}] ", false);
+            dump($msg);
+        }else{
+            \Workerman\Worker::safeEcho("[{$tag}] $msg\n", false);
+        }
+    }
+}
+
+/**
  * WorkerMan header
  */
 if(!function_exists('wm_header')){
@@ -329,9 +344,10 @@ if(!function_exists('wm_500')){
         if(defined('DEBUG') and DEBUG){
             $msg = explode('|',$msg);
             if(count($msg)>1){
-                dump($msg[0] . ' : ' . $msg[1]);
+                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
+            }else{
+                cli_echo($msg[0],'SYSTEM ERROR');
             }
-            dump($msg[0]);
         }
         wm_end(
             '<html><head><title>500 Internal Server Error</title></head><body><center><h3>500 Internal Server Error</h3></center></body></html>'
@@ -352,9 +368,10 @@ if(!function_exists('wm_404')){
         if(defined('DEBUG') and DEBUG){
             $msg = explode('|',$msg);
             if(count($msg)>1){
-                dump($msg[0] . ' : ' . $msg[1]);
+                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
+            }else{
+                cli_echo($msg[0],'SYSTEM ERROR');
             }
-            dump($msg[0]);
         }
         wm_end(
             '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found</h3></center></body></html>'
@@ -375,9 +392,10 @@ if(!function_exists('wm_403')){
         if(defined('DEBUG') and DEBUG){
             $msg = explode('|',$msg);
             if(count($msg)>1){
-                dump($msg[0] . ' : ' . $msg[1]);
+                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
+            }else{
+                cli_echo($msg[0],'SYSTEM ERROR');
             }
-            dump($msg[0]);
         }
         wm_end(
             '<h1>403 Forbidden</h1>'
@@ -394,7 +412,7 @@ if(!function_exists('safe_echo')){
      * @param bool $decorated
      */
     function safe_echo($msg = 'echo', $decorated = false){
-        \Workerman\Worker::safeEcho($msg, $decorated);
+        \Workerman\Worker::safeEcho("$msg\n", $decorated);
     }
 }
 
