@@ -270,7 +270,7 @@ class Rabbit extends Instance {
             $this->active();
         }catch (Exception $e){
             if(defined('DEBUG') and DEBUG){
-                dump($e);
+                cli_echo($e->getMessage(),'RABBIT');
             }
             return [false,$e->getMessage()];
         }
@@ -297,7 +297,7 @@ class Rabbit extends Instance {
             $this->active();
         }catch (Exception $e){
             if(defined('DEBUG') and DEBUG){
-                dump($e);
+                cli_echo($e->getMessage(),'RABBIT ERROR');
             }
             return [false,$e->getMessage()];
         }

@@ -31,8 +31,6 @@ class App{
     public function init(){
         //载入公共方法
         $this->_funcInit();
-        //设置头
-        $this->_setHeader();
         //载入配置
         $this->_configInit();
 
@@ -43,6 +41,8 @@ class App{
      * 运行
      */
     public function run(){
+        //设置头
+        $this->_setHeader();
         //自动载入函数
         $this->_setAutoload();
         //设置路由 并执行
@@ -64,10 +64,13 @@ class App{
     }
 
     /**
-     * 头
+     * 设置默认头
      */
     private function _setHeader(){
-        wm_header('Content-type: text/html; charset=UTF-8');
+        wm_header('Content-Type: text/html; charset=UTF-8');
+//        wm_header('Access-Control-Allow-Origin: *');
+//        wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
+//        wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
     }
     /**
      * 自动载入(异常补充)

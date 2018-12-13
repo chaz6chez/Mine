@@ -56,7 +56,7 @@ class Config {
                 Arr::path(self::$_config, $path, $default, '.');
         }catch (Exception $e){
             if(defined('DEBUG') and DEBUG){
-                dump($e->getMessage());
+                cli_echo($e->getMessage(),'CONFIG ERROR');
             }
             return [];
         }
