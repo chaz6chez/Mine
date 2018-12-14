@@ -52,7 +52,7 @@ class CnukServerBase extends BaseStub{
      * @return \Grpc\UnaryCall
      */
     public function ConfirWithdrawal( WithdrawalRequest $argument, $metadata = [], $options = []) {
-        return $this->_simpleRequest('/CnukServer.Route.CnukServices/Withdrawal',
+        return $this->_simpleRequest('/CnukServer.Route.CnukServices/ConfirWithdrawal',
             $argument,
             ['CnukServer\Withdrawal\Response', 'decode'],
             $metadata, $options);
@@ -66,7 +66,7 @@ class CnukServerBase extends BaseStub{
      * @return \Grpc\UnaryCall
      */
     public function Trade( ExchangeRequest $argument, $metadata = [], $options = []) {
-        return $this->_simpleRequest('/CnukServer.Route.CnukServices/Exchange',
+        return $this->_simpleRequest('/CnukServer.Route.CnukServices/Trade',
             $argument,
             ['CnukServer\Exchange\Response', 'decode'],
             $metadata, $options);

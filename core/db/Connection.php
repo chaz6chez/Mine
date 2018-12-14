@@ -255,6 +255,11 @@ class Connection{
      */
     public function update($data) {
         $res = $this->_medoo->update($this->_table, $data, $this->_getWhere());
+        if($res instanceof \PDOStatement){
+            $res = $res->rowCount();
+        }else{
+            $res = false;
+        }
         $this->cleanup();
         return $res;
     }
@@ -266,10 +271,19 @@ class Connection{
      */
     public function delete($mulitTable = null) {
         $res = $this->_medoo->delete($this->_table, $this->_getWhere(), $mulitTable);
+        if($res instanceof \PDOStatement){
+            $res = $res->rowCount();
+        }else{
+            $res = false;
+        }
         $this->cleanup();
         return $res;
     }
 
+    /**
+     * @param $columns
+     * @return bool|\PDOStatement
+     */
     public function replace($columns) {
         $res = $this->_medoo->replace($this->_table, $columns, $this->_getWhere());
         $this->cleanup();
