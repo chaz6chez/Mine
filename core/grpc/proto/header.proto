@@ -17,6 +17,10 @@ enum TradeStatus {
 message Request {
 	// the socket url 
   string url = 1;
+
+  string signal = 2;
+
+  string public_key = 3;
 }
 
 message Response {

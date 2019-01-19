@@ -2,7 +2,7 @@
 # -------------------------- #
 #  Name: chaz6chez           #
 #  Email: admin@chaz6chez.cn #
-#  Date: 2018/10/15            #
+#  Date: 2018/10/15          #
 # -------------------------- #
 namespace core\lib;
 
@@ -11,6 +11,8 @@ use Workerman\Protocols\Http;
 use Workerman\WebServer;
 
 /**
+ * 注 ：此版本 CoreServer 兼容拓展 gRPC v1.17之前版本
+ *
  *  1.不使用独立入口php文件做导向
  *  2.Worker start时加载框架程序
  *  3.不支持独立运行的php脚本
@@ -24,6 +26,8 @@ class CoreServer extends WebServer {
     public $allowed        = [];  # 授权的路由
     public $forbidden      = [];  # 拒绝的路由
     public $defaultPath    = '';  # 默认路径
+    public $gRPC           = false;
+
     /**
      * @var App
      */
@@ -57,6 +61,7 @@ class CoreServer extends WebServer {
 
     /**
      * Worker启动
+     * @throws \Exception
      */
     public function onWorkerStart() {
         if(!defined('WORKER_MAN') or !WORKER_MAN){
@@ -77,6 +82,17 @@ class CoreServer extends WebServer {
         }
         $this->coreApp->init();
 
+        if($this->gRPC){
+            if(self::$_OS === OS_TYPE_LINUX){
+                $dl = @dl('grpc.so');
+            }else{
+                $dl = @dl('php_grpc.dll');
+            }
+            if(!$dl){
+                self::safeEcho('grpc extension not ready');
+                exit;
+            }
+        }
         if(DEBUG){
             $GLOBALS['WORKER_START_MEMORY'] = get_memory_used();
         }
@@ -212,8 +228,8 @@ class CoreServer extends WebServer {
         if (is_file($file)) {
             # 安全性检查(输出文件锁死在$rootDir)
             if ((
-                !($requestRealPath = realpath($file)) ||
-                !($requestRootPath = realpath($rootDir))) ||
+                    !($requestRealPath = realpath($file)) ||
+                    !($requestRootPath = realpath($rootDir))) ||
                 0 !== strpos($requestRealPath, $requestRootPath)
             ) {
                 Http::header('HTTP/1.1 400 Bad Request');

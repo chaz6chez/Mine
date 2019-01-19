@@ -8,23 +8,45 @@ namespace core\mq;
 
 use Api\Common\Service\MQConsumers;
 use core\lib\Config;
+use Workerman\Lib\Timer;
 use Workerman\Worker;
 
-class MQServer extends Worker{
+class MQClient extends Worker{
 
     public $configPath   = null;
     public $functionPath = null;
+    private $eventLimit  = 20000;
+    private $eventCount  = 0;
+    private $memory      = 0;
+    private $interval    = 0.01;
+    /**
+     * @var \AMQPConnection
+     */
+    protected $connection = null;
+    /**
+     * @var \AMQPChannel
+     */
+    protected $channel = null;
+    /**
+     * @var \AMQPQueue
+     */
+    protected $queue = null;
     /**
      * @var Rabbit
      */
     protected $client = null;
 
     /**
+     * @var Timer
+     */
+    protected $timer = null;
+
+    /**
      * MQServer constructor.
      */
     public function __construct() {
         parent::__construct();
-        $this->name = 'MQServer';
+        $this->name = 'MQClient';
     }
 
     /**
@@ -65,14 +87,11 @@ class MQServer extends Worker{
      * @param Worker $worker
      */
     public function onWorkerStart($worker){
-        global $connection;
-        global $channel;
-        global $queue;
         $this->funcInit();
         $this->confInit();
         cli_echo_debug("Rabbit Server Start","# : {$worker->workerId}|{$worker->id}");
         $rabbit = Rabbit::instance();
-        $connection = new \AMQPConnection([
+        $this->connection = new \AMQPConnection([
             'host'     => $rabbit->_config['host'],
             'virtual'  => $rabbit->_config['vhost'],
             'port'     => $rabbit->_config['port'],
@@ -80,37 +99,62 @@ class MQServer extends Worker{
             'password' => $rabbit->_config['password'],
         ]);
         try{
-            $connection->connect();
-
-            $channel = new \AMQPChannel($connection);
-            $exchange = new \AMQPExchange($channel);
+            $this->connection->connect();
+            $this->channel = new \AMQPChannel($this->connection);
+            $exchange = new \AMQPExchange($this->channel);
             $exchange->setName($rabbit->_exchangeName);
             $exchange->setType($rabbit->_type);
-            $queue = new \AMQPQueue($channel);
-            $queue->setName($rabbit->_queueName);
-            $queue->bind($rabbit->_exchangeName);
-
+            $this->queue = new \AMQPQueue($this->channel);
+            $this->queue->setName($rabbit->_queueName);
+            $this->queue->bind($rabbit->_exchangeName);
         }catch (\Exception $e){
             $error = $e->getMessage();
             log_add("[$worker->workerId|$worker->id] Rabbit Server Error [$error]",'MQ',__METHOD__);
             cli_echo_debug("Rabbit Server Error [$error]","# : {$worker->workerId}|{$worker->id}");
             return;
         }
-        $count = 0;
-        while(true){
-            if(++$count > 20000){
-                $worker::stopAll();
-                break;
-            }
-            try{
-                $queue->consume(function (\AMQPEnvelope $even,\AMQPQueue $queue){
-                    MQConsumers::instance()->MQRoute($even,$queue);
-                });
-            }catch (\Exception $e){
-                $error = $e->getMessage();
-                cli_echo_debug("Consumers Error [$error]","#");
-            }
+        $this->timer = Timer::add($this->interval,function(){
+            $this->restart();
+            $this->queueConsume();
+            $this->memory = number_format(memory_get_usage(false) / 1024 / 1024, 2);
+        });
+    }
 
+    /**
+     * @param float $interval
+     */
+    public function setInterval(float $interval){
+        $this->interval = $interval;
+    }
+
+    /**
+     * @param int $limit
+     */
+    public function setEventLimit(int $limit){
+        $this->eventLimit = $limit;
+    }
+
+    /**
+     * 队列消费
+     */
+    protected function queueConsume(){
+        try{
+            $this->queue->consume(function (\AMQPEnvelope $even,\AMQPQueue $queue){
+                MQConsumers::instance()->MQRoute($even,$queue);
+            });
+        }catch (\Exception $e){
+            $error = $e->getMessage();
+            cli_echo_debug("Consumers Error [$error]","#");
+        }
+    }
+
+    /**
+     * 计数重启
+     */
+    private function restart(){
+        if(++$this->eventCount > $this->eventLimit){
+            $this->eventCount = 0;
+            Worker::stopAll();
         }
     }
 
@@ -119,12 +163,10 @@ class MQServer extends Worker{
      * @param Worker $worker
      */
     public function onWorkerStop($worker){
-        global $connection;
-        global $channel;
-        global $queue;
-        $queue = null;
-        ($channel instanceof \AMQPChannel and $channel) ? $channel->close() : $channel = null;
-        ($connection instanceof \AMQPConnection and $connection) ? $connection->disconnect() : $connection = null;
+        Timer::del($this->timer);
+        $this->queue = null;
+        $this->channel = null;
+        ($this->connection instanceof \AMQPConnection) ? $this->connection->disconnect() : $this->connection = null;
         cli_echo_debug("Rabbit Server Stop","# : {$worker->workerId}|{$worker->id}");
     }
 }

@@ -21,7 +21,7 @@ class Result {
             !isset($data['code']) ||
             !isset($data['msg']) ||
             !isset($data['data']) ||
-            is_object($data)
+            !is_array($data)
         ) {
             wm_500('数据获取失败,格式错误');
         }
@@ -38,7 +38,7 @@ class Result {
             !isset($data['code']) ||
             !isset($data['msg']) ||
             !isset($data['data']) ||
-            is_object($data)
+            !is_array($data)
         ) {
             wm_500('数据获取失败,格式错误');
         }
@@ -126,12 +126,12 @@ class Result {
      * @return array|mixed
      */
     public function throwError($msg = '', $code = 0, $data = '') {
-        if (empty($this->_data['code'])) {
-            return;
-        }
         $this->_data['msg'] = $msg ? $msg . ':' . $this->_data['msg'] : $this->_data['msg'];
         $this->_data['code'] = $code ? $code : $this->_data['code'];
         $this->_data['data'] = $data ? $data : $this->_data['data'];
+        if (empty($this->_data['code'])) {
+            return $this->_output->error('没有错误需要抛出', 500, $this->_data['data']);;
+        }
         if ($this->_pattern != 'arr') {
             $this->_output->error($this->_data['msg'], $this->_data['code'], $this->_data['data']);
         } else {

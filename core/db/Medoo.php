@@ -286,7 +286,7 @@ class Medoo {
             $this->connection();
             $this->command();
         } catch (PDOException $e) {
-            throw new PDOException($e->getMessage());
+            throw new PDOException($e->getMessage(),$e->getCode());
         }
     }
 
@@ -300,14 +300,21 @@ class Medoo {
     }
 
     public function reconnect(){
-        if(!$this->pdo or !$this->pdo instanceof PDO){
-            $this->connection();
-            $this->command();
-        }
+//        if(!$this->pdo or !$this->pdo instanceof PDO){
+//            $this->connection();
+//            $this->command();
+//        }
+        $this->connection();
+        $this->command();
     }
 
     public function connection() {
         $option = isset($this->options['option']) ? $this->options['option'] : [];
+        # 设置抛出异常
+        $option = array_merge($option,[
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+
         $this->pdo = new PDO(
             $this->dsn,
             isset($this->options['username']) ? $this->options['username'] : null,
@@ -387,12 +394,10 @@ class Medoo {
                 } catch (PDOException $ex) {
                     $this->rollback();
                     return false;
-//                    throw $ex;
                 }
             } else {
                 $this->rollback();
                 return false;
-//                throw $e;
             }
         }
         return $this->statement;

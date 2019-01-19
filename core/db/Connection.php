@@ -7,7 +7,6 @@
 
 namespace core\db;
 
-use core\lib\Instance;
 use core\helper\Arr;
 
 class Connection{
@@ -70,11 +69,28 @@ class Connection{
                 $this->_config = $conf;
             }
             if(extension_loaded('PDO')){
-                $this->_medoo = new Medoo($this->_config);
+                try{
+                    $this->_medoo = new Medoo($this->_config);
+                }catch (\PDOException $e){
+                    $this->_active = false;
+                    wm_500('db server exception');
+                }
+                $this->_active = true;
             }else{
+                $this->_active = false;
                 wm_500('not support: PDO');
             }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function checker(){
+        if(!$this->_active or !$this->_medoo){
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -87,9 +103,10 @@ class Connection{
 
     /**
      * 获得PDO对象
-     * @return \PDO
+     * @return \PDO|bool
      */
     public function getPdo() {
+        if(!$this->checker()) return false;
         return $this->_medoo->pdo;
     }
 
@@ -209,6 +226,7 @@ class Connection{
      * @return array|bool|mixed
      */
     public function select() {
+        if(!$this->checker()) return false;
         if ($this->_join) {
             $res = $this->_medoo->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
         } else {
@@ -223,6 +241,7 @@ class Connection{
      * @return array|bool|mixed
      */
     public function find() {
+        if(!$this->checker()) return false;
         $res = null;
         $this->limit(1);
         if ($this->_join) {
@@ -240,6 +259,7 @@ class Connection{
      * @return array|mixed
      */
     public function insert($datas) {
+        if(!$this->checker()) return false;
         $res = $this->_medoo->insert($this->_table, $datas);
         if(is_object($res)){
             $res = $this->_medoo->id();
@@ -254,6 +274,7 @@ class Connection{
      * @return int
      */
     public function update($data) {
+        if(!$this->checker()) return false;
         $res = $this->_medoo->update($this->_table, $data, $this->_getWhere());
         if($res instanceof \PDOStatement){
             $res = $res->rowCount();
@@ -270,6 +291,7 @@ class Connection{
      * @return int
      */
     public function delete($mulitTable = null) {
+        if(!$this->checker()) return false;
         $res = $this->_medoo->delete($this->_table, $this->_getWhere(), $mulitTable);
         if($res instanceof \PDOStatement){
             $res = $res->rowCount();
@@ -285,6 +307,7 @@ class Connection{
      * @return bool|\PDOStatement
      */
     public function replace($columns) {
+        if(!$this->checker()) return false;
         $res = $this->_medoo->replace($this->_table, $columns, $this->_getWhere());
         $this->cleanup();
         return $res;
@@ -292,12 +315,14 @@ class Connection{
 
 
     public function get() {
+        if(!$this->checker()) return false;
         $res = $this->_medoo->get($this->_table, $this->_field, $this->_getWhere());
         $this->cleanup();
         return $res;
     }
 
     public function has() {
+        if(!$this->checker()) return false;
         if (!$this->_join) {
             $res = $this->_medoo->has($this->_table, $this->_getWhere());
         } else {
@@ -308,6 +333,7 @@ class Connection{
     }
 
     public function count() {
+        if(!$this->checker()) return false;
         if (!$this->_join) {
             $res = $this->_medoo->count($this->_table, $this->_getWhere());
         } else {
@@ -318,6 +344,7 @@ class Connection{
     }
 
     public function max() {
+        if(!$this->checker()) return false;
         if (!$this->_join) {
             $res = $this->_medoo->max($this->_table, $this->_field, $this->_getWhere());
         } else {
@@ -328,6 +355,7 @@ class Connection{
     }
 
     public function min() {
+        if(!$this->checker()) return false;
         if (!$this->_join) {
             $res = $this->_medoo->min($this->_table, $this->_field, $this->_getWhere());
         } else {
@@ -338,6 +366,7 @@ class Connection{
     }
 
     public function avg() {
+        if(!$this->checker()) return false;
         if (!$this->_join) {
             $res = $this->_medoo->avg($this->_table, $this->_field, $this->_getWhere());
         } else {
@@ -348,6 +377,7 @@ class Connection{
     }
 
     public function sumGroup() {
+        if(!$this->checker()) return false;
         $data = [];
         $table = $this->_table;
         $where = $this->_getWhere();
@@ -366,6 +396,7 @@ class Connection{
     }
 
     public function sum() {
+        if(!$this->checker()) return false;
         if (!$this->_join) {
             $res = $this->_medoo->sum($this->_table, $this->_field, $this->_getWhere());
         } else {
@@ -376,26 +407,32 @@ class Connection{
     }
 
     public function info() {
+        if(!$this->checker()) return false;
         return $this->_medoo->info();
     }
 
     public function error() {
+        if(!$this->checker()) return false;
         return $this->_medoo->error();
     }
 
     public function lastQuery() {
+        if(!$this->checker()) return false;
         return $this->_medoo->lastQuery();
     }
 
     public function quote($string) {
+        if(!$this->checker()) return false;
         return $this->_medoo->quote($string);
     }
 
     public function query($query) {
+        if(!$this->checker()) return false;
         return $this->_medoo->query($query);
     }
 
     public function exec($query) {
+        if(!$this->checker()) return false;
         return $this->_medoo->exec($query);
     }
 
@@ -403,6 +440,7 @@ class Connection{
      * 开启事务
      */
     public function beginTransaction() {
+        if(!$this->checker()) return false;
         if ($this->_transactionCount === 0) {
             if($this->_medoo->beginTransaction(false)){
                 $this->_transactionCount++;
@@ -414,6 +452,7 @@ class Connection{
      * 事务回滚
      */
     public function rollback() {
+        if(!$this->checker()) return false;
         if ($this->_transactionCount > 0) {
             $this->_medoo->rollBack();
             $this->_transactionCount = 0;
@@ -424,6 +463,7 @@ class Connection{
      * 执行事务提交
      */
     public function commit() {
+        if(!$this->checker()) return false;
         if ($this->_transactionCount === 1) {
             $this->_medoo->commit();
         }
@@ -485,6 +525,7 @@ class Connection{
     }
 
     public function _getLog(){
+        if(!$this->checker()) return false;
         return $this->_medoo->log();
     }
 }

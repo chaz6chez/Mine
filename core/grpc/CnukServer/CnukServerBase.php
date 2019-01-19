@@ -93,7 +93,7 @@ class CnukServerBase extends BaseStub{
      * @param array $options
      * @return \Grpc\UnaryCall
      */
-    public function Deposit( DepositRequest $argument, $metadata = [], $options = []) {
+    public function Deposit(DepositRequest $argument, $metadata = [], $options = []) {
         return $this->_simpleRequest('/CnukServer.Route.CnukServices/Deposit',
             $argument,
             ['CnukServer\Deposit\Response', 'decode'],

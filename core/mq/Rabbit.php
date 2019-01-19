@@ -91,9 +91,10 @@ class Rabbit extends Instance {
                     $this->_config['password'],
                     $this->_config['vhost']
                 );
-            } catch (AMQPRuntimeException $e){
-                throw new Exception('rabbitMQ server connect error ['.$e->getMessage().']');
+            }catch (\Exception $e){
+                throw new Exception("rabbitMQ server connect error [{$e->getMessage()}]");
             }
+
         }
         return $this->_connection;
     }
@@ -104,11 +105,7 @@ class Rabbit extends Instance {
      * @throws Exception
      */
     public function active(){
-        try{
-            $this->_connection();
-        }catch (Exception $e){
-            throw new Exception($e->getMessage());
-        }
+        $this->_connection();
         return $this;
     }
 
@@ -267,7 +264,7 @@ class Rabbit extends Instance {
     public function publishMessage(array $message){
         $message = serialize($message);
         try{
-            $this->active();
+          $this->active();
         }catch (Exception $e){
             if(defined('DEBUG') and DEBUG){
                 cli_echo($e->getMessage(),'RABBIT');

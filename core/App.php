@@ -43,6 +43,8 @@ class App{
     public function run(){
         //设置头
         $this->_setHeader();
+        //设置时间
+        $this->_setTime();
         //自动载入函数
         $this->_setAutoload();
         //设置路由 并执行
@@ -64,13 +66,20 @@ class App{
     }
 
     /**
+     * 设置时间
+     */
+    private function _setTime(){
+        $GLOBALS['NOW_TIME'] = isset($_SERVER['REQUEST_TIME']) ? $_SERVER['REQUEST_TIME'] : time();
+    }
+
+    /**
      * 设置默认头
      */
     private function _setHeader(){
-        wm_header('Content-Type: text/html; charset=UTF-8');
-//        wm_header('Access-Control-Allow-Origin: *');
-//        wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
-//        wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+        wm_header('Content-Type: application/json;charset=utf-8');
+        wm_header('Access-Control-Allow-Origin: *');
+        wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
+        wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
     }
     /**
      * 自动载入(异常补充)

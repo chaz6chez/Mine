@@ -19,6 +19,14 @@ class Request extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string url = 1;</code>
      */
     private $url = '';
+    /**
+     * Generated from protobuf field <code>string signal = 2;</code>
+     */
+    private $signal = '';
+    /**
+     * Generated from protobuf field <code>string public_key = 3;</code>
+     */
+    private $public_key = '';
 
     /**
      * Constructor.
@@ -28,6 +36,8 @@ class Request extends \Google\Protobuf\Internal\Message
      *
      *     @type string $url
      *           the socket url 
+     *     @type string $signal
+     *     @type string $public_key
      * }
      */
     public function __construct($data = NULL) {
@@ -57,6 +67,50 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->url = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string signal = 2;</code>
+     * @return string
+     */
+    public function getSignal()
+    {
+        return $this->signal;
+    }
+
+    /**
+     * Generated from protobuf field <code>string signal = 2;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setSignal($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->signal = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string public_key = 3;</code>
+     * @return string
+     */
+    public function getPublicKey()
+    {
+        return $this->public_key;
+    }
+
+    /**
+     * Generated from protobuf field <code>string public_key = 3;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPublicKey($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->public_key = $var;
 
         return $this;
     }

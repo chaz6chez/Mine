@@ -45,11 +45,13 @@ class Db extends Instance {
         if(!$conf){
             $conf = $this->_config[$name];
         }
-        if (isset($this->_servers[$name]) and $this->_servers[$name] instanceof Connection) {
-            $this->_servers[$name]->setActive($conf);
-        }else{
+        if (!isset($this->_servers[$name]) and !$this->_servers[$name] instanceof Connection) {
             $this->_servers[$name] = $this->connect();
+        }
+        try{
             $this->_servers[$name]->setActive($conf);
+        }catch (\Exception $e){
+            log_add("mysql server exception ->{$e->getMessage()}",'MYSQL',__METHOD__);
         }
         return $this->_servers[$name];
     }

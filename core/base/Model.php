@@ -127,7 +127,7 @@ class Model {
     /**
      * 获得主数据库连接
      * @param string $name
-     * @return Connection
+     * @return Connection|bool
      */
     public function dbName($name = 'default') {
         if ($name == 'default') {
@@ -138,6 +138,7 @@ class Model {
         if (!isset($this->_dbMaster[$dbName]) or !$this->_dbMaster[$dbName] instanceof Connection) {
             $this->_dbMaster[$dbName] = $this->db()->dbName($dbName);
         }
+
         return $this->_dbMaster[$dbName];
     }
 

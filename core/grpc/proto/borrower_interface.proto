@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package CnukServer.Borrower;
+
+import "header.proto";
+
+// 接口主要用来增加一个用户资产，这里设计到虚拟币和法定货币两种
+
+message Request{
+	CnukServer.Header.Request header = 1;
+	string order_number = 3;
+}
+
+message Response {
+	CnukServer.Header.Response header = 1;
+}

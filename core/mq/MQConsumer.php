@@ -35,45 +35,37 @@ class MQConsumer extends Service {
     public function MQRoute(\AMQPEnvelope $even,\AMQPQueue $queue){
         $msg = unserialize($body = $even->getBody());
         if(!is_array($msg)){
-            safe_echo(" [*]>> Queue message error\n");
-            safe_echo(" [*]>> -> [$body]\n");
-            //todo 日志记录该消息内容格式错误
+            log_add("Queue message error [{$body}]",'MQ',__METHOD__);
             return;
         }
         $helper = MQRoute::factory($msg);
         $helper->validate();
         if($helper->hasError()){
-            //todo 日志记录该消息内容缺失关键内容
-            $error = $body . '->' . $helper->getError();
-            safe_echo(" [*]>> MQRoute error\n");
-            safe_echo(" [*]>> -> [$error]\n");
+            //缺失关键内容
+            log_add("MQRoute error [{$body}][{$helper->getError()}]",'MQ',__METHOD__);
             return;
         }
         $res = call_user_func([$this, $helper->target], $helper,$queue);
         if($res == false){
-            safe_echo(" >>[*] MQRoute target missed\n");
-            //todo 日志记录该消息目标缺失
+            //目标缺失
+            log_add("MQRoute target missed",'MQ',__METHOD__);
             return;
         }
         $res = $this->result($res);
         if($res->hasError()){
-            $error = $res->getMessage();
-            safe_echo(" [*]>> MQRoute service error\n");
-            safe_echo(" [*]>> -> [$error]\n");
-            //todo 日志记录业务错误信息
+            //业务错误信息
+            log_add("MQRoute service error [{$helper->target}][{$res->getMessage()}]",'MQ',__METHOD__);
             return;
         }
         try{
             $queue->ack($even->getDeliveryTag());
         }catch (\AMQPConnectionException $e){
-            safe_echo(" [*]>> MQRoute ack connection error\n");
-            //todo 连接器异常
+            //连接器异常
+            log_add("MQRoute ack connection error",'MQ',__METHOD__);
         }catch (\AMQPChannelException $e){
-            safe_echo(" [*]>> MQRoute ack channel error\n");
-            //todo 记录通道异常
+            //通道异常
+            log_add("MQRoute ack channel error",'MQ',__METHOD__);
         }
-
-        safe_echo(" [*]>> Queue message success\n");
         return;
     }
 }

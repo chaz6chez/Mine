@@ -34,4 +34,29 @@ class Tools{
         return ($e->getCode() == 10054 or $e->getMessage() == 10054);
     }
 
+    /**
+     * 判断grpc拓展是否支持
+     * @param bool $master
+     * @return array
+     */
+    public static function grpcForkSupport($master = true){
+        if(PHP_OS === 'Linux'){
+            $env = getenv();
+            if(
+                !$env or
+                !isset($env['GRPC_ENABLE_FORK_SUPPORT']) or
+                !isset($env['GRPC_POLL_STRATEGY']) or
+                $env['GRPC_ENABLE_FORK_SUPPORT'] != '1' or
+                $env['GRPC_POLL_STRATEGY'] != 'epoll1'
+            ){
+                if($master){
+                    echo "grpc extension environment variables not ready\n";
+                    exit;
+                }
+                return [false,"grpc extension environment variables not ready\n"];
+            }
+        }
+        return [true,null];
+    }
+
 }
