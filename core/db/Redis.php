@@ -13,6 +13,9 @@ use core\lib\Config;
  *  2018-11-22
  *      1.解决10054问题
  *
+ *  2019-01-01
+ *      1.新增hGetAllNew替代hGetAll
+ *
  * Class Redis
  * @package core\db
  */
@@ -84,13 +87,25 @@ class Redis extends Driver {
     }
 
     /**
+     * 检查后删除
+     * @param $name
+     * @return bool
+     */
+    public function rmAfterCheck($name){
+        if($this->has($name)){
+            return $this->rm($name);
+        }
+        return true;
+    }
+
+    /**
      * 判断缓存
      * @access public
      * @param string $name 缓存变量名
      * @return bool
      */
     public function has($name) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         return $this->handler->exists($this->getCacheKey($name));
     }
 
@@ -99,7 +114,7 @@ class Redis extends Driver {
      * @return array|bool
      */
     public function keys($name){
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         return $this->handler->keys($this->getCacheKey($name));
     }
 
@@ -126,7 +141,7 @@ class Redis extends Driver {
      * @return array|bool
      */
     public function hGetAll($name){
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $h = $this->handler->hGetAll($this->getCacheKey($name));
         if($h){
             foreach ($h as &$value){
@@ -141,7 +156,7 @@ class Redis extends Driver {
      * @return array|bool
      */
     public function hGetAllNew($key) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $key = $this->getCacheKey($key);
         $keys = $this->handler->hKeys($key);
         $data = [];
@@ -169,7 +184,7 @@ class Redis extends Driver {
      * @return string|bool
      */
     public function hGet($name,$key){
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $value = $this->handler->hGet($this->getCacheKey($name),$key);
         $value = ($json = is_json($value,true)) ? $json : $value;
         return $value;
@@ -181,7 +196,7 @@ class Redis extends Driver {
      * @return bool
      */
     public function hSetArray($name,array $array){
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         foreach ($array as $key => $value){
             $v = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
             $this->handler->hSet($this->getCacheKey($name),$key,$v);
@@ -196,7 +211,7 @@ class Redis extends Driver {
      * @return bool|int
      */
     public function hSet($name,$key,$value){
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $v = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
         return $this->handler->hSet($this->getCacheKey($name),$key,$v);
     }
@@ -207,7 +222,7 @@ class Redis extends Driver {
      * @return bool|int
      */
     public function hDel($name,$keys){
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         if(is_array($keys)){
             foreach ($keys as $key){
                 $this->handler->hDel($this->getCacheKey($name),$key);
@@ -226,7 +241,7 @@ class Redis extends Driver {
      * @return mixed
      */
     public function get($name, $default = false) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $value = $this->handler->get($this->getCacheKey($name));
         if (is_null($value) || false === $value) {
             return $default;
@@ -248,7 +263,7 @@ class Redis extends Driver {
      * @return boolean
      */
     public function set($name, $value, $expire = null) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         if (is_null($expire)) {
             $expire = $this->options['expire'];
         }
@@ -277,7 +292,7 @@ class Redis extends Driver {
      * @return false|int
      */
     public function inc($name, $step = 1) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $key = $this->getCacheKey($name);
         return $this->handler->incrby($key, $step);
     }
@@ -290,7 +305,7 @@ class Redis extends Driver {
      * @return false|int
      */
     public function dec($name, $step = 1) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         $key = $this->getCacheKey($name);
         return $this->handler->decrby($key, $step);
     }
@@ -302,7 +317,7 @@ class Redis extends Driver {
      * @return boolean
      */
     public function rm($name) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         return $this->handler->delete($this->getCacheKey($name));
     }
 
@@ -313,7 +328,7 @@ class Redis extends Driver {
      * @return boolean
      */
     public function clear($tag = null) {
-        if(!$this->_ext() or !$this->call()) return false;
+        if(!$this->call()) return false;
         if ($tag) {
             // 指定标签清除
             $keys = $this->getTagItem($tag);

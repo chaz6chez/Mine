@@ -5,6 +5,12 @@
 #  Date: 2018/10/23            #
 # -------------------------- #
 namespace core\mq;
+/**
+ * 用于检测业务代码死循环或者长时间阻塞等问题
+ * 如果发现业务卡死，可以将下面declare打开（去掉//注释），并执行php start.php reload
+ * 然后观察一段时间workerman.log看是否有process_timeout异常
+ */
+//declare(ticks=1);
 
 use Api\Common\Service\MQConsumers;
 use core\lib\Config;
@@ -17,7 +23,6 @@ class MQClient extends Worker{
     public $functionPath = null;
     private $eventLimit  = 20000;
     private $eventCount  = 0;
-    private $memory      = 0;
     private $interval    = 0.01;
     /**
      * @var \AMQPConnection
@@ -115,8 +120,8 @@ class MQClient extends Worker{
         }
         $this->timer = Timer::add($this->interval,function(){
             $this->restart();
-            $this->queueConsume();
-            $this->memory = number_format(memory_get_usage(false) / 1024 / 1024, 2);
+//            $this->queueConsume(); # 阻塞调用
+            $this->queueGet(); # 非阻塞调用
         });
     }
 
@@ -136,12 +141,32 @@ class MQClient extends Worker{
 
     /**
      * 队列消费
+     *
+     * 阻塞
      */
     protected function queueConsume(){
         try{
+            // 阻塞调用
             $this->queue->consume(function (\AMQPEnvelope $even,\AMQPQueue $queue){
                 MQConsumers::instance()->MQRoute($even,$queue);
             });
+        }catch (\Exception $e){
+            $error = $e->getMessage();
+            cli_echo_debug("Consumers Error [$error]","#");
+        }
+    }
+
+    /**
+     * 队列消费
+     *
+     * 非阻塞
+     */
+    protected function queueGet(){
+        try{
+            // 非阻塞调用
+            if($even = $this->queue->get()){
+                MQConsumers::instance()->MQRoute($even,$this->queue);
+            }
         }catch (\Exception $e){
             $error = $e->getMessage();
             cli_echo_debug("Consumers Error [$error]","#");

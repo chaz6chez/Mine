@@ -528,4 +528,11 @@ class Connection{
         if(!$this->checker()) return false;
         return $this->_medoo->log();
     }
+
+    public function getConfig($param = null){
+        if(!$param){
+            return $this->_config;
+        }
+        return isset($this->_config[$param]) ? $this->_config[$param] : '';
+    }
 }

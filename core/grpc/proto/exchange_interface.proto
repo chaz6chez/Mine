@@ -17,6 +17,8 @@ message Request {
 	uint64 type = 10;
 	uint64 order_status = 11;
 	string fee_uid = 12;
+	string total = 13;
+	uint64 calculate_type = 14;
 }
 
 

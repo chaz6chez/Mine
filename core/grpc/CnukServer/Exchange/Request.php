@@ -57,6 +57,14 @@ class Request extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string fee_uid = 12;</code>
      */
     private $fee_uid = '';
+    /**
+     * Generated from protobuf field <code>string total = 13;</code>
+     */
+    private $total = '';
+    /**
+     * Generated from protobuf field <code>uint64 calculate_type = 14;</code>
+     */
+    private $calculate_type = 0;
 
     /**
      * Constructor.
@@ -75,6 +83,8 @@ class Request extends \Google\Protobuf\Internal\Message
      *     @type int|string $type
      *     @type int|string $order_status
      *     @type string $fee_uid
+     *     @type string $total
+     *     @type int|string $calculate_type
      * }
      */
     public function __construct($data = NULL) {
@@ -320,6 +330,50 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->fee_uid = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string total = 13;</code>
+     * @return string
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    /**
+     * Generated from protobuf field <code>string total = 13;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTotal($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->total = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 calculate_type = 14;</code>
+     * @return int|string
+     */
+    public function getCalculateType()
+    {
+        return $this->calculate_type;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 calculate_type = 14;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setCalculateType($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->calculate_type = $var;
 
         return $this;
     }
