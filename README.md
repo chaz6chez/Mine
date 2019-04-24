@@ -7,6 +7,12 @@ A simple API framework for WorkerMan
 ***
 
 ## 更新
+**2019-02-11**
+1) 修复框架BUG：数据库驱动组件、缓存、CoreServer等BUG；
+2) 调整MQ消费者消费方式，使用定时器配合非阻塞消费方法改进；
+3) 新增Permanent常驻单例容器组件；
+4) 框架优化调整；
+
 **2018-12-05**
 1) 调整框架加载内容方法；
 2) 使用CoreServer替代HttpServer，提升性能；
