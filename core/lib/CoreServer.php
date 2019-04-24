@@ -117,8 +117,9 @@ class CoreServer extends WebServer {
         # 域名解析
         $urlInfo = parse_url("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
         if (!$urlInfo) {
+            #header('HTTP/1.1 400 Bad Request');
             Http::header('HTTP/1.1 400 Bad Request');
-            $connection->close('<h1>400 Bad Request</h1>');
+            $connection->close('<h1>400 Bad Request [Unknown]</h1>');
             self::safeEcho("[#] --(Bad Request)-- END -----------------\n");
             return;
         }
@@ -135,8 +136,9 @@ class CoreServer extends WebServer {
         $file = null;
         switch ($pathInfoExtension){
             case 'php':         # php脚本
+                #header('HTTP/1.1 403 Forbidden');
                 Http::header('HTTP/1.1 403 Forbidden');
-                $connection->close('<h1>403 Forbidden</h1>');
+                $connection->close('<h1>403 Forbidden [File]</h1>');
                 self::safeEcho("[#] -(403 Forbidden)- END -----------------\n");
                 return;
                 break;
@@ -162,8 +164,9 @@ class CoreServer extends WebServer {
             }
 
             if(!isset($this->serverRoot[$_SERVER['SERVER_NAME']])) {
+                #header('HTTP/1.1 403 Forbidden');
                 Http::header('HTTP/1.1 403 Forbidden');
-                $connection->close('<h1>403 Forbidden</h1>');
+                $connection->close('<h1>403 Forbidden [Server Name]</h1>');
                 self::safeEcho("[#] -(403 Forbidden)- END -----------------\n");
                 return;
             }
@@ -216,8 +219,9 @@ class CoreServer extends WebServer {
                 !($requestRootPath = realpath($rootDir))) ||
                 0 !== strpos($requestRealPath, $requestRootPath)
             ) {
+                #header('HTTP/1.1 400 Bad Request');
                 Http::header('HTTP/1.1 400 Bad Request');
-                $connection->close('<h1>400 Bad Request</h1>');
+                $connection->close('<h1>400 Bad Request [Not Safe]</h1>');
                 self::safeEcho("[#] --(Bad Request)-- END -----------------\n");
                 return;
             }
@@ -229,11 +233,12 @@ class CoreServer extends WebServer {
         }
 
         # 404
+        #header("HTTP/1.1 404 Not Found");
         Http::header("HTTP/1.1 404 Not Found");
         if(isset($siteConfig['custom404']) && file_exists($siteConfig['custom404'])){
             $html404 = file_get_contents($siteConfig['custom404']);
         }else{
-            $html404 = '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found</h3></center></body></html>';
+            $html404 = '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found [Core]</h3></center></body></html>';
         }
         $connection->close($html404);
         self::safeEcho("[#] ---(Not Found)--- END -----------------\n");

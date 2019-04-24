@@ -28,6 +28,8 @@ message Response {
 
 	// if execute fail, return the failed msg of execute
 	string result_msg = 2;
+
+	string result_code = 3;
 	
-	string url = 3;
+	string url = 4;
 }

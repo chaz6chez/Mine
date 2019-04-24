@@ -9,6 +9,8 @@
 namespace core\crontab;
 
 use Api\V1\Service\CtocOrder;
+use Api\V1\Service\Visa;
+use core\lib\Autoload;
 use core\lib\Config;
 use \Workerman\Worker;
 use \Workerman\Lib\Timer;
@@ -21,6 +23,7 @@ class Task extends Worker{
      * @var Timer
      */
     protected $timer = null;
+    protected $visa_timer = null;
 
     /**
      * Task constructor.
@@ -63,6 +66,11 @@ class Task extends Worker{
         }
     }
 
+    private function _setAutoload(){
+        $autoload = Autoload::instance();
+        $autoload->register();
+    }
+
     /**
      * start
      * @param Worker $worker
@@ -70,11 +78,17 @@ class Task extends Worker{
     public function onWorkerStart($worker){
         $this->funcInit();
         $this->confInit();
+        $this->_setAutoload();
+
         cli_echo_debug("Task Server Start","# : {$worker->workerId}|{$worker->id}");
 
         // 每30秒执行一次，清理过期订单
         $this->timer = Timer::add(30,function(){
             CtocOrder::instance()->cancelExpireOrder();
+        });
+        // 每10分钟执行一次，检查更新visa消费者状态
+        $this->visa_timer = Timer::add(600,function(){
+            Visa::instance()->taskUpdateVisaStatus();
         });
     }
 
@@ -84,6 +98,7 @@ class Task extends Worker{
      */
     public function onWorkerStop($worker){
         Timer::del($this->timer);
+        Timer::del($this->visa_timer);
         cli_echo_debug("Task Server Stop","# : {$worker->workerId}|{$worker->id}");
     }
 }

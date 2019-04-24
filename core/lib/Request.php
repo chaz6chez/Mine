@@ -244,7 +244,10 @@ class Request {
                 //todo 文件二进制流筛选过滤，当前仅简单处理
                 $realType = file_real_type($f['file_data']);
                 if(!array_key_exists($realType,$this->fileAllow)){
-                    wm_403('Illegal file');
+                    $type = substr($f['file_type'],strpos($f['file_type'],'/') + 1);
+                    if(!array_key_exists($type,$this->fileAllow)){
+                        wm_403("Illegal file{$f['file_name']}");
+                    }
                 }
                 //todo 文件大小的限制
 
@@ -262,11 +265,12 @@ class Request {
      * 上传文件的本地保存
      * @param string $name
      * @param string $fileName
+     * @param null $public
      * @return array|string
      * 定位具体文件名  string 文件地址
      * 其他情况返回    array  文件地址集合
      */
-    public function filesPath($name = '',$fileName = ''){
+    public function filesPath($name = '',$fileName = '',$public = null){
         if(!$this->files){
             $this->getFile();
         }
@@ -277,7 +281,11 @@ class Request {
         }
         $paths = [];
         $string = new_token(uniqid('.,#$%^&@'));
-        $path = str_replace(PUBLIC_PATH,'',$this->uploadPath);
+        if(!$public){
+            $path = str_replace(PUBLIC_PATH,'',$this->uploadPath);
+        }else{
+            $path = str_replace($public,'',$this->uploadPath);
+        }
         if(!$name){
             foreach ($_FILES as $file){
                 $fileRename = $string.'.'.file_suffix($file['file_name']);
@@ -310,9 +318,10 @@ class Request {
      * 仅保存每个key的第一个文件并返回路径
      * @param $name
      * @param null $path
+     * @param bool $public
      * @return string
      */
-    public function getFilePath($name,$path = null){
+    public function getFilePath($name,$path = null,$public = null){
         if(!$this->files){
             $this->getFile();
         }
@@ -326,7 +335,12 @@ class Request {
         }
         $filePath = '';
         $string = new_token(uniqid('.,#$%^&@'));
-        $path = str_replace(PUBLIC_PATH,'',$this->uploadPath);
+        if(!$public){
+            $path = str_replace(PUBLIC_PATH,'',$this->uploadPath);
+        }else{
+            $path = str_replace($public,'',$this->uploadPath);
+        }
+
         if(isset($this->files[$name])){
             $file = $this->files[$name];
             $file = array_shift($file);

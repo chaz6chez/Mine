@@ -22,6 +22,8 @@ class Connection{
      */
     protected $_active = false;
 
+    protected $_error = '';
+
     /**
      * 数据库配置
      * @var array
@@ -73,12 +75,13 @@ class Connection{
                     $this->_medoo = new Medoo($this->_config);
                 }catch (\PDOException $e){
                     $this->_active = false;
-                    wm_500('db server exception');
+                    $this->_error = 'db server exception';
                 }
                 $this->_active = true;
+                $this->_error = '';
             }else{
                 $this->_active = false;
-                wm_500('not support: PDO');
+                $this->_error = 'not support: PDO';
             }
         }
     }
@@ -91,6 +94,13 @@ class Connection{
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return string
+     */
+    public function getError(){
+        return $this->_error;
     }
 
     /**
@@ -256,10 +266,23 @@ class Connection{
     /**
      * 新增数据
      * @param $datas
+     * @param bool $filter
      * @return array|mixed
      */
-    public function insert($datas) {
+    public function insert($datas,$filter = false) {
         if(!$this->checker()) return false;
+        if($filter){
+            $data = [];
+            foreach ($datas as $key => $v){
+                preg_match('/(?<column>[-.a-zA-Z0-9_]+)(\[(?<operator>\+|\-|\*|\/)\])?/i', $key, $match);
+                if(isset($match['operator'])){
+                    $data[$match['column']] = $v;
+                }else{
+                    $data[$key] = $v;
+                }
+            }
+            $datas = $data;
+        }
         $res = $this->_medoo->insert($this->_table, $datas);
         if(is_object($res)){
             $res = $this->_medoo->id();
@@ -317,6 +340,13 @@ class Connection{
     public function get() {
         if(!$this->checker()) return false;
         $res = $this->_medoo->get($this->_table, $this->_field, $this->_getWhere());
+        $this->cleanup();
+        return $res;
+    }
+
+    public function hasTable() {
+        if(!$this->checker()) return false;
+        $res = $this->_medoo->query("SHOW TABLES LIKE {$this->_table}");
         $this->cleanup();
         return $res;
     }
@@ -421,6 +451,11 @@ class Connection{
         return $this->_medoo->lastQuery();
     }
 
+    public function last(){
+        if(!$this->checker()) return false;
+        return $this->_medoo->last();
+    }
+
     public function quote($string) {
         if(!$this->checker()) return false;
         return $this->_medoo->quote($string);
@@ -438,14 +473,15 @@ class Connection{
 
     /**
      * 开启事务
+     * @param bool $throw
      */
-    public function beginTransaction() {
+    public function beginTransaction($throw = false) {
         if(!$this->checker()) return false;
-        if ($this->_transactionCount === 0) {
-            if($this->_medoo->beginTransaction(false)){
-                $this->_transactionCount++;
-            }
+        if($this->_medoo->beginTransaction($throw)){
+            $this->_transactionCount++;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -453,10 +489,11 @@ class Connection{
      */
     public function rollback() {
         if(!$this->checker()) return false;
-        if ($this->_transactionCount > 0) {
-            $this->_medoo->rollBack();
+        if($this->_medoo->rollback()){
             $this->_transactionCount = 0;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -464,12 +501,11 @@ class Connection{
      */
     public function commit() {
         if(!$this->checker()) return false;
-        if ($this->_transactionCount === 1) {
-            $this->_medoo->commit();
+        if($this->_medoo->commit()){
+            $this->_transactionCount = 0;
+            return true;
         }
-        if ($this->_transactionCount > 0) {
-            $this->_transactionCount--;
-        }
+        return false;
     }
 
     /**

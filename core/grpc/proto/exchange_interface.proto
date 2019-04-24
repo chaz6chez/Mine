@@ -19,6 +19,9 @@ message Request {
 	string fee_uid = 12;
 	string total = 13;
 	uint64 calculate_type = 14;
+	uint64 rate_is_reverse = 15;
+	string marketer_fee_uid = 16;
+	string marketer_fee = 17;
 }
 
 

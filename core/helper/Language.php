@@ -43,15 +43,16 @@ class Language {
 
     /***
      * 输出
-     * @param string $code
+     * @param $code
+     * @param null $tag
      * @return mixed|null
      */
-    final public static function output($code){
+    final public static function output($code,$tag = null){
         $codes = self::_rule((string)$code);
         if(is_array($codes) and count($codes) < 2){
             return null;
         }
-        return self::instance()->parse($code);
+        return self::instance()->parse($code,$tag);
     }
 
     /**
@@ -108,13 +109,17 @@ class Language {
 
     /**
      * 解析输出
-     * @param string $code
+     * @param $code
+     * @param null $tag
      * @return mixed|null
      */
-    public function parse($code){
+    public function parse($code,$tag = null){
         $codes = self::_rule((string)$code);
         if(is_array($codes) and count($codes) > 1){
             $this->load($codes[0]);
+        }
+        if($tag){
+            return isset(self::$_messageList[$codes[1]]) ? self::$_messageList[$codes[1]]."[{$tag}]" : null;
         }
         return isset(self::$_messageList[$codes[1]]) ? self::$_messageList[$codes[1]] : null;
     }

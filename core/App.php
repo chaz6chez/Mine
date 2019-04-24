@@ -81,6 +81,7 @@ class App{
         wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
         wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
     }
+
     /**
      * 自动载入(异常补充)
      */
@@ -88,6 +89,7 @@ class App{
         $autoload = Autoload::instance();
         $autoload->register();
     }
+
     /**
      * 设置路由
      */

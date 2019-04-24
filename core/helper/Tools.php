@@ -41,13 +41,9 @@ class Tools{
      */
     public static function grpcForkSupport($master = true){
         if(PHP_OS === 'Linux'){
-            $env = getenv();
             if(
-                !$env or
-                !isset($env['GRPC_ENABLE_FORK_SUPPORT']) or
-                !isset($env['GRPC_POLL_STRATEGY']) or
-                $env['GRPC_ENABLE_FORK_SUPPORT'] != '1' or
-                $env['GRPC_POLL_STRATEGY'] != 'epoll1'
+                getenv('GRPC_ENABLE_FORK_SUPPORT') != '1' or
+                getenv('GRPC_POLL_STRATEGY') != 'epoll1'
             ){
                 if($master){
                     echo "grpc extension environment variables not ready\n";

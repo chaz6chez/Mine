@@ -1411,7 +1411,7 @@ class Medoo {
                 return false;
             }
         }
-
+//        return true;
     }
 
     public function rollback() {

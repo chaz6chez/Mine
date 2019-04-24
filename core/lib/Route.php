@@ -117,11 +117,13 @@ final class Route{
 
         if($this->_forbidden){
             if(in_array($this->_mode,$this->_forbidden)){
+                $this->clean();
                 wm_403("{$this->_mode} Forbidden");
             }
         }
         if($this->_allowed){
             if(!in_array($this->_mode,$this->_allowed)){
+                $this->clean();
                 wm_404("{$this->_mode} Not Found");
             }
         }
@@ -141,5 +143,11 @@ final class Route{
         $obj = new $c();
         $methodName = $this->_action;
         $obj->$methodName();
+    }
+
+    public function clean(){
+        $this->_mode    = 'Index';
+        $this->_ctrl    = 'Index';
+        $this->_action  = 'Index';
     }
 }
