@@ -214,6 +214,23 @@ if(!function_exists('array2xml')) {
 }
 
 /**
+ * 数组与字符串之间的相互简易转换
+ */
+if(!function_exists('arr_str')) {
+    /**
+     * @param $input
+     * @param string $tag
+     * @return array|string
+     */
+    function arr_str($input,$tag = 'ARRAY') {
+        if(is_array($input)){
+            return $tag.serialize($input);
+        }
+        return unserialize(mb_substr($input,mb_strlen($tag)));
+    }
+}
+
+/**
  * 对象转数组
  */
 if(!function_exists('object2array')) {
