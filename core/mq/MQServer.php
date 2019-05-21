@@ -55,20 +55,22 @@ class MQServer extends Worker{
     public function funcInit(){
         if($this->functionPath){
             if(file_exists($this->functionPath)){
-                require_once COMMON_PATH . '/functions.php';
+                require_once $this->functionPath;
             }
         }
     }
 
     /**
      * start
+     * @param Worker $worker
      */
-    public function onWorkerStart(){
+    public function onWorkerStart($worker){
         global $connection;
         global $channel;
+        global $queue;
         $this->funcInit();
         $this->confInit();
-        self::safeEcho(" [#] Rabbit Server Start\n");
+        cli_echo_debug("Rabbit Server Start","# : {$worker->workerId}|{$worker->id}");
         $rabbit = Rabbit::instance();
         $connection = new \AMQPConnection([
             'host'     => $rabbit->_config['host'],
@@ -79,35 +81,50 @@ class MQServer extends Worker{
         ]);
         try{
             $connection->connect();
-        }catch (\AMQPConnectionException $e){
+
+            $channel = new \AMQPChannel($connection);
+            $exchange = new \AMQPExchange($channel);
+            $exchange->setName($rabbit->_exchangeName);
+            $exchange->setType($rabbit->_type);
+            $queue = new \AMQPQueue($channel);
+            $queue->setName($rabbit->_queueName);
+            $queue->bind($rabbit->_exchangeName);
+
+        }catch (\Exception $e){
             $error = $e->getMessage();
-            self::safeEcho(" [#] Rabbit Server Error [$error]\n");
-            exit;
+            log_add("[$worker->workerId|$worker->id] Rabbit Server Error [$error]",'MQ',__METHOD__);
+            cli_echo_debug("Rabbit Server Error [$error]","# : {$worker->workerId}|{$worker->id}");
+            return;
         }
-        $channel = new \AMQPChannel($connection);
-        $exchange = new \AMQPExchange($channel);
-        $exchange->setName($rabbit->_exchangeName);
-        $exchange->setType($rabbit->_type);
-        $queue = new \AMQPQueue($channel);
-        $queue->setName($rabbit->_queueName);
-        $queue->bind($rabbit->_exchangeName);
+        $count = 0;
         while(true){
-            $queue->consume(function (\AMQPEnvelope $even,\AMQPQueue $queue){
-                self::safeEcho(" [#]> Consumers start work\n");
-                MQConsumers::instance()->MQRoute($even,$queue);
-                self::safeEcho(" [#]> Consumers stop work\n");
-            });
+            if(++$count > 20000){
+                $worker::stopAll();
+                break;
+            }
+            try{
+                $queue->consume(function (\AMQPEnvelope $even,\AMQPQueue $queue){
+                    MQConsumers::instance()->MQRoute($even,$queue);
+                });
+            }catch (\Exception $e){
+                $error = $e->getMessage();
+                cli_echo_debug("Consumers Error [$error]","#");
+            }
+
         }
     }
 
     /**
      * stop
+     * @param Worker $worker
      */
-    public function onWorkerStop(){
+    public function onWorkerStop($worker){
         global $connection;
         global $channel;
-        $channel->close();
-        $connection->close();
-        self::safeEcho(" [#] Rabbit Server Stop\n");
+        global $queue;
+        $queue = null;
+        ($channel instanceof \AMQPChannel and $channel) ? $channel->close() : $channel = null;
+        ($connection instanceof \AMQPConnection and $connection) ? $connection->disconnect() : $connection = null;
+        cli_echo_debug("Rabbit Server Stop","# : {$worker->workerId}|{$worker->id}");
     }
 }

@@ -16,7 +16,7 @@ class Template extends Instance{
     protected $_tplExt   = '.tpl';
     protected $_tplVars  = [];
     protected $_tplDir   = COMMON_PATH.'/Template';
-    protected $_language = 'zh_cn';
+    protected $_language = 'zh-cn';
     protected $_title    = 'title';
 
     protected function _initConfig() {}
@@ -46,7 +46,7 @@ class Template extends Instance{
         if(is_dir($this->_tplDir."/{$language}/")){
             $this->_language = $language;
         }else{
-            $this->_language = 'en_uk';
+            $this->_language = 'en-uk';
         }
         return $this;
     }
@@ -101,10 +101,15 @@ class Template extends Instance{
             }
             $arr = explode('.', $m[0]);
             array_shift($arr);
-            $r = $this->_tplVars[$m[1]];
-            foreach ($arr as $a) {
-                $r .= "['" . trim($a) . "']";
+
+            $r = '';
+            if(isset($this->_tplVars[$m[1]])){
+                $r = $this->_tplVars[$m[1]];
+                foreach ($arr as $a) {
+                    $r .= "['" . trim($a) . "']";
+                }
             }
+
             return $r;
         }, $content);
         return $content;

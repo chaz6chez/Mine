@@ -16,7 +16,7 @@ use Workerman\WebServer;
  *  3.不支持独立运行的php脚本
  *  4.其他文件格式以文件方式输出
  *
- * Class FastServer
+ * Class CoreServer
  * @package core\lib
  */
 class CoreServer extends WebServer {
@@ -57,11 +57,10 @@ class CoreServer extends WebServer {
 
     /**
      * Worker启动
-     * @throws \Exception
      */
     public function onWorkerStart() {
         if(!defined('WORKER_MAN') or !WORKER_MAN){
-            self::safeEcho('WORKER_MAN not defined');
+            self::safeEcho('!!SERVER WARNING!! WORKER_MAN not defined');
             exit;
         }
         if(!$this->coreApp or !$this->coreApp instanceof App){
@@ -77,6 +76,10 @@ class CoreServer extends WebServer {
             $this->coreApp->setForbiddenRoute($this->forbidden);
         }
         $this->coreApp->init();
+
+        if(DEBUG){
+            $GLOBALS['WORKER_START_MEMORY'] = get_memory_used();
+        }
         parent::onWorkerStart();
     }
 
@@ -85,7 +88,7 @@ class CoreServer extends WebServer {
      */
     public function onClose($connection){
         if(DEBUG){
-            self::safeEcho("$this->id - $connection->id :closed\n");
+            self::safeEcho("[#] $this->id - $connection->id :closed\n");
         }
     }
 
@@ -94,7 +97,7 @@ class CoreServer extends WebServer {
      */
     public function onConnect($connection){
         if(DEBUG){
-            self::safeEcho("$this->id - $connection->id :connect\n");
+            self::safeEcho("[#] $this->id - $connection->id :connect\n");
         }
     }
 
@@ -102,14 +105,22 @@ class CoreServer extends WebServer {
      * Emit when http message coming.
      *
      * @param \Workerman\Connection\TcpConnection $connection
-     * @return void
      */
     public function onMessage($connection) {
+        # 内存占用
+        if(DEBUG){
+            self::safeEcho("[#] ---------------- START ----------------\n");
+            cli_echo_debug($_SERVER,'SERVER INFO');
+            $GLOBALS['REQUEST_START_MEMORY'] = get_memory_used();
+        }
+
         # 域名解析
-        $urlInfo = parse_url('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+        $urlInfo = parse_url("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
         if (!$urlInfo) {
+            #header('HTTP/1.1 400 Bad Request');
             Http::header('HTTP/1.1 400 Bad Request');
-            $connection->close('<h1>400 Bad Request</h1>');
+            $connection->close('<h1>400 Bad Request [Unknown]</h1>');
+            self::safeEcho("[#] --(Bad Request)-- END -----------------\n");
             return;
         }
         # path解析
@@ -125,8 +136,10 @@ class CoreServer extends WebServer {
         $file = null;
         switch ($pathInfoExtension){
             case 'php':         # php脚本
+                #header('HTTP/1.1 403 Forbidden');
                 Http::header('HTTP/1.1 403 Forbidden');
-                $connection->close('<h1>403 Forbidden</h1>');
+                $connection->close('<h1>403 Forbidden [File]</h1>');
+                self::safeEcho("[#] -(403 Forbidden)- END -----------------\n");
                 return;
                 break;
             case 'html':        # html文件
@@ -136,7 +149,7 @@ class CoreServer extends WebServer {
 
                 break;
             default:            # 其他文件(图片等)
-                $file = "$rootDir/$path";
+                $file = "{$rootDir}/{$path}";
                 break;
         }
 
@@ -146,7 +159,17 @@ class CoreServer extends WebServer {
 
         # 框架响应
         if($file === null){
-            $path = substr($path,strrpos($path,'.php')); # 兼容唯一入口
+            if($strrpos = strrpos($path,'.')){
+                $path = substr($path,$strrpos); # 兼容唯一入口
+            }
+
+            if(!isset($this->serverRoot[$_SERVER['SERVER_NAME']])) {
+                #header('HTTP/1.1 403 Forbidden');
+                Http::header('HTTP/1.1 403 Forbidden');
+                $connection->close('<h1>403 Forbidden [Server Name]</h1>');
+                self::safeEcho("[#] -(403 Forbidden)- END -----------------\n");
+                return;
+            }
 
             $cwd = getcwd();
             chdir($rootDir);
@@ -173,6 +196,18 @@ class CoreServer extends WebServer {
                 $connection->close($content);
             }
             chdir($cwd);
+
+            # 内存占用
+            if(DEBUG){
+                $GLOBALS['REQUEST_END_MEMORY'] = get_memory_used();
+                $rUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['REQUEST_START_MEMORY'];
+                $aUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['WORKER_START_MEMORY'];
+                self::safeEcho("[#] all_memory_used:{$GLOBALS['REQUEST_END_MEMORY']}\n");
+                self::safeEcho("[#] run_memory_used:{$aUsedMemory}\n");
+                self::safeEcho("[#] request_memory_used:{$rUsedMemory}\n");
+                self::safeEcho("[#] ----------------- END -----------------\n");
+            }
+
             return;
         }
 
@@ -180,28 +215,33 @@ class CoreServer extends WebServer {
         if (is_file($file)) {
             # 安全性检查(输出文件锁死在$rootDir)
             if ((
-                    !($requestRealPath = realpath($file)) ||
-                    !($requestRootPath = realpath($rootDir))) ||
+                !($requestRealPath = realpath($file)) ||
+                !($requestRootPath = realpath($rootDir))) ||
                 0 !== strpos($requestRealPath, $requestRootPath)
             ) {
+                #header('HTTP/1.1 400 Bad Request');
                 Http::header('HTTP/1.1 400 Bad Request');
-                $connection->close('<h1>400 Bad Request</h1>');
+                $connection->close('<h1>400 Bad Request [Not Safe]</h1>');
+                self::safeEcho("[#] --(Bad Request)-- END -----------------\n");
                 return;
             }
 
             $file = realpath($file);
             # 发送文件
+            self::safeEcho("[#] ------(File)----- END -----------------\n");
             return self::sendFile($connection, $file);
         }
 
         # 404
+        #header("HTTP/1.1 404 Not Found");
         Http::header("HTTP/1.1 404 Not Found");
         if(isset($siteConfig['custom404']) && file_exists($siteConfig['custom404'])){
             $html404 = file_get_contents($siteConfig['custom404']);
         }else{
-            $html404 = '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found</h3></center></body></html>';
+            $html404 = '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found [Core]</h3></center></body></html>';
         }
         $connection->close($html404);
+        self::safeEcho("[#] ---(Not Found)--- END -----------------\n");
         return;
     }
 }

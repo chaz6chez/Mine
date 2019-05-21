@@ -17,6 +17,10 @@ enum TradeStatus {
 message Request {
 	// the socket url 
   string url = 1;
+
+  string signal = 2;
+
+  string public_key = 3;
 }
 
 message Response {
@@ -24,6 +28,8 @@ message Response {
 
 	// if execute fail, return the failed msg of execute
 	string result_msg = 2;
+
+	string result_code = 3;
 	
-	string url = 3;
+	string url = 4;
 }

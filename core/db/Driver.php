@@ -99,6 +99,7 @@ abstract class Driver{
      * @return mixed
      */
     public function pull($name) {
+        $this->call();
         $result = $this->get($name, false);
         if ($result) {
             $this->rm($name);
@@ -118,6 +119,7 @@ abstract class Driver{
      * @throws \throwable
      */
     public function remember($name, $value, $expire = null) {
+        $this->call();
         if (!$this->has($name)) {
             $time = time();
             while ($time + 5 > time() && $this->has($name . '_lock')) {
@@ -157,6 +159,7 @@ abstract class Driver{
      * @return $this
      */
     public function tag($name, $keys = null, $overlay = false) {
+        $this->call();
         if (is_null($name)) {
 
         } elseif (is_null($keys)) {
@@ -184,6 +187,7 @@ abstract class Driver{
      * @return void
      */
     protected function setTagItem($name) {
+        $this->call();
         if ($this->tag) {
             $key = 'tag_' . md5($this->tag);
             $this->tag = null;

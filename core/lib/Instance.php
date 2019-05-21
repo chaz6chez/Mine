@@ -10,15 +10,12 @@ namespace core\lib;
  * 单例容器
  *
  *  1.使用享元模式开发，所有子类公用一个容器，共同管理
- *  2.内部实现计数GC，自动控制其单例容器释放内存
+ *  2.内部实现计数 GC，自动控制其单例容器释放内存
  *  3.instanceClean()、instanceRemove()方法可主动释放内存
  *  4.getInstances()方法可获取当前容器情况
  *
- * todo GC容器设置 常驻单例、预加载单例
- *  todo 1.常驻单例：一旦实例保存，不会被GC掉
- *  todo 2.预加载单例：第一次加载Instance类时触发生成单例，可选常驻 or 普通
- *
- *  注.以上所说的内存释放在PHP GC前提下实现
+ *  注.
+ *      1.以上所说的内存释放在PHP GC前提下实现
  *
  * Class Instance
  * @package core\lib
@@ -35,9 +32,13 @@ abstract class Instance{
     private $_result;
 
     protected $_config         = [];
-    private static $_instances = []; # 单例容器 队列模型
-    protected static $_time    = 0;
-    protected static $_class   = null;
+
+    private static $_instances = [];    # 单例容器 队列模型
+    private static $_i_capacity= 0;     # 单例容器 容量
+    private static $_use_count = 0;     # 已占用的数量
+
+    protected static $_time    = 0;     # 当前时间
+    protected static $_class   = null;  # 唤起的类名
 
 
     /**
@@ -86,32 +87,21 @@ abstract class Instance{
     }
 
     /**
-     * 查看已实例的类
-     * @param string $className
-     * @return array|mixed|null
-     */
-    final public function getInstances($className = ''){
-        if($className){
-            return isset(self::$_instances[$className]) ? self::$_instances[$className] : null;
-        }
-        return self::$_instances;
-    }
-
-    /**
      * 容器 GC
      * @param int $limit
      */
     final private static function GC($limit = 10){
-        if(defined('INSTANCES_LIMIT')){
+        if(defined('INSTANCES_LIMIT') and INSTANCES_LIMIT){
             $limit = INSTANCES_LIMIT;
         }
+        self::$_i_capacity = $limit;
         # 判断容器容量
-        if(!$limit){
-            return;
-        }
         $count = count(self::$_instances);
+
         if($count > 0){
+            self::$_use_count = $count;
             if(($redundant = $count - (int)$limit) > 0){
+                self::$_use_count = $limit;
                 # 溢出的对象出队 等待PHP GC
                 do{
                     array_shift(self::$_instances);
@@ -155,8 +145,8 @@ abstract class Instance{
      * @return static
      */
     final public static function factory($config = false) {
-        $class = get_called_class();
-        return new $class($config);
+        self::$_class = get_called_class();
+        return new self::$_class($config);
     }
 
     /**
@@ -187,6 +177,18 @@ abstract class Instance{
     }
 
     /**
+     * 查看已实例的类
+     * @param string $className
+     * @return array|mixed|null
+     */
+    final static public function getInstances($className = ''){
+        if($className){
+            return isset(self::$_instances[$className]) ? self::$_instances[$className] : null;
+        }
+        return self::$_instances;
+    }
+
+    /**
      * 读取配置
      * @param null $key
      * @param null $default
@@ -214,10 +216,8 @@ abstract class Instance{
      * @return Result
      */
     protected function result($result) {
-        if (!$this->_result or !$this->_result instanceof Result) {
-            $this->_result = new Result($result);
-        }
-        $this->_result->setPattern('arr')->reload($result);
+        $this->_result = new Result($result);
+        $this->_result->setPattern('arr');
         return $this->_result;
     }
 

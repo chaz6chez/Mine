@@ -57,6 +57,26 @@ class Request extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string fee_uid = 12;</code>
      */
     private $fee_uid = '';
+    /**
+     * Generated from protobuf field <code>string total = 13;</code>
+     */
+    private $total = '';
+    /**
+     * Generated from protobuf field <code>uint64 calculate_type = 14;</code>
+     */
+    private $calculate_type = 0;
+    /**
+     * Generated from protobuf field <code>uint64 rate_is_reverse = 15;</code>
+     */
+    private $rate_is_reverse = 0;
+    /**
+     * Generated from protobuf field <code>string marketer_fee_uid = 16;</code>
+     */
+    private $marketer_fee_uid = '';
+    /**
+     * Generated from protobuf field <code>string marketer_fee = 17;</code>
+     */
+    private $marketer_fee = '';
 
     /**
      * Constructor.
@@ -75,6 +95,11 @@ class Request extends \Google\Protobuf\Internal\Message
      *     @type int|string $type
      *     @type int|string $order_status
      *     @type string $fee_uid
+     *     @type string $total
+     *     @type int|string $calculate_type
+     *     @type int|string $rate_is_reverse
+     *     @type string $marketer_fee_uid
+     *     @type string $marketer_fee
      * }
      */
     public function __construct($data = NULL) {
@@ -320,6 +345,116 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->fee_uid = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string total = 13;</code>
+     * @return string
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    /**
+     * Generated from protobuf field <code>string total = 13;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTotal($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->total = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 calculate_type = 14;</code>
+     * @return int|string
+     */
+    public function getCalculateType()
+    {
+        return $this->calculate_type;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 calculate_type = 14;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setCalculateType($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->calculate_type = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 rate_is_reverse = 15;</code>
+     * @return int|string
+     */
+    public function getRateIsReverse()
+    {
+        return $this->rate_is_reverse;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 rate_is_reverse = 15;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setRateIsReverse($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->rate_is_reverse = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string marketer_fee_uid = 16;</code>
+     * @return string
+     */
+    public function getMarketerFeeUid()
+    {
+        return $this->marketer_fee_uid;
+    }
+
+    /**
+     * Generated from protobuf field <code>string marketer_fee_uid = 16;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setMarketerFeeUid($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->marketer_fee_uid = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string marketer_fee = 17;</code>
+     * @return string
+     */
+    public function getMarketerFee()
+    {
+        return $this->marketer_fee;
+    }
+
+    /**
+     * Generated from protobuf field <code>string marketer_fee = 17;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setMarketerFee($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->marketer_fee = $var;
 
         return $this;
     }

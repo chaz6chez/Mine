@@ -29,6 +29,68 @@ if (!function_exists('dump')) {
 }
 
 /**
+ * 判断是否是unix时间戳
+ */
+if (!function_exists('is_timestamp')){
+    /**
+     * @param $timestamp
+     * @return bool
+     */
+    function is_timestamp($timestamp) {
+        if(strtotime(date('Y-m-d H:i:s', $timestamp)) === $timestamp) {
+            return $timestamp;
+        } else {
+            return false;
+        }
+    }
+}
+
+/**
+ * 日志
+ *
+ *  例：
+ *      log_add('welcome', $GLOBALS['API_MODULE'], __METHOD__);
+ *  日志保存在该文件同级的log目录下，保存内容为：
+ *      06:07:14 [Api\V1\Controller\Index::index] welcome
+ *
+ */
+if (!function_exists('log_add')) {
+
+    /**
+     * @param array|int|string|object $msg
+     * @param null|string $module
+     * @param null|string $tag
+     * @return bool|int
+     */
+    function log_add($msg, $module = null, $tag = null) {
+        $dir = defined('LOG_PATH') ? LOG_PATH :  __DIR__ . '/log'; # 默认目录
+        $name = date('Y_m_d').'.log';                             # 默认文件名
+        $tag = $tag ? $tag : 'LOG';                                      # 默认标记
+
+        if($module){
+            $dir = "{$dir}/{$module}";
+        }
+
+        if(!is_dir($dir)){
+            if(!mkdir($dir,0755,true)){
+                return false;
+            }
+        }
+        if($msg instanceof Exception){
+            $msg = $msg->getMessage() . ':' . $msg->getCode();
+        }else{
+            $msg = is_scalar($msg) ? (string)$msg : json_encode($msg,JSON_UNESCAPED_UNICODE);
+        }
+
+        if(file_exists($path = "{$dir}/{$name}")){
+            return file_put_contents($path, date('H:i:s') . " [{$tag}] {$msg}\n",FILE_APPEND | LOCK_EX);
+        }else{
+            return file_put_contents($path, date('H:i:s') . " [{$tag}] {$msg}\n", LOCK_EX);
+        }
+    }
+}
+
+/**
  * 设置配置文件
  */
 if (!function_exists('set_config')) {
@@ -148,6 +210,49 @@ if(!function_exists('array2xml')) {
         }
         $xml .= "</xml>";
         return $xml;
+    }
+}
+
+/**
+ * 数组与字符串之间的相互简易转换
+ */
+if(!function_exists('arr_str')) {
+    /**
+     * @param $input
+     * @param string $tag
+     * @return array|string
+     */
+    function arr_str($input,$tag = 'ARRAY') {
+        if(is_array($input)){
+            return $tag.serialize($input);
+        }
+        return unserialize(mb_substr($input,mb_strlen($tag)));
+    }
+}
+
+/**
+ * 数组与字符串之间的相互简易转换
+ */
+if(!function_exists('arr_uri')) {
+    /**
+     * @param array|string $input
+     * @return array|string
+     */
+    function arr_uri($input) {
+        if(is_array($input)){
+            $uri = '';
+            foreach ($input as $k => $v){
+                $uri .= "&{$k}={$v}";
+            }
+            return $uri;
+        }
+        $input = explode('&',$input);
+        $array = [];
+        foreach ($input as $v){
+            $v = explode('=',$v);
+            if (count($v) > 1) $array[$v[0]] = $v[1];
+        }
+        return $array;
     }
 }
 
@@ -279,6 +384,28 @@ if(!function_exists('get_memory_used')){
 }
 
 /**
+ * 获取变量名
+ */
+if(!function_exists('get_variable_name')){
+    /**
+     * @param $var
+     * @param null|object|array $scope
+     * @return false|int|string
+     */
+    function get_variable_name(&$var, $scope = null){
+        $scope = $scope==null? $GLOBALS : $scope;
+        $tmp = $var;
+        $var = 'tmp_value_'.mt_rand();
+        if(is_object($scope)){
+            $scope = object2array($scope);
+        }
+        $name = array_search($var, $scope,true);
+        $var = $tmp;
+        return $name;
+    }
+}
+
+/**
  * WorkerMan 断开通讯 exit
  */
 if(!function_exists('wm_close')){
@@ -299,6 +426,63 @@ if(!function_exists('wm_end')){
             $_SERVER['HTTP_CONNECTION'] = 'close';
         }
         \Workerman\Protocols\Http::end($msg);
+    }
+}
+
+/**
+ * WorkerMan 控制台输出
+ */
+if(!function_exists('cli_echo')){
+
+    /**
+     * @param string $msg
+     * @param string $tag
+     */
+    function cli_echo($msg = '',$tag = '#'){
+        if(is_object($msg)){
+            if($msg instanceof Exception){
+                $msg = $msg->getMessage() . ':' . $msg->getCode();
+            }else{
+                return dump($msg);
+            }
+        }
+        if(is_array($msg)  or is_bool($msg)){
+            \Workerman\Worker::safeEcho("[{$tag}] ", false);
+            return dump($msg);
+        }else{
+            \Workerman\Worker::safeEcho("[{$tag}] $msg\n", false);
+        }
+    }
+}
+
+/**
+ * WorkerMan 控制台输出 debug下
+ */
+if(!function_exists('cli_echo_debug')){
+
+    /**
+     * @param string $msg
+     * @param string $tag
+     * @return array|mixed
+     */
+    function cli_echo_debug($msg = '',$tag = '#'){
+        if(defined('DEBUG') and DEBUG){
+            if(is_object($msg)){
+                if($msg instanceof Exception){
+                    $msg = $msg->getMessage() . ':' . $msg->getCode();
+                }else{
+                    return dump($msg);
+
+                }
+            }
+            if(is_array($msg) or is_bool($msg)){
+                \Workerman\Worker::safeEcho("[{$tag}] ", false);
+                return dump($msg);
+            }else{
+                $msg = (string)$msg;
+                \Workerman\Worker::safeEcho("[{$tag}] {$msg}\n", false);
+            }
+        }
     }
 }
 
@@ -324,17 +508,19 @@ if(!function_exists('wm_500')){
      * @param string $msg
      */
     function wm_500($msg = '500 Internal Server Error'){
-        ob_clean();
+        @ob_clean();
         wm_header("HTTP/1.1 500 Internal Server Error");
         if(defined('DEBUG') and DEBUG){
             $msg = explode('|',$msg);
             if(count($msg)>1){
-                dump($msg[0] . ' : ' . $msg[1]);
+                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
+            }else{
+                cli_echo($msg[0],'SYSTEM ERROR');
             }
-            dump($msg[0]);
         }
+        log_add($msg,'SYSTEM',__METHOD__);
         wm_end(
-            '<html><head><title>500 Internal Server Error</title></head><body><center><h3>500 Internal Server Error</h3></center></body></html>'
+            '<html><head><title>500 Internal Server Error</title></head><body><center><h3>500 Internal Server Error [Server]</h3></center></body></html>'
             ,true);
     }
 }
@@ -347,17 +533,18 @@ if(!function_exists('wm_404')){
      * @param string $msg
      */
     function wm_404($msg = '404 Not Found'){
-        ob_clean();
+        @ob_clean();
         wm_header("HTTP/1.1 404 Not Found");
         if(defined('DEBUG') and DEBUG){
             $msg = explode('|',$msg);
             if(count($msg)>1){
-                dump($msg[0] . ' : ' . $msg[1]);
+                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
+            }else{
+                cli_echo($msg[0],'SYSTEM ERROR');
             }
-            dump($msg[0]);
         }
         wm_end(
-            '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found</h3></center></body></html>'
+            '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found [Server]</h3></center></body></html>'
         ,true);
     }
 }
@@ -370,17 +557,18 @@ if(!function_exists('wm_403')){
      * @param string $msg
      */
     function wm_403($msg = '403 Forbidden'){
-        ob_clean();
+        @ob_clean();
         wm_header("HTTP/1.1 403 Forbidden");
         if(defined('DEBUG') and DEBUG){
             $msg = explode('|',$msg);
             if(count($msg)>1){
-                dump($msg[0] . ' : ' . $msg[1]);
+                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
+            }else{
+                cli_echo($msg[0],'SYSTEM ERROR');
             }
-            dump($msg[0]);
         }
         wm_end(
-            '<h1>403 Forbidden</h1>'
+            '<h1>403 Forbidden [Server]</h1>'
             ,true);
     }
 }
@@ -394,7 +582,7 @@ if(!function_exists('safe_echo')){
      * @param bool $decorated
      */
     function safe_echo($msg = 'echo', $decorated = false){
-        \Workerman\Worker::safeEcho($msg, $decorated);
+        \Workerman\Worker::safeEcho("$msg\n", $decorated);
     }
 }
 
@@ -489,6 +677,9 @@ if(!function_exists('float_muls')){
     }
 }
 
+/**
+ * 高精度除法 a / b 舍去
+ */
 if(!function_exists('float_bcdiv')){
     /** 高精度除法 a / b
      * @param $a
@@ -497,6 +688,21 @@ if(!function_exists('float_bcdiv')){
      */
     function float_bcdiv($a,$b){
         return bcdiv(sprintf('%.'.COIN_UNIT.'f', $a), sprintf('%.'.COIN_UNIT.'f', $b), COIN_UNIT);
+    }
+}
+
+/**
+ * 高精度除法 a / b 四舍五入
+ */
+if(!function_exists('bcdiv_new')){
+    /**
+     * @param $a
+     * @param $b
+     * @param int $scale
+     * @return string
+     */
+    function bcdiv_new($a,$b,int $scale = 8){
+        return number_format(bcdiv($a,$b,$scale + 1),$scale);
     }
 }
 
@@ -751,5 +957,127 @@ if(!function_exists('error_code')){
             return $err[0];
         }
         return $msg;
+    }
+}
+
+/**
+ * 密码检查
+ */
+if(!function_exists('password_checker')){
+
+    /**
+     * @param $password
+     * @param string $preg
+     * @return false|int
+     */
+    function password_checker($password,$preg = '/^(?=.*[A-Za-z])(?=.*\d)[\s\S]{8,}$/') {
+        # 默认 至少8个字符，1个字母和1个数字，其他可以是任意字符
+        return preg_match($preg,$password);
+    }
+}
+
+/**
+ * 密码检查
+ */
+if(!function_exists('get_tag')){
+
+    /**
+     * @param $string
+     * @return mixed
+     */
+    function get_tag($string) {
+        preg_match_all('/\[(?<tag>[\s\S]*?)\]/',$string,$res);
+        return $res['tag'][0];
+    }
+}
+
+/**
+ * 内容解密
+ */
+if(!function_exists('unlock_txt')){
+
+    /**
+     * @param $txt
+     * @param string $key
+     * @return string
+     */
+    function unlock_txt($txt,$key = 'ukexpay_workerman') {
+        $txt = passport_key(base64_decode(urldecode($txt)), $key);
+        $tmp = '';
+        for ($i = 0; $i < strlen($txt); $i++) {
+            $tmp .= $txt[$i] ^ $txt[++$i];
+        }
+        return $tmp;
+    }
+}
+
+/**
+ * 内容加密
+ */
+if(!function_exists('lock_txt')){
+
+    /**
+     * @param $txt
+     * @param string $key
+     * @return string
+     */
+    function lock_txt($txt,$key = 'ukexpay_workerman') {
+        srand((double)microtime() * 1000000);
+        $encrypt_key = md5(rand(0, 32000));
+        $ctr = 0;
+        $tmp = '';
+        for($i = 0; $i < strlen($txt); $i++) {
+            $ctr = $ctr == strlen($encrypt_key) ? 0 : $ctr;
+            $tmp .= $encrypt_key[$ctr].($txt[$i] ^ $encrypt_key[$ctr++]);
+        }
+        return urlencode(base64_encode(passport_key($tmp, $key)));
+    }
+}
+
+/**
+ * Passport 密匙处理函数
+ */
+if(!function_exists('passport_key')){
+    /**
+     * @param $txt
+     * @param $encrypt_key
+     * @return string
+     */
+    function passport_key($txt, $encrypt_key) {
+        $encrypt_key = md5($encrypt_key);
+        $ctr = 0;
+        $tmp = '';
+        for($i = 0; $i < strlen($txt); $i++) {
+            $ctr = $ctr == strlen($encrypt_key) ? 0 : $ctr;
+            $tmp .= $txt[$i] ^ $encrypt_key[$ctr++];
+        }
+        return $tmp;
+    }
+}
+
+/**
+ * Passport 信息(数组)编码函数
+ */
+if(!function_exists('passport_encode')){
+    /**
+     *
+     * @param                array           待编码的数组
+     *
+     * @return       string          数组经编码后的字串
+     */
+    function passport_encode($array) {
+
+        // 数组变量初始化
+        $arrayenc = array();
+
+        // 遍历数组 $array，其中 $key 为当前元素的下标，$val 为其对应的值
+        foreach($array as $key => $val) {
+            // $arrayenc 数组增加一个元素，其内容为 "$key=经过 urlencode() 后的 $val 值"
+            $arrayenc[] = $key.'='.urlencode($val);
+        }
+
+        // 返回以 "&" 连接的 $arrayenc 的值(implode)，例如 $arrayenc = array('aa', 'bb', 'cc', 'dd')，
+        // 则 implode('&', $arrayenc) 后的结果为 ”aa&bb&cc&dd"
+        return implode('&', $arrayenc);
     }
 }

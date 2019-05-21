@@ -13,12 +13,16 @@ use core\lib\Config;
  *  2018-11-22
  *      1.解决10054问题
  *
+ *  2019-01-01
+ *      1.新增hGetAllNew替代hGetAll
+ *
  * Class Redis
  * @package core\db
  */
 class Redis extends Driver {
 
-    protected $options = [];
+    protected $options   = [];
+    protected $is_active = null;
     /**
      * @var Redis
      */
@@ -37,16 +41,23 @@ class Redis extends Driver {
         if (!$this->handler or !$this->handler instanceof \Redis) {
             $this->handler = new \Redis();
         }
-        if ($this->options['persistent']) {
-            $this->handler->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
-        } else {
-            $this->handler->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
-        }
-        if ('' != $this->options['password']) {
-            $this->handler->auth($this->options['password']);
-        }
-        if (0 != $this->options['select']) {
-            $this->handler->select($this->options['select']);
+        try{
+            if ($this->options['persistent']) {
+                $this->handler->pconnect($this->options['host'], $this->options['port'], $this->options['timeout'], 'persistent_id_' . $this->options['select']);
+            } else {
+                $this->handler->connect($this->options['host'], $this->options['port'], $this->options['timeout']);
+            }
+
+            if ('' != $this->options['password']) {
+                $this->handler->auth($this->options['password']);
+            }
+
+            if (0 != $this->options['select']) {
+                $this->handler->select($this->options['select']);
+            }
+        }catch (\Exception $e){
+            $this->is_active = false;
+            log_add('redis server exception','REDIS',__METHOD__);
         }
     }
 
@@ -61,6 +72,7 @@ class Redis extends Driver {
             }
             return false;
         }
+        return true;
     }
 
     /**
@@ -75,14 +87,25 @@ class Redis extends Driver {
     }
 
     /**
+     * 检查后删除
+     * @param $name
+     * @return bool
+     */
+    public function rmAfterCheck($name){
+        if($this->has($name)){
+            return $this->rm($name);
+        }
+        return true;
+    }
+
+    /**
      * 判断缓存
      * @access public
      * @param string $name 缓存变量名
      * @return bool
      */
     public function has($name) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         return $this->handler->exists($this->getCacheKey($name));
     }
 
@@ -91,8 +114,7 @@ class Redis extends Driver {
      * @return array|bool
      */
     public function keys($name){
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         return $this->handler->keys($this->getCacheKey($name));
     }
 
@@ -116,11 +138,10 @@ class Redis extends Driver {
 
     /**
      * @param $name
-     * @return array
+     * @return array|bool
      */
     public function hGetAll($name){
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         $h = $this->handler->hGetAll($this->getCacheKey($name));
         if($h){
             foreach ($h as &$value){
@@ -131,13 +152,39 @@ class Redis extends Driver {
     }
 
     /**
+     * @param $key
+     * @return array|bool
+     */
+    public function hGetAllNew($key) {
+        if(!$this->call()) return false;
+        $key = $this->getCacheKey($key);
+        $keys = $this->handler->hKeys($key);
+        $data = [];
+        if(!$keys) return $data;
+        $json = $this->handler->hMGet($key, $keys);
+        $data = ($json = is_json($json,true)) ? $json : [];
+        return $data;
+    }
+
+//    public function hGetAll_test($key){
+//        $it = NULL;
+//        $this->handler->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
+//        $data = [];
+//        while($arr = $this->handler->hScan($this->getCacheKey($key),null)) {
+//            foreach($arr as $k => $v) {
+//                $data[$k] = $v;
+//            }
+//        }
+//        return $data;
+//    }
+
+    /**
      * @param $name
      * @param $key
-     * @return string
+     * @return string|bool
      */
     public function hGet($name,$key){
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         $value = $this->handler->hGet($this->getCacheKey($name),$key);
         $value = ($json = is_json($value,true)) ? $json : $value;
         return $value;
@@ -149,8 +196,7 @@ class Redis extends Driver {
      * @return bool
      */
     public function hSetArray($name,array $array){
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         foreach ($array as $key => $value){
             $v = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
             $this->handler->hSet($this->getCacheKey($name),$key,$v);
@@ -165,8 +211,7 @@ class Redis extends Driver {
      * @return bool|int
      */
     public function hSet($name,$key,$value){
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         $v = is_scalar($value) ? $value : json_encode($value,JSON_UNESCAPED_UNICODE);
         return $this->handler->hSet($this->getCacheKey($name),$key,$v);
     }
@@ -177,8 +222,7 @@ class Redis extends Driver {
      * @return bool|int
      */
     public function hDel($name,$keys){
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         if(is_array($keys)){
             foreach ($keys as $key){
                 $this->handler->hDel($this->getCacheKey($name),$key);
@@ -197,8 +241,7 @@ class Redis extends Driver {
      * @return mixed
      */
     public function get($name, $default = false) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         $value = $this->handler->get($this->getCacheKey($name));
         if (is_null($value) || false === $value) {
             return $default;
@@ -220,8 +263,7 @@ class Redis extends Driver {
      * @return boolean
      */
     public function set($name, $value, $expire = null) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         if (is_null($expire)) {
             $expire = $this->options['expire'];
         }
@@ -250,8 +292,7 @@ class Redis extends Driver {
      * @return false|int
      */
     public function inc($name, $step = 1) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         $key = $this->getCacheKey($name);
         return $this->handler->incrby($key, $step);
     }
@@ -264,8 +305,7 @@ class Redis extends Driver {
      * @return false|int
      */
     public function dec($name, $step = 1) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         $key = $this->getCacheKey($name);
         return $this->handler->decrby($key, $step);
     }
@@ -277,8 +317,7 @@ class Redis extends Driver {
      * @return boolean
      */
     public function rm($name) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         return $this->handler->delete($this->getCacheKey($name));
     }
 
@@ -289,8 +328,7 @@ class Redis extends Driver {
      * @return boolean
      */
     public function clear($tag = null) {
-        $this->_ext();
-        $this->call();
+        if(!$this->call()) return false;
         if ($tag) {
             // 指定标签清除
             $keys = $this->getTagItem($tag);
@@ -305,22 +343,28 @@ class Redis extends Driver {
 
     /**
      * 检查连接
-     * @return bool|string
+     * @param bool $throw
+     * @return bool
      */
-    public function call(){
+    public function call($throw = false){
         try{
             $this->handler->ping();
         }catch (\RedisException $e){
+            log_add($e->getMessage() . ':' . $e->getCode(),'REDIS',__METHOD__);
             if(Tools::isRedisTimeout($e)){
-                if($this->options['persistent']){
+                if($this->options['persistent'] and $this->handler instanceof \Redis){
                     $this->handler->close();
                 }
                 $this->handler = null;
+                $this->is_active = null;
                 self::$_instance = null;
                 self::$_instance = new self();
                 return true;
             }
-            return false;
+            return !$throw ? false : wm_500('redis server timeout');
+        }catch (\Exception $e){
+            log_add($e->getMessage() . ':' . $e->getCode(),'REDIS',__METHOD__);
+            return !$throw ? false : wm_500('redis server timeout');
         }
         return true;
     }

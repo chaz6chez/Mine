@@ -44,6 +44,10 @@ class Raw {
  *      1.优化、调整方法结构
  *      2.新增 command()         : 命令集方法
  *      2.新增 reconnect()       : 用于重连，请在 closeConnection()后调用
+ *  2019-05-08 :
+ *      1.修复事务相关方法回滚及提交失败
+ *      2.调整事务相关方法实现内容
+ *      3.增加 inTran 属性可视化是否在事务内
  * @package Api\Core\Db
  */
 class Medoo {
@@ -67,6 +71,7 @@ class Medoo {
     protected $commands    = []; # 命令集
     protected $options     = []; # config
     protected $option      = []; # config->option
+    protected $inTran      = false;
 
     public function __construct(array $options) {
         $this->options = $options;
@@ -286,7 +291,7 @@ class Medoo {
             $this->connection();
             $this->command();
         } catch (PDOException $e) {
-            throw new PDOException($e->getMessage());
+            throw new PDOException($e->getMessage(),$e->getCode());
         }
     }
 
@@ -304,10 +309,17 @@ class Medoo {
             $this->connection();
             $this->command();
         }
+//        $this->connection();
+//        $this->command();
     }
 
     public function connection() {
         $option = isset($this->options['option']) ? $this->options['option'] : [];
+        # 设置抛出异常
+        $option = array_merge($option,[
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+
         $this->pdo = new PDO(
             $this->dsn,
             isset($this->options['username']) ? $this->options['username'] : null,
@@ -387,12 +399,10 @@ class Medoo {
                 } catch (PDOException $ex) {
                     $this->rollback();
                     return false;
-//                    throw $ex;
                 }
             } else {
                 $this->rollback();
                 return false;
-//                throw $e;
             }
         }
         return $this->statement;
@@ -1388,55 +1398,85 @@ class Medoo {
         return $this->aggregate('sum', $table, $join, $column, $where);
     }
 
-    public function beginTransaction($throw = false) {
+    public function inTransaction(){
+        return $this->inTran;
+    }
 
+    private function _setInTran(){
+        return $this->inTran = $this->pdo->inTransaction();
+    }
+
+    public function beginTransaction($throw = false) {
+        if($this->_setInTran()){
+            if ($throw) throw new \core\helper\Exception('Connection: Db transaction is ready started.');
+            return false;
+        }
         try {
-            $this->reconnect();
-            return $this->pdo->beginTransaction();
+            return $this->_beginTransaction();
         } catch (PDOException $e) {
             # 服务端断开时重连一次
             if (Tools::isGoneAwayError($e)) {
                 $this->closeConnection();
                 $this->reconnect();
-                return $this->pdo->beginTransaction();
+                return $this->_beginTransaction();
             } else {
-                if($throw){
-                    throw new \core\helper\Exception($e->getMessage(),$e->getCode());
-                }
+                if($throw) throw new \core\helper\Exception($e->getMessage(),$e->getCode());
                 return false;
             }
         }
-
     }
 
-    public function rollback() {
-        if ($this->pdo->inTransaction()) {
-            return $this->pdo->rollBack();
+    private function _beginTransaction() {
+        if($res = $this->pdo->beginTransaction()){
+            $this->_setInTran();
         }
-        return true;
+        return $res;
     }
 
-    public function commit() {
-        if ($this->pdo->inTransaction()) {
-            return $this->pdo->commit();
+    public function rollback($throw = false) {
+        if (!$this->_setInTran()) {
+            if($throw) throw new \core\helper\Exception('Connection: Db is not in transaction.');
+            return false;
         }
-        return true;
+        return $this->_rollback();
+    }
+
+    protected function _rollback(){
+        if($res = $this->pdo->rollBack()){
+            $this->_setInTran();
+        }
+        return $res;
+    }
+
+    public function commit($throw = false) {
+        if (!$this->_setInTran()) {
+            if($throw) throw new \core\helper\Exception('Connection: Db is not in transaction.');
+            return false;
+        }
+        return $this->_commit();
+    }
+
+    private function _commit(){
+        if($res = $this->pdo->commit()){
+            $this->_setInTran();
+        }
+        return $res;
     }
 
     public function action($actions) {
         if (is_callable($actions)) {
-            $this->pdo->beginTransaction();
+            $this->_beginTransaction();
 
             try {
                 $result = $actions($this);
 
                 if ($result === false) {
-                    $this->pdo->rollBack();
+                    $this->_rollback();
                 } else {
-                    $this->pdo->commit();
+                    $this->_commit();
                 }
             } catch (Exception $e) {
-                $this->pdo->rollBack();
+                $this->_rollBack();
 
                 throw new \core\helper\Exception($e->getMessage(),$e->getCode());
             }

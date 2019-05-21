@@ -29,6 +29,7 @@ final class Route{
     private $_allowed    = [];
     private $_forbidden  = ['Common'];
     private static $_instance;
+    public static $_API_MODULE = 'unknown';
 
     /**
      * Route constructor.
@@ -116,11 +117,13 @@ final class Route{
 
         if($this->_forbidden){
             if(in_array($this->_mode,$this->_forbidden)){
+                $this->clean();
                 wm_403("{$this->_mode} Forbidden");
             }
         }
         if($this->_allowed){
             if(!in_array($this->_mode,$this->_allowed)){
+                $this->clean();
                 wm_404("{$this->_mode} Not Found");
             }
         }
@@ -134,8 +137,17 @@ final class Route{
             wm_404("{$this->_ctrl} Not Found");
         }
 
+        $GLOBALS['API_MODULE'] = camel2lower($this->_mode);
+        self::$_API_MODULE = $GLOBALS['API_MODULE'];
+
         $obj = new $c();
         $methodName = $this->_action;
         $obj->$methodName();
+    }
+
+    public function clean(){
+        $this->_mode    = 'Index';
+        $this->_ctrl    = 'Index';
+        $this->_action  = 'Index';
     }
 }
