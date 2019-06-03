@@ -4,6 +4,27 @@
 #  Email: admin@chaz6chez.cn #
 #  Date: 2018/9/19            #
 # -------------------------- #
+
+/**
+ * 进程超时检查函数
+ */
+if(!function_exists('process_time_checker')){
+    /**
+     * @param int $timeout 秒
+     */
+    function process_timeout_checker(int $timeout = 5){
+        global $PROCESS_TIME;
+        $PROCESS_TIME = time();
+        declare(ticks=1);
+        register_tick_function(function ($timeout){
+            global $PROCESS_TIME;
+            if(time() - $PROCESS_TIME > $timeout){
+                exit("Timeout {$timeout} seconds");
+            }
+        },$timeout);
+    }
+}
+
 /**
  * 打印调试
  */
