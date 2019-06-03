@@ -8,7 +8,8 @@ import "header.proto";
 
 message Request{
 	CnukServer.Header.Request header = 1;
-	string order_number = 3;
+	string order_number = 2;
+	string confir_admin_id=3;
 }
 
 message Response {

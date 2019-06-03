@@ -244,7 +244,7 @@ if(!function_exists('arr_uri')) {
             foreach ($input as $k => $v){
                 $uri .= "&{$k}={$v}";
             }
-            return $uri;
+            return ltrim($uri,'&');
         }
         $input = explode('&',$input);
         $array = [];
@@ -994,15 +994,58 @@ if(!function_exists('get_tag')){
 /**
  * 内容解密
  */
-if(!function_exists('unlock_txt')){
+if(!function_exists('base64_urlencode')){
+    /**
+     * @param $string
+     * @return mixed|string
+     */
+    function base64_urlencode($string) {
+        $data = base64_encode($string);
+        $data = str_replace(
+            ['+','/','='],
+            ['-','_',''],
+            $data
+        );
+        return $data;
+    }
+}
+
+
+/**
+ * 内容加密
+ */
+if(!function_exists('base64_urldecode')){
+
+    /**
+     * @param $string
+     * @return bool|string
+     */
+    function base64_urldecode($string) {
+        $data = str_replace(
+            ['-','_'],
+            ['+','/'],
+            $string
+        );
+        $mod4 = strlen($data) % 4;
+        if ($mod4) {
+            $data .= substr('====', $mod4);
+        }
+        return base64_decode($data);
+    }
+}
+
+/**
+ * 内容解密
+ */
+if(!function_exists('lock_decode')){
 
     /**
      * @param $txt
      * @param string $key
      * @return string
      */
-    function unlock_txt($txt,$key = 'ukexpay_workerman') {
-        $txt = passport_key(base64_decode(urldecode($txt)), $key);
+    function lock_decode($txt,$key = 'ukexpay_workerman') {
+        $txt = passport_key(base64_urldecode($txt), $key);
         $tmp = '';
         for ($i = 0; $i < strlen($txt); $i++) {
             $tmp .= $txt[$i] ^ $txt[++$i];
@@ -1014,14 +1057,14 @@ if(!function_exists('unlock_txt')){
 /**
  * 内容加密
  */
-if(!function_exists('lock_txt')){
+if(!function_exists('lock_encode')){
 
     /**
      * @param $txt
      * @param string $key
      * @return string
      */
-    function lock_txt($txt,$key = 'ukexpay_workerman') {
+    function lock_encode($txt,$key = 'ukexpay_workerman') {
         srand((double)microtime() * 1000000);
         $encrypt_key = md5(rand(0, 32000));
         $ctr = 0;
@@ -1030,7 +1073,7 @@ if(!function_exists('lock_txt')){
             $ctr = $ctr == strlen($encrypt_key) ? 0 : $ctr;
             $tmp .= $encrypt_key[$ctr].($txt[$i] ^ $encrypt_key[$ctr++]);
         }
-        return urlencode(base64_encode(passport_key($tmp, $key)));
+        return base64_urlencode(passport_key($tmp, $key));
     }
 }
 
@@ -1079,5 +1122,21 @@ if(!function_exists('passport_encode')){
         // 返回以 "&" 连接的 $arrayenc 的值(implode)，例如 $arrayenc = array('aa', 'bb', 'cc', 'dd')，
         // 则 implode('&', $arrayenc) 后的结果为 ”aa&bb&cc&dd"
         return implode('&', $arrayenc);
+    }
+}
+
+
+/**
+ * 环境变量获取
+ */
+if(!function_exists('env')){
+    /**
+     * @param null $name
+     * @param null $default
+     * @return array|bool|false|mixed|null|string
+     */
+    function env($name = null,$default = null) {
+        \core\lib\Env::init();
+        return \core\lib\Env::get($name,$default);
     }
 }

@@ -31,7 +31,7 @@ class Config {
      */
     public static function init() {
         self::$_config = null;
-        self::$_config = require COMMON_PATH . '/configs.php';
+        if(file_exists($config = COMMON_PATH . '/configs.php')) self::$_config = require $config;
     }
 
     /**
@@ -39,7 +39,7 @@ class Config {
      * @param $path
      */
     public static function load($path) {
-        $config = is_array($path) ? $path : require $path;
+        $config = is_array($path) ? $path : (file_exists($path) ? require $path : []);
         self::$_config = Arr::merge(self::$_config, $config);
     }
 

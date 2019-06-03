@@ -18,9 +18,13 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $header = null;
     /**
-     * Generated from protobuf field <code>string order_number = 3;</code>
+     * Generated from protobuf field <code>string order_number = 2;</code>
      */
     private $order_number = '';
+    /**
+     * Generated from protobuf field <code>string confir_admin_id = 3;</code>
+     */
+    private $confir_admin_id = '';
 
     /**
      * Constructor.
@@ -30,6 +34,7 @@ class Request extends \Google\Protobuf\Internal\Message
      *
      *     @type \CnukServer\Header\Request $header
      *     @type string $order_number
+     *     @type string $confir_admin_id
      * }
      */
     public function __construct($data = NULL) {
@@ -60,7 +65,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string order_number = 3;</code>
+     * Generated from protobuf field <code>string order_number = 2;</code>
      * @return string
      */
     public function getOrderNumber()
@@ -69,7 +74,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string order_number = 3;</code>
+     * Generated from protobuf field <code>string order_number = 2;</code>
      * @param string $var
      * @return $this
      */
@@ -77,6 +82,28 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->order_number = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string confir_admin_id = 3;</code>
+     * @return string
+     */
+    public function getConfirAdminId()
+    {
+        return $this->confir_admin_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string confir_admin_id = 3;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setConfirAdminId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->confir_admin_id = $var;
 
         return $this;
     }

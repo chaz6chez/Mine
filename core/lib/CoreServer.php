@@ -155,6 +155,8 @@ class CoreServer extends WebServer {
 
         if(isset($siteConfig['additionHeader'])){
             Http::header($siteConfig['additionHeader']);
+        }else{
+            Http::header('HTTP/1.1 200 OK');
         }
 
         # 框架响应

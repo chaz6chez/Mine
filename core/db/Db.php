@@ -8,7 +8,6 @@ namespace core\db;
 
 use core\lib\Instance;
 use core\lib\Config;
-use core\helper\Exception;
 
 class Db extends Instance {
 
