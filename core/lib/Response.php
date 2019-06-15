@@ -29,16 +29,21 @@ class Response {
     }
 
     /**
-     * @param $code
-     * @param string $msg
+     * @param $msg
+     * @param string $code
      * @param null $data
      * @param null $ext
      * @return Response
      */
-    public function error($code,$msg = 'failed',$data = null,$ext = null){
+    public function error($msg,$code = '500',$data = null,$ext = null){
         $this->status = 0;
         $this->code = $code;
         $this->message = $msg;
+        $err = explode('|', $msg);
+        if (is_array($err) && count($err) > 1) {
+            $this->code = $err[0];
+            $this->message = $err[1];
+        }
         if($data){
             $this->data = $data;
         }
@@ -50,21 +55,33 @@ class Response {
 
     /**
      * @param $data
-     * @param null $code
+     * @param string $code
      * @param null $ext
      * @param string $msg
      * @return Response
      */
-    public function success($data,$code = null,$ext = null,$msg = 'success'){
+    public function success($data = null,$code = '0',$ext = null,$msg = 'success'){
         $this->status = 1;
         $this->data = $data;
         $this->message = $msg;
         if($code){
-            $this->code = $data;
+            $this->code = $code;
+            $code = explode('|', $code);
+            if (is_array($code) && count($code) > 1) {
+                $this->code = $code[0];
+                $this->message = $code[1];
+            }
         }
         if($ext){
             $this->ext = $ext;
         }
+        return clone $this;
+    }
+
+    /**
+     * @return Response
+     */
+    public function throwError(){
         return clone $this;
     }
 

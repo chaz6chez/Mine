@@ -1008,7 +1008,7 @@ if(!function_exists('get_tag')){
      */
     function get_tag($string) {
         preg_match_all('/\[(?<tag>[\s\S]*?)\]/',$string,$res);
-        return $res['tag'][0];
+        return isset($res['tag'][0]) ? $res['tag'][0] : $string;
     }
 }
 

@@ -315,6 +315,38 @@ class Request {
     }
 
     /**
+     * @param $base64
+     * @param string $suffix
+     * @param null $path
+     * @param null $public
+     * @return string
+     */
+    public function fileSave($base64,$suffix = 'jpg',$path = null,$public = null){
+        if($path){
+            $this->uploadPath = $path;
+        }
+        if(!is_dir($this->uploadPath)){
+            if(!mkdir($this->uploadPath,0755,true)){
+                wm_500("directory {$this->uploadPath} creation failed");
+            }
+        }
+        $filePath = '';
+        $string = new_token(uniqid('.,#$%^&@'));
+        if(!$public){
+            $path = str_replace(PUBLIC_PATH,'',$this->uploadPath);
+        }else{
+            $path = str_replace($public,'',$this->uploadPath);
+        }
+
+        if($file = base64_decode($base64)){
+            $fileRename = $string.'.'.$suffix;
+            file_put_contents($this->uploadPath.$fileRename, $file);
+            $filePath = $path.$fileRename;
+        }
+        return $filePath;
+    }
+
+    /**
      * 仅保存每个key的第一个文件并返回路径
      * @param $name
      * @param null $path
