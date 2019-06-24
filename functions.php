@@ -4,6 +4,27 @@
 #  Email: admin@chaz6chez.cn #
 #  Date: 2018/9/19            #
 # -------------------------- #
+
+/**
+ * 进程超时检查函数
+ */
+if(!function_exists('process_time_checker')){
+    /**
+     * @param int $timeout 秒
+     */
+    function process_timeout_checker(int $timeout = 5){
+        global $PROCESS_TIME;
+        $PROCESS_TIME = time();
+        declare(ticks=1);
+        register_tick_function(function ($timeout){
+            global $PROCESS_TIME;
+            if(time() - $PROCESS_TIME > $timeout){
+                exit("Timeout {$timeout} seconds");
+            }
+        },$timeout);
+    }
+}
+
 /**
  * 打印调试
  */
@@ -227,6 +248,32 @@ if(!function_exists('arr_str')) {
             return $tag.serialize($input);
         }
         return unserialize(mb_substr($input,mb_strlen($tag)));
+    }
+}
+
+/**
+ * 数组与字符串之间的相互简易转换
+ */
+if(!function_exists('arr_uri')) {
+    /**
+     * @param array|string $input
+     * @return array|string
+     */
+    function arr_uri($input) {
+        if(is_array($input)){
+            $uri = '';
+            foreach ($input as $k => $v){
+                $uri .= "&{$k}={$v}";
+            }
+            return ltrim($uri,'&');
+        }
+        $input = explode('&',$input);
+        $array = [];
+        foreach ($input as $v){
+            $v = explode('=',$v);
+            if (count($v) > 1) $array[$v[0]] = $v[1];
+        }
+        return $array;
     }
 }
 
@@ -961,65 +1008,156 @@ if(!function_exists('get_tag')){
      */
     function get_tag($string) {
         preg_match_all('/\[(?<tag>[\s\S]*?)\]/',$string,$res);
-        return $res['tag'][0];
+        return isset($res['tag'][0]) ? $res['tag'][0] : $string;
     }
 }
 
 /**
  * 内容解密
  */
-if(!function_exists('unlock_txt')){
+if(!function_exists('base64_urlencode')){
+    /**
+     * @param $string
+     * @return mixed|string
+     */
+    function base64_urlencode($string) {
+        $data = base64_encode($string);
+        $data = str_replace(
+            ['+','/','='],
+            ['-','_',''],
+            $data
+        );
+        return $data;
+    }
+}
+
+
+/**
+ * 内容加密
+ */
+if(!function_exists('base64_urldecode')){
+
+    /**
+     * @param $string
+     * @return bool|string
+     */
+    function base64_urldecode($string) {
+        $data = str_replace(
+            ['-','_'],
+            ['+','/'],
+            $string
+        );
+        $mod4 = strlen($data) % 4;
+        if ($mod4) {
+            $data .= substr('====', $mod4);
+        }
+        return base64_decode($data);
+    }
+}
+
+/**
+ * 内容解密
+ */
+if(!function_exists('lock_decode')){
 
     /**
      * @param $txt
      * @param string $key
      * @return string
      */
-    function unlock_txt($txt,$key = 'ukexpay_workerman') {
-        $txt = base64_decode(urldecode($txt));
-        $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-=+";
-        $ch = $txt[0];
-        $nh = strpos($chars,$ch);
-        $mdKey = md5($key.$ch);
-        $mdKey = substr($mdKey,$nh%8, $nh%8+7);
-        $txt = substr($txt,1);
+    function lock_decode($txt,$key = 'ukexpay_workerman') {
+        $txt = passport_key(base64_urldecode($txt), $key);
         $tmp = '';
-        $k = 0;
-        for ($i=0; $i<strlen($txt); $i++) {
-            $k = $k == strlen($mdKey) ? 0 : $k;
-            $j = strpos($chars,$txt[$i])-$nh - ord($mdKey[$k++]);
-            while ($j<0) $j+=64;
-            $tmp .= $chars[$j];
+        for ($i = 0; $i < strlen($txt); $i++) {
+            $tmp .= $txt[$i] ^ $txt[++$i];
         }
-        return trim(base64_decode($tmp),$key);
+        return $tmp;
     }
 }
 
 /**
  * 内容加密
  */
-if(!function_exists('lock_txt')){
+if(!function_exists('lock_encode')){
 
     /**
      * @param $txt
      * @param string $key
      * @return string
      */
-    function lock_txt($txt,$key = 'ukexpay_workerman') {
-        $txt = $txt.$key;
-        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-=+';
-        $nh = rand(0,64);
-        $ch = $chars[$nh];
-        $mdKey = md5($key.$ch);
-        $mdKey = substr($mdKey,$nh%8, $nh%8+7);
-        $txt = base64_encode($txt);
+    function lock_encode($txt,$key = 'ukexpay_workerman') {
+        srand((double)microtime() * 1000000);
+        $encrypt_key = md5(rand(0, 32000));
+        $ctr = 0;
         $tmp = '';
-        $k = 0;
-        for ($i=0; $i<strlen($txt); $i++) {
-            $k = $k == strlen($mdKey) ? 0 : $k;
-            $j = ($nh+strpos($chars,$txt[$i])+ord($mdKey[$k++]))%64;
-            $tmp .= $chars[$j];
+        for($i = 0; $i < strlen($txt); $i++) {
+            $ctr = $ctr == strlen($encrypt_key) ? 0 : $ctr;
+            $tmp .= $encrypt_key[$ctr].($txt[$i] ^ $encrypt_key[$ctr++]);
         }
-        return urlencode(base64_encode($ch.$tmp));
+        return base64_urlencode(passport_key($tmp, $key));
+    }
+}
+
+/**
+ * Passport 密匙处理函数
+ */
+if(!function_exists('passport_key')){
+    /**
+     * @param $txt
+     * @param $encrypt_key
+     * @return string
+     */
+    function passport_key($txt, $encrypt_key) {
+        $encrypt_key = md5($encrypt_key);
+        $ctr = 0;
+        $tmp = '';
+        for($i = 0; $i < strlen($txt); $i++) {
+            $ctr = $ctr == strlen($encrypt_key) ? 0 : $ctr;
+            $tmp .= $txt[$i] ^ $encrypt_key[$ctr++];
+        }
+        return $tmp;
+    }
+}
+
+/**
+ * Passport 信息(数组)编码函数
+ */
+if(!function_exists('passport_encode')){
+    /**
+     *
+     * @param                array           待编码的数组
+     *
+     * @return       string          数组经编码后的字串
+     */
+    function passport_encode($array) {
+
+        // 数组变量初始化
+        $arrayenc = array();
+
+        // 遍历数组 $array，其中 $key 为当前元素的下标，$val 为其对应的值
+        foreach($array as $key => $val) {
+            // $arrayenc 数组增加一个元素，其内容为 "$key=经过 urlencode() 后的 $val 值"
+            $arrayenc[] = $key.'='.urlencode($val);
+        }
+
+        // 返回以 "&" 连接的 $arrayenc 的值(implode)，例如 $arrayenc = array('aa', 'bb', 'cc', 'dd')，
+        // 则 implode('&', $arrayenc) 后的结果为 ”aa&bb&cc&dd"
+        return implode('&', $arrayenc);
+    }
+}
+
+
+/**
+ * 环境变量获取
+ */
+if(!function_exists('env')){
+    /**
+     * @param null $name
+     * @param null $default
+     * @return array|bool|false|mixed|null|string
+     */
+    function env($name = null,$default = null) {
+        \core\lib\Env::init();
+        return \core\lib\Env::get($name,$default);
     }
 }
