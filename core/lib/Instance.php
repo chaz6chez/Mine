@@ -22,15 +22,6 @@ namespace core\lib;
  */
 abstract class Instance{
 
-    /**
-     * @var Output
-     */
-    private $_output;
-    /**
-     * @var Result
-     */
-    private $_result;
-
     protected $_config         = [];
 
     private static $_instances = [];    # 单例容器 队列模型
@@ -43,33 +34,38 @@ abstract class Instance{
 
     /**
      * Service constructor.
-     * @param $loadConfig
      */
-    public function __construct($loadConfig = false) {
-        if($loadConfig){
-            $this->_loadConfig();
-        }
+    public function __construct() {
         $this->_initConfig();
         $this->_init();
-    }
-
-    /**
-     * 私有配置
-     */
-    protected function _loadConfig(){
-        $classArr = explode('\\',self::$_class);
-        $modeName = $classArr[1];
-        $configPath = API_PATH . '/' . $modeName . '/configs.php';
-        if(file_exists($configPath)){
-            // todo 这里的配置加载并没有做隔离，载入config文件时，会整体合并覆盖Config类中的元素
-            Config::load($configPath);
-        }
     }
 
     /**
      * 载入配置内容
      */
     abstract protected function _initConfig();
+
+    /**
+     * 读取配置
+     * @param null $key
+     * @param null $default
+     * @return array|mixed|null
+     */
+    public function getConfig($key = null, $default = null) {
+        if(!$key){
+            return $this->_config;
+        }
+        return array_key_exists($key, $this->_config) ? $this->_config[$key] : $default;
+    }
+
+    /**
+     * 动态改变设置
+     * @param $key
+     * @param $value
+     */
+    public function setConfig($key, $value) {
+        $this->_config[$key] = $value;
+    }
 
     /**
      * 获取时间
@@ -116,20 +112,14 @@ abstract class Instance{
      *
      *  对象会存入单例容器，随着进程而保持，不会被PHP GC主动回收
      *
-     * @param bool $loadConfig
      * @return static
      */
-    final public static function instance($loadConfig = false) {
+    final public static function instance() {
         self::$_class = get_called_class();
-        # 如果要加载配置
-        if($loadConfig){
-            self::GC();
-            return self::$_instances[self::$_class] = new self::$_class($loadConfig);
-        }
         # 容器中不存在
         if (!isset(self::$_instances[self::$_class]) or !self::$_instances[self::$_class] instanceof Instance) {
             self::GC();
-            return self::$_instances[self::$_class] = new self::$_class($loadConfig);
+            return self::$_instances[self::$_class] = new self::$_class();
         }
         # 更新旧容器内部时间属性
         self::now();
@@ -141,12 +131,11 @@ abstract class Instance{
      *
      *  对象不会存入单例容器，随着方法体执行完毕而被PHP GC主动回收
      *
-     * @param bool $config
      * @return static
      */
-    final public static function factory($config = false) {
+    final public static function factory() {
         self::$_class = get_called_class();
-        return new self::$_class($config);
+        return new self::$_class();
     }
 
     /**
@@ -186,61 +175,5 @@ abstract class Instance{
             return isset(self::$_instances[$className]) ? self::$_instances[$className] : null;
         }
         return self::$_instances;
-    }
-
-    /**
-     * 读取配置
-     * @param null $key
-     * @param null $default
-     * @return array|mixed|null
-     */
-    public function getConfig($key = null, $default = null) {
-        if(!$key){
-            return $this->_config;
-        }
-        return array_key_exists($key, $this->_config) ? $this->_config[$key] : $default;
-    }
-
-    /**
-     * 动态改变设置
-     * @param $key
-     * @param $value
-     */
-    public function setConfig($key, $value) {
-        $this->_config[$key] = $value;
-    }
-
-    /**
-     * 获取结果
-     * @param $result
-     * @return Result
-     */
-    protected function result($result) {
-        $this->_result = new Result($result);
-        $this->_result->setPattern('arr');
-        return $this->_result;
-    }
-
-    /**
-     * 获取输出器对象
-     * @param string $pattern
-     * @return array|Output|mixed
-     */
-    protected function output($pattern = 'arr') {
-        if (!$this->_output or !$this->_output instanceof Output) {
-            $this->_output = new Output();
-        }
-        if(is_string($pattern)){
-            $this->_output->setPattern($pattern);
-        }
-        if (is_array($pattern)) {
-            $this->_output->setPattern('arr');
-            if (isset($pattern['errCode']) && isset($pattern['message']) && isset($pattern['data'])) {
-                return $this->_output->output($pattern['errCode'], $pattern['message'], $pattern['data']);
-            } else {
-                return $this->_output->success($pattern);
-            }
-        }
-        return $this->_output;
     }
 }

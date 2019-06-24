@@ -55,4 +55,85 @@ class Tools{
         return [true,null];
     }
 
+    /**
+     * 是否是全局启动
+     * @return bool
+     */
+    public static function isGlobalStart(){
+        if (
+            defined('GLOBAL_START') and
+            GLOBAL_START
+        ){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取launcher配置
+     * @param $path
+     * @param array $argv
+     * @param bool $defines
+     * @return string
+     */
+    public static function Launcher($path,array $argv,$defines = false){
+        global $LAUNCHER_PATH;
+        if($defines){
+            self::LauncherDefines($path);
+        }
+        if(isset($argv[3])){
+            if($argv[3] == 'all'){
+                goto res;
+            }
+            if(!file_exists($path = "{$path}/{$argv[3]}")){
+                exit("{$argv[3]} launcher not defined.\n");
+            }
+            $LAUNCHER_PATH = $path;
+            return "{$path}/launcher_*.php";
+        }
+        res:
+        return $path.'/*/launcher_*.php';
+    }
+
+    /**
+     * @param $file
+     * @param array $argv
+     * @return bool
+     */
+    public static function LauncherSkip($file,array $argv){
+        global $LAUNCHER_PATH;
+        if(isset($argv[4])){
+            if($file == $argv[4]){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param $path
+     * @return mixed
+     */
+    public static function LauncherDefines($path){
+        if(file_exists($file = $path.'/launcher_defines.php')){
+            require_once $file;
+            return;
+        }
+        exit('define file of the launcher was not found'.PHP_EOL);
+    }
+
+    /**
+     * WinOs
+     * @param bool $exit
+     * @return bool
+     */
+    public static function isWinOs($exit = false){
+        if(strpos(strtolower(PHP_OS), 'win') === 0) {
+            if($exit){
+                exit('please use launcher.bat'.PHP_EOL);
+            }
+            return true;
+        }
+        return false;
+    }
 }

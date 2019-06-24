@@ -149,30 +149,30 @@ class TaskService extends Worker{
     private function checker($worker){
         if(!$this->config) {
             cli_echo_debug("Task Server Config Error", "# : {$worker->workerId}|{$worker->id}");
-            $this->stop();
+            $this->_Stop($worker);
         }
         if(!CronExpression::isValidExpression($this->cronExpression)){
             cli_echo_debug("Cron-expression Error", "# : {$worker->workerId}|{$worker->id}");
-            $this->stop();
+            $this->_Stop($worker);
         }
         try{
             $this->serviceObj = new $this->service;
         }catch (\Exception $e){
             cli_echo_debug("Task Server {$e->getMessage()}", "# : {$worker->workerId}|{$worker->id}");
-            $this->stop();
+            $this->_Stop($worker);
         }
         if(
             !method_exists($this->serviceObj,$this->upperFunc)
         ){
             cli_echo_debug("Upper-half Function Not Found", "# : {$worker->workerId}|{$worker->id}");
-            $this->stop();
+            $this->_Stop($worker);
         }
         if(
             $this->doubleLine and
             !method_exists($this->serviceObj,$this->lowerFunc)
         ){
             cli_echo_debug("Lower-half Function Not Found", "# : {$worker->workerId}|{$worker->id}");
-            $this->stop();
+            $this->_Stop($worker);
         }
     }
 
@@ -193,7 +193,7 @@ class TaskService extends Worker{
      * @param Worker $worker
      */
     public function onWorkerStop($worker){
-        $this->_Stop($worker);
+        $this->_Stop($worker,false);
     }
 
     /**
@@ -210,8 +210,9 @@ class TaskService extends Worker{
     /**
      * 停止
      * @param $worker
+     * @param bool $exit
      */
-    private function _Stop($worker){
+    private function _Stop($worker,$exit = true){
         if($this->upperHalf){
             Timer::del($this->upperHalf);
         }
@@ -219,6 +220,9 @@ class TaskService extends Worker{
             Timer::del($this->lowerHalf);
         }
         cli_echo_debug("Task Server Stop","# : {$worker->workerId}|{$worker->id}");
+        if($exit){
+            exit('Task Error'.PHP_EOL);
+        }
     }
 
     /**
@@ -230,7 +234,7 @@ class TaskService extends Worker{
 //            if($this->corn->isDue()){
                 $res = call_user_func([$this->serviceObj,$this->upperFunc]);
                 if(!$res[0]){ # 失败记录日志
-                    log_add($res[1],"TaskService_{$this->name}",__METHOD__);
+                    log_add($res[1],"task_{$this->name}",__METHOD__);
                 }
                 if($this->doubleLine){
                     $this->_CronLowerHalf($res[1]);
@@ -256,7 +260,7 @@ class TaskService extends Worker{
                 $res = call_user_func([$this->serviceObj,$this->lowerFunc]);
             }
             if(!$res[0]){ # 失败记录日志
-                log_add($res[1],"TaskService_{$this->name}",__METHOD__);
+                log_add($res[1],"task_{$this->name}",__METHOD__);
             }
         },[$param],false);
     }

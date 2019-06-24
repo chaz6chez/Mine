@@ -48,6 +48,9 @@ class Raw {
  *      1.修复事务相关方法回滚及提交失败
  *      2.调整事务相关方法实现内容
  *      3.增加 inTran 属性可视化是否在事务内
+ *  2019-06-17 :
+ *      1.新增 hasTable()        : 用于判断是否含有该表
+ *
  * @package Api\Core\Db
  */
 class Medoo {
@@ -1310,6 +1313,14 @@ class Medoo {
                 return $stack;
             }
         }
+    }
+
+    public function hasTable($table){
+        $query = $this->exec("SHOW TABLES LIKE '{$this->prefix}{$table}'");
+        if (!$query) {
+            return false;
+        }
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function has($table, $join, $where = null) {

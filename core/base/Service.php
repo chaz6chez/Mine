@@ -7,11 +7,27 @@
 namespace core\base;
 
 use core\helper\Arr;
-use core\helper\Exception;
 use core\lib\Config;
 use core\lib\Instance;
+use core\lib\Output;
+use core\lib\Response;
+use core\lib\Result;
 
 class Service extends Instance {
+
+    /**
+     * @var Output
+     */
+    private $_output;
+    /**
+     * @var Result
+     */
+    private $_result;
+
+    /**
+     * @var Response
+     */
+    private $_response;
 
     /**
      * 载入配置内容
@@ -28,5 +44,49 @@ class Service extends Instance {
                 }
             }
         }
+    }
+
+    /**
+     * 获取结果
+     * @param $result
+     * @return Result
+     */
+    protected function result($result) {
+        $this->_result = new Result($result);
+        $this->_result->setPattern('arr');
+        return $this->_result;
+    }
+
+    /**
+     * 响应
+     * @param $response
+     * @return Response
+     */
+    protected function response($response = []) {
+        $this->_response = new Response($response);
+        return $this->_response;
+    }
+
+    /**
+     * 获取输出器对象
+     * @param string $pattern
+     * @return array|Output|mixed
+     */
+    protected function output($pattern = 'arr') {
+        if (!$this->_output or !$this->_output instanceof Output) {
+            $this->_output = new Output();
+        }
+        if(is_string($pattern)){
+            $this->_output->setPattern($pattern);
+        }
+        if (is_array($pattern)) {
+            $this->_output->setPattern('arr');
+            if (isset($pattern['errCode']) && isset($pattern['message']) && isset($pattern['data'])) {
+                return $this->_output->output($pattern['errCode'], $pattern['message'], $pattern['data']);
+            } else {
+                return $this->_output->success($pattern);
+            }
+        }
+        return $this->_output;
     }
 }

@@ -1,0 +1,19 @@
+/*  the transfer is same currecny function. And one user to other user account.
+ *  just like those use mothord :
+ *	1.user A transfer 500 BTC  to user b's BTC account.
+ *  2.user A transfer USD to user b's USD account.
+ */
+syntax = "proto3";
+
+import "header.proto";
+
+package CnukServer.HeartBeat;
+
+message Request {
+	CnukServer.Header.Request header = 1;
+}
+
+message Response{
+	CnukServer.Header.Response header = 1;
+	uint64 timetemp = 2;
+}

@@ -2,9 +2,11 @@ syntax = "proto3";
 
 package CnukServer.StatisticServer;
 
+import "header.proto";
 
 message Request {
-	uint64 time = 1;
+	CnukServer.Header.Request header = 1;
+	uint64 time = 2;
 }
 
 
@@ -24,7 +26,7 @@ message WorkerThreadeStatistic{
      map<int32, int32> worker_deal_count = 3;
      map<int32, int32> worker_all_count = 4;
      map<int32, int32> task_wait_time_in_queue = 5;
-		 map<int32, int32> total_cost = 6;
+	 map<int32, int32> total_cost = 6;
      int64  worker_cost_per_period = 7;
 }
 
@@ -40,4 +42,5 @@ message Response{
      ServiceStatistic c2c_submit = 8;
      ServiceStatistic c2c_configure = 9;
      ServiceStatistic c2c_cancle = 10;
+	 CnukServer.Header.Response header = 11;
 }

@@ -9,6 +9,7 @@ import	"c2c_interface.proto";
 import  "statistic_server_interface.proto";
 import  "reconfig_interface.proto";
 import  "borrower_interface.proto";
+import  "heart_beat_interface.proto";
 
 package CnukServer.Route;
 
@@ -63,5 +64,9 @@ service CnukServices {
 	}
 
 	rpc Borrower(CnukServer.Borrower.Request) returns (CnukServer.Borrower.Response){
+	}
+
+	// heartbeat
+	rpc HeartBeat(CnukServer.HeartBeat.Request) returns (CnukServer.HeartBeat.Response){
 	}
 }

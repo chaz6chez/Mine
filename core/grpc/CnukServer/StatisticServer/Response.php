@@ -53,6 +53,10 @@ class Response extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.CnukServer.StatisticServer.ServiceStatistic c2c_cancle = 10;</code>
      */
     private $c2c_cancle = null;
+    /**
+     * Generated from protobuf field <code>.CnukServer.Header.Response header = 11;</code>
+     */
+    private $header = null;
 
     /**
      * Constructor.
@@ -70,6 +74,7 @@ class Response extends \Google\Protobuf\Internal\Message
      *     @type \CnukServer\StatisticServer\ServiceStatistic $c2c_submit
      *     @type \CnukServer\StatisticServer\ServiceStatistic $c2c_configure
      *     @type \CnukServer\StatisticServer\ServiceStatistic $c2c_cancle
+     *     @type \CnukServer\Header\Response $header
      * }
      */
     public function __construct($data = NULL) {
@@ -293,6 +298,28 @@ class Response extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \CnukServer\StatisticServer\ServiceStatistic::class);
         $this->c2c_cancle = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.CnukServer.Header.Response header = 11;</code>
+     * @return \CnukServer\Header\Response
+     */
+    public function getHeader()
+    {
+        return $this->header;
+    }
+
+    /**
+     * Generated from protobuf field <code>.CnukServer.Header.Response header = 11;</code>
+     * @param \CnukServer\Header\Response $var
+     * @return $this
+     */
+    public function setHeader($var)
+    {
+        GPBUtil::checkMessage($var, \CnukServer\Header\Response::class);
+        $this->header = $var;
 
         return $this;
     }

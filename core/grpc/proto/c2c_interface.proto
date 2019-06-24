@@ -14,10 +14,10 @@ message Request {
   string fee_id = 8;
   string amount = 9;
   int64  status = 10 ;
-	string fee = 12;
-	string money = 13;
-	string ads_ord = 14;
-	string market_maker_id = 15;
+string fee = 12;
+string money = 13;
+string ads_ord = 14;
+string market_maker_id = 15;
 }
 
 message Response {

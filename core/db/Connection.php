@@ -347,9 +347,9 @@ class Connection{
 
     public function hasTable() {
         if(!$this->checker()) return false;
-        $res = $this->_medoo->query("SHOW TABLES LIKE {$this->_table}");
+        $res = $this->_medoo->hasTable($this->_table);
         $this->cleanup();
-        return $res;
+        return $res ? $res[0] : $res;
     }
 
     public function has() {
@@ -567,7 +567,7 @@ class Connection{
      * 属性参数初始化
      */
     public function cleanup() {
-        $this->_table = null;
+//        $this->_table = null;
         $this->_join = [];
         $this->_field = '*';
         $this->_where = [];
