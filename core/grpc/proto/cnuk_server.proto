@@ -10,6 +10,8 @@ import  "statistic_server_interface.proto";
 import  "reconfig_interface.proto";
 import  "borrower_interface.proto";
 import  "heart_beat_interface.proto";
+import  "reimburse_interface.proto";
+import  "visa_interface.proto";
 
 package CnukServer.Route;
 
@@ -68,5 +70,13 @@ service CnukServices {
 
 	// heartbeat
 	rpc HeartBeat(CnukServer.HeartBeat.Request) returns (CnukServer.HeartBeat.Response){
+	}
+
+	//reimburse
+	rpc Reimburse(CnukServer.Reimburse.Request) returns (CnukServer.Reimburse.Response){
+	}
+
+	// visa balance
+	rpc VisaBalance(CnukServer.Visa.Request) returns (CnukServer.Visa.Response){
 	}
 }

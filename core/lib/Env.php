@@ -26,6 +26,14 @@ class Env {
      * @var bool 状态
      */
     protected static $_init = false;
+    /**
+     * @var string
+     */
+    protected static $_file = '';
+    /**
+     * @var string
+     */
+    public static $defaultFile = SERVER_PATH . '/.env';
 
     /**
      * 系统环境变量预加载
@@ -55,7 +63,8 @@ class Env {
      */
     public static function clean(){
         self::$_init = false;
-        self::$_env = [];
+        self::$_env  = [];
+        self::$_file = '';
     }
 
     /**
@@ -65,11 +74,30 @@ class Env {
      * @return void
      */
     public static function load($file = ''){
-        if(!$file) {
-            $file = SERVER_PATH . '/.env';
-        }
+        $file = self::setFile($file);
         $env = parse_ini_file($file, true);
         self::set($env);
+    }
+
+    /**
+     * 设置加载文件
+     * @param string $file
+     * @return string
+     */
+    public static function setFile(string $file){
+        self::$_file = self::$defaultFile;
+        if($file) {
+            self::$_file = $file;
+        }
+        return self::$_file;
+    }
+
+    /**
+     * 获取当前加载的文件
+     * @return string
+     */
+    public static function getFile(){
+        return self::$_file;
     }
 
     /**

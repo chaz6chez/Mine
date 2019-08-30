@@ -21,6 +21,8 @@ message Request {
   string signal = 2;
 
   string public_key = 3;
+
+  uint64 timestamp = 4;
 }
 
 message Response {
@@ -32,4 +34,6 @@ message Response {
 	string result_code = 3;
 	
 	string url = 4;
+
+	string data = 5;
 }

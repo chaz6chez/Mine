@@ -39,7 +39,13 @@ class Config {
      * @param $path
      */
     public static function load($path) {
-        $config = is_array($path) ? $path : (file_exists($path) ? require $path : []);
+        if(is_array($path)){
+            $config = $path;
+        }else if(file_exists($path)){
+            $config = require $path;
+        }else{
+            $config = [];
+        }
         self::$_config = Arr::merge(self::$_config, $config);
     }
 

@@ -27,6 +27,10 @@ class Request extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string public_key = 3;</code>
      */
     private $public_key = '';
+    /**
+     * Generated from protobuf field <code>uint64 timestamp = 4;</code>
+     */
+    private $timestamp = 0;
 
     /**
      * Constructor.
@@ -38,6 +42,7 @@ class Request extends \Google\Protobuf\Internal\Message
      *           the socket url 
      *     @type string $signal
      *     @type string $public_key
+     *     @type int|string $timestamp
      * }
      */
     public function __construct($data = NULL) {
@@ -111,6 +116,28 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->public_key = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 timestamp = 4;</code>
+     * @return int|string
+     */
+    public function getTimestamp()
+    {
+        return $this->timestamp;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 timestamp = 4;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTimestamp($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->timestamp = $var;
 
         return $this;
     }

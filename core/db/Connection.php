@@ -275,7 +275,7 @@ class Connection{
         if($filter){
             $data = [];
             foreach ($datas as $key => $v){
-                preg_match('/(?<column>[-.a-zA-Z0-9_]+)(\[(?<operator>\+|\-|\*|\/)\])?/i', $key, $match);
+                preg_match('/(?<column>[\s\S]*(?=\[(?<operator>\+|\-|\*|\/|\>\=?|\<\=?|\!|\<\>|\>\<|\!?~)\]$)|[\s\S]*)/', $key, $match);
                 if(isset($match['operator'])){
                     $data[$match['column']] = $v;
                 }else{
@@ -413,9 +413,8 @@ class Connection{
         $table = $this->_table;
         $where = $this->_getWhere();
         $join = $this->_join;
-        $filed = $this->_field;
         if (is_array($this->_field)) {
-            foreach ($filed as $f) {
+            foreach ($this->_field as $f) {
                 $this->_table = $table;
                 $this->_field = [$f];
                 $this->_join = $join;

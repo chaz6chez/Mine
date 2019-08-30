@@ -7,7 +7,7 @@ package CnukServer.Exchange;
 
 message Request {
 	CnukServer.Header.Request header = 1;
-	uint64 time = 2;
+	//uint64 time = 2;
 	string user_id  = 3;
 	string trade_pair = 5;
 	string amount = 6;
@@ -15,11 +15,11 @@ message Request {
 	string fee = 8;
 	string order_number = 9;
 	uint64 type = 10;
-	uint64 order_status = 11;
+	//uint64 order_status = 11;
 	string fee_uid = 12;
 	string total = 13;
 	uint64 calculate_type = 14;
-	uint64 rate_is_reverse = 15;
+	//uint64 rate_is_reverse = 15;
 	string marketer_fee_uid = 16;
 	string marketer_fee = 17;
 }

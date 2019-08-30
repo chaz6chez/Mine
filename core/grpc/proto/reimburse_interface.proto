@@ -1,0 +1,19 @@
+/* it's the struct of enchashment.  user will let the virtual coin 
+ * that user put in the third part to own's wallet address. 
+ */
+syntax = "proto3";
+
+import "header.proto";
+
+package CnukServer.Reimburse;
+
+
+message Request {
+	CnukServer.Header.Request header = 1;
+	uint64 id = 2;
+	uint64 confirm_admin_id = 3;
+}
+
+message Response {
+	CnukServer.Header.Response header = 1;
+}

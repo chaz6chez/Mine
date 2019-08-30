@@ -18,10 +18,8 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $header = null;
     /**
-     * Generated from protobuf field <code>uint64 time = 2;</code>
-     */
-    private $time = 0;
-    /**
+     *uint64 time = 2;
+     *
      * Generated from protobuf field <code>string pay_uid = 3;</code>
      */
     private $pay_uid = '';
@@ -57,6 +55,12 @@ class Request extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string fee_uid = 11;</code>
      */
     private $fee_uid = '';
+    /**
+     * ukex pay 2.0 addation section
+     *
+     * Generated from protobuf field <code>uint64 order_type = 12;</code>
+     */
+    private $order_type = 0;
 
     /**
      * Constructor.
@@ -65,8 +69,8 @@ class Request extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type \CnukServer\Header\Request $header
-     *     @type int|string $time
      *     @type string $pay_uid
+     *          uint64 time = 2;
      *     @type string $acquir_uid
      *     @type string $trade_pair
      *     @type string $amount
@@ -75,6 +79,8 @@ class Request extends \Google\Protobuf\Internal\Message
      *     @type string $order_number
      *     @type int|string $order_status
      *     @type string $fee_uid
+     *     @type int|string $order_type
+     *           ukex pay 2.0 addation section
      * }
      */
     public function __construct($data = NULL) {
@@ -105,28 +111,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint64 time = 2;</code>
-     * @return int|string
-     */
-    public function getTime()
-    {
-        return $this->time;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 time = 2;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setTime($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->time = $var;
-
-        return $this;
-    }
-
-    /**
+     *uint64 time = 2;
+     *
      * Generated from protobuf field <code>string pay_uid = 3;</code>
      * @return string
      */
@@ -136,6 +122,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     *uint64 time = 2;
+     *
      * Generated from protobuf field <code>string pay_uid = 3;</code>
      * @param string $var
      * @return $this
@@ -320,6 +308,32 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->fee_uid = $var;
+
+        return $this;
+    }
+
+    /**
+     * ukex pay 2.0 addation section
+     *
+     * Generated from protobuf field <code>uint64 order_type = 12;</code>
+     * @return int|string
+     */
+    public function getOrderType()
+    {
+        return $this->order_type;
+    }
+
+    /**
+     * ukex pay 2.0 addation section
+     *
+     * Generated from protobuf field <code>uint64 order_type = 12;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setOrderType($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->order_type = $var;
 
         return $this;
     }

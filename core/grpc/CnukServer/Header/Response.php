@@ -31,6 +31,10 @@ class Response extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string url = 4;</code>
      */
     private $url = '';
+    /**
+     * Generated from protobuf field <code>string data = 5;</code>
+     */
+    private $data = '';
 
     /**
      * Constructor.
@@ -43,6 +47,7 @@ class Response extends \Google\Protobuf\Internal\Message
      *           if execute fail, return the failed msg of execute
      *     @type string $result_code
      *     @type string $url
+     *     @type string $data
      * }
      */
     public function __construct($data = NULL) {
@@ -138,6 +143,28 @@ class Response extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->url = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string data = 5;</code>
+     * @return string
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * Generated from protobuf field <code>string data = 5;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setData($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->data = $var;
 
         return $this;
     }

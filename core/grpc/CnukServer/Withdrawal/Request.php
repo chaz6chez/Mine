@@ -22,51 +22,65 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $user_id = '';
     /**
-     * Generated from protobuf field <code>uint64 time = 3;</code>
-     */
-    private $time = 0;
-    /**
-     * Generated from protobuf field <code>string pay_wallet_address = 5;</code>
-     */
-    private $pay_wallet_address = '';
-    /**
-     * Generated from protobuf field <code>string acquire_wallet_address = 6;</code>
-     */
-    private $acquire_wallet_address = '';
-    /**
-     * Generated from protobuf field <code>string currency_name = 7;</code>
+     *uint64 time = 3;
+     *string pay_wallet_address = 5;
+     *string acquire_wallet_address = 6;
+     *
+     * Generated from protobuf field <code>string currency_name = 5;</code>
      */
     private $currency_name = '';
     /**
-     * Generated from protobuf field <code>string amount = 8;</code>
+     * Generated from protobuf field <code>string amount = 6;</code>
      */
     private $amount = '';
     /**
-     * Generated from protobuf field <code>string fee = 9;</code>
+     * Generated from protobuf field <code>string fee = 7;</code>
      */
     private $fee = '';
     /**
-     * Generated from protobuf field <code>string order_number = 10;</code>
+     * Generated from protobuf field <code>string order_number = 8;</code>
      */
     private $order_number = '';
     /**
-     * initial 0 
+     *uint64 order_status = 9; // initial 0 
      *
-     * Generated from protobuf field <code>uint64 order_status = 11;</code>
-     */
-    private $order_status = 0;
-    /**
-     * Generated from protobuf field <code>string fee_uid = 12;</code>
+     * Generated from protobuf field <code>string fee_uid = 10;</code>
      */
     private $fee_uid = '';
     /**
-     * Generated from protobuf field <code>string tx_id = 13;</code>
+     * Generated from protobuf field <code>string tx_id = 11;</code>
      */
     private $tx_id = '';
     /**
-     * Generated from protobuf field <code>int64 tx_height = 14;</code>
+     * Generated from protobuf field <code>int64 tx_height = 12;</code>
      */
     private $tx_height = 0;
+    /**
+     * ukex pay 2.0 addation
+     *
+     * Generated from protobuf field <code>string target_addr_id = 13;</code>
+     */
+    private $target_addr_id = '';
+    /**
+     * Generated from protobuf field <code>string payment_id = 14;</code>
+     */
+    private $payment_id = '';
+    /**
+     * Generated from protobuf field <code>string wallet_addr = 15;</code>
+     */
+    private $wallet_addr = '';
+    /**
+     * Generated from protobuf field <code>string total = 16;</code>
+     */
+    private $total = '';
+    /**
+     * Generated from protobuf field <code>string third_order_number = 17;</code>
+     */
+    private $third_order_number = '';
+    /**
+     * Generated from protobuf field <code>bool is_sucessed = 18;</code>
+     */
+    private $is_sucessed = false;
 
     /**
      * Constructor.
@@ -76,18 +90,24 @@ class Request extends \Google\Protobuf\Internal\Message
      *
      *     @type \CnukServer\Header\Request $header
      *     @type string $user_id
-     *     @type int|string $time
-     *     @type string $pay_wallet_address
-     *     @type string $acquire_wallet_address
      *     @type string $currency_name
+     *          uint64 time = 3;
+     *          string pay_wallet_address = 5;
+     *          string acquire_wallet_address = 6;
      *     @type string $amount
      *     @type string $fee
      *     @type string $order_number
-     *     @type int|string $order_status
-     *           initial 0 
      *     @type string $fee_uid
+     *          uint64 order_status = 9; // initial 0 
      *     @type string $tx_id
      *     @type int|string $tx_height
+     *     @type string $target_addr_id
+     *           ukex pay 2.0 addation
+     *     @type string $payment_id
+     *     @type string $wallet_addr
+     *     @type string $total
+     *     @type string $third_order_number
+     *     @type bool $is_sucessed
      * }
      */
     public function __construct($data = NULL) {
@@ -140,73 +160,11 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint64 time = 3;</code>
-     * @return int|string
-     */
-    public function getTime()
-    {
-        return $this->time;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 time = 3;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setTime($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->time = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string pay_wallet_address = 5;</code>
-     * @return string
-     */
-    public function getPayWalletAddress()
-    {
-        return $this->pay_wallet_address;
-    }
-
-    /**
-     * Generated from protobuf field <code>string pay_wallet_address = 5;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setPayWalletAddress($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->pay_wallet_address = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string acquire_wallet_address = 6;</code>
-     * @return string
-     */
-    public function getAcquireWalletAddress()
-    {
-        return $this->acquire_wallet_address;
-    }
-
-    /**
-     * Generated from protobuf field <code>string acquire_wallet_address = 6;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setAcquireWalletAddress($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->acquire_wallet_address = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string currency_name = 7;</code>
+     *uint64 time = 3;
+     *string pay_wallet_address = 5;
+     *string acquire_wallet_address = 6;
+     *
+     * Generated from protobuf field <code>string currency_name = 5;</code>
      * @return string
      */
     public function getCurrencyName()
@@ -215,7 +173,11 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string currency_name = 7;</code>
+     *uint64 time = 3;
+     *string pay_wallet_address = 5;
+     *string acquire_wallet_address = 6;
+     *
+     * Generated from protobuf field <code>string currency_name = 5;</code>
      * @param string $var
      * @return $this
      */
@@ -228,7 +190,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string amount = 8;</code>
+     * Generated from protobuf field <code>string amount = 6;</code>
      * @return string
      */
     public function getAmount()
@@ -237,7 +199,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string amount = 8;</code>
+     * Generated from protobuf field <code>string amount = 6;</code>
      * @param string $var
      * @return $this
      */
@@ -250,7 +212,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string fee = 9;</code>
+     * Generated from protobuf field <code>string fee = 7;</code>
      * @return string
      */
     public function getFee()
@@ -259,7 +221,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string fee = 9;</code>
+     * Generated from protobuf field <code>string fee = 7;</code>
      * @param string $var
      * @return $this
      */
@@ -272,7 +234,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string order_number = 10;</code>
+     * Generated from protobuf field <code>string order_number = 8;</code>
      * @return string
      */
     public function getOrderNumber()
@@ -281,7 +243,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string order_number = 10;</code>
+     * Generated from protobuf field <code>string order_number = 8;</code>
      * @param string $var
      * @return $this
      */
@@ -294,33 +256,9 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * initial 0 
+     *uint64 order_status = 9; // initial 0 
      *
-     * Generated from protobuf field <code>uint64 order_status = 11;</code>
-     * @return int|string
-     */
-    public function getOrderStatus()
-    {
-        return $this->order_status;
-    }
-
-    /**
-     * initial 0 
-     *
-     * Generated from protobuf field <code>uint64 order_status = 11;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setOrderStatus($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->order_status = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string fee_uid = 12;</code>
+     * Generated from protobuf field <code>string fee_uid = 10;</code>
      * @return string
      */
     public function getFeeUid()
@@ -329,7 +267,9 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string fee_uid = 12;</code>
+     *uint64 order_status = 9; // initial 0 
+     *
+     * Generated from protobuf field <code>string fee_uid = 10;</code>
      * @param string $var
      * @return $this
      */
@@ -342,7 +282,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string tx_id = 13;</code>
+     * Generated from protobuf field <code>string tx_id = 11;</code>
      * @return string
      */
     public function getTxId()
@@ -351,7 +291,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string tx_id = 13;</code>
+     * Generated from protobuf field <code>string tx_id = 11;</code>
      * @param string $var
      * @return $this
      */
@@ -364,7 +304,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int64 tx_height = 14;</code>
+     * Generated from protobuf field <code>int64 tx_height = 12;</code>
      * @return int|string
      */
     public function getTxHeight()
@@ -373,7 +313,7 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>int64 tx_height = 14;</code>
+     * Generated from protobuf field <code>int64 tx_height = 12;</code>
      * @param int|string $var
      * @return $this
      */
@@ -381,6 +321,142 @@ class Request extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt64($var);
         $this->tx_height = $var;
+
+        return $this;
+    }
+
+    /**
+     * ukex pay 2.0 addation
+     *
+     * Generated from protobuf field <code>string target_addr_id = 13;</code>
+     * @return string
+     */
+    public function getTargetAddrId()
+    {
+        return $this->target_addr_id;
+    }
+
+    /**
+     * ukex pay 2.0 addation
+     *
+     * Generated from protobuf field <code>string target_addr_id = 13;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTargetAddrId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->target_addr_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string payment_id = 14;</code>
+     * @return string
+     */
+    public function getPaymentId()
+    {
+        return $this->payment_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string payment_id = 14;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPaymentId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->payment_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string wallet_addr = 15;</code>
+     * @return string
+     */
+    public function getWalletAddr()
+    {
+        return $this->wallet_addr;
+    }
+
+    /**
+     * Generated from protobuf field <code>string wallet_addr = 15;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setWalletAddr($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->wallet_addr = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string total = 16;</code>
+     * @return string
+     */
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    /**
+     * Generated from protobuf field <code>string total = 16;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTotal($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->total = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string third_order_number = 17;</code>
+     * @return string
+     */
+    public function getThirdOrderNumber()
+    {
+        return $this->third_order_number;
+    }
+
+    /**
+     * Generated from protobuf field <code>string third_order_number = 17;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setThirdOrderNumber($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->third_order_number = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool is_sucessed = 18;</code>
+     * @return bool
+     */
+    public function getIsSucessed()
+    {
+        return $this->is_sucessed;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool is_sucessed = 18;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setIsSucessed($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->is_sucessed = $var;
 
         return $this;
     }

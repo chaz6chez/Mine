@@ -89,6 +89,20 @@ class Output {
     }
 
     /**
+     * @return bool
+     */
+    public function getCross(){
+        return $this->_cross;
+    }
+
+    /**
+     * @param bool $cross
+     */
+    public function setCross(bool $cross){
+        $this->_cross = $cross;
+    }
+
+    /**
      * 输出
      * @param $code
      * @param $msg
@@ -111,7 +125,8 @@ class Output {
         if ($this->_cross){
             wm_header('Access-Control-Allow-Origin: *');
             wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
-            wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+            wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, DEVICE-ID, DEVICE-NAME, DEVICE-OS, UID, TOKEN, SIGN, TIMESTAMP, LANGUAGE');
+            $this->_cross = false;
         }
         $status = !empty($code) ? 0 : 1;
         $data = $data === null ? '' : $data;

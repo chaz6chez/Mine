@@ -11,17 +11,25 @@ package CnukServer.Withdrawal;
 message Request {
 	CnukServer.Header.Request header = 1;
 	string user_id = 2;
-	uint64 time = 3;
-	string pay_wallet_address = 5;
-	string acquire_wallet_address = 6;
-	string currency_name = 7;
-	string amount = 8;
-	string fee = 9;
-	string order_number = 10;
-	uint64 order_status = 11; // initial 0 
-  	string fee_uid = 12;
-	string tx_id = 13;
-	int64  tx_height = 14;
+	//uint64 time = 3;
+	//string pay_wallet_address = 5;
+	//string acquire_wallet_address = 6;
+	string currency_name = 5;
+	string amount = 6;
+	string fee = 7;
+	string order_number = 8;
+	//uint64 order_status = 9; // initial 0 
+  	string fee_uid = 10;
+	string tx_id = 11;
+	int64  tx_height = 12;
+	
+	// ukex pay 2.0 addation
+	string target_addr_id = 13;
+	string payment_id = 14;
+	string wallet_addr = 15;
+	string total = 16;
+    string third_order_number = 17;
+	bool is_sucessed = 18;
 }
 
 message Response {

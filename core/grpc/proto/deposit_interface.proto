@@ -15,6 +15,16 @@ import "header.proto";
 message Request {
 	CnukServer.Header.Request header = 1;
 	string order_number = 2;
+	// ukex pay 2.0 addation section
+	uint64 user_id = 3;
+	uint64 coin_id = 4;
+	uint64 src_id = 5;
+	string rate = 6;
+	string amount = 7;
+	string income = 8;
+	string txid = 9;
+	uint64 type = 10;
+	string source_account = 11;
 }
 
 

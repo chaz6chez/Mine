@@ -39,6 +39,22 @@ class Tools{
      * @param bool $master
      * @return array
      */
+    public static function grpcExtensionSupport($master = true){
+        if(!extension_loaded('grpc')){
+            if($master){
+                echo "no support grpc\n";
+                exit;
+            }
+            return [false,"no support grpc\n"];
+        }
+        return [true,null];
+    }
+
+    /**
+     * 判断grpc拓展是否支持
+     * @param bool $master
+     * @return array
+     */
     public static function grpcForkSupport($master = true){
         if(PHP_OS === 'Linux'){
             if(
@@ -73,13 +89,13 @@ class Tools{
      * 获取launcher配置
      * @param $path
      * @param array $argv
-     * @param bool $defines
+     * @param bool $base
      * @return string
      */
-    public static function Launcher($path,array $argv,$defines = false){
+    public static function Launcher($path,array $argv,$base = true){
         global $LAUNCHER_PATH;
-        if($defines){
-            self::LauncherDefines($path);
+        if($base){
+            self::LauncherBase($path);
         }
         if(isset($argv[3])){
             if($argv[3] == 'all'){
@@ -120,6 +136,19 @@ class Tools{
             return;
         }
         exit('define file of the launcher was not found'.PHP_EOL);
+    }
+
+    /**
+     * @param $path
+     * @return mixed
+     */
+    public static function LauncherBase($path){
+        foreach(glob("{$path}/launcher_*.php") as $launcher) {
+            if(!file_exists($launcher)){
+                exit("{$launcher} file was not found".PHP_EOL);
+            }
+            require_once $launcher;
+        }
     }
 
     /**

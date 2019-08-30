@@ -720,10 +720,14 @@ if(!function_exists('bcdiv_new')){
      * @param $a
      * @param $b
      * @param int $scale
-     * @return string
+     * @param bool $number_format
+     * @return string|null
      */
-    function bcdiv_new($a,$b,int $scale = 8){
-        return number_format(bcdiv($a,$b,$scale + 1),$scale);
+    function bcdiv_new($a,$b,int $scale = 8, $number_format = false){
+        if ($number_format) {
+            return number_format(bcdiv($a,$b,$scale + 1),$scale);
+        }
+        return bcdiv($a,$b,$scale + 1);
     }
 }
 
@@ -982,6 +986,24 @@ if(!function_exists('error_code')){
 }
 
 /**
+ * 获取提示信息
+ */
+if(!function_exists('notice_msg')){
+
+    /**
+     * @param $msg
+     * @return mixed|null
+     */
+    function notice_msg($msg) {
+        $data = explode('|',$msg);
+        if(is_array($data) and count($data) > 1){
+            return $data[1];
+        }
+        return $msg;
+    }
+}
+
+/**
  * 密码检查
  */
 if(!function_exists('password_checker')){
@@ -1008,7 +1030,7 @@ if(!function_exists('get_tag')){
      */
     function get_tag($string) {
         preg_match_all('/\[(?<tag>[\s\S]*?)\]/',$string,$res);
-        return isset($res['tag'][0]) ? $res['tag'][0] : $string;
+        return isset($res['tag'][0]) ? $res['tag'][0] : null;
     }
 }
 
@@ -1159,5 +1181,41 @@ if(!function_exists('env')){
     function env($name = null,$default = null) {
         \core\lib\Env::init();
         return \core\lib\Env::get($name,$default);
+    }
+}
+
+/**
+ * response检查
+ */
+if(!function_exists('response_checker_add')){
+    /**
+     * @param \core\lib\Response $response
+     * @return \core\lib\Response
+     */
+    function response_checker_add(\core\lib\Response $response) {
+        return $GLOBALS['RESPONSE_QUEUE'][] = $response;
+    }
+}
+
+/**
+ * response检查
+ */
+if(!function_exists('response_checker_do')){
+
+    /**
+     * @return \core\lib\Response|mixed
+     */
+    function response_checker_do() {
+        if(is_array($GLOBALS['RESPONSE_QUEUE']) and $GLOBALS['RESPONSE_QUEUE']){
+            foreach ($GLOBALS['RESPONSE_QUEUE'] as $response){
+                if($response instanceof \core\lib\Response){
+                    if($response->hasError()){
+                        return $response;
+                    }
+                }
+            }
+        }
+        $GLOBALS['RESPONSE_QUEUE'] = null;
+        return new \core\lib\Response;
     }
 }

@@ -18,10 +18,8 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $header = null;
     /**
-     * Generated from protobuf field <code>uint64 time = 2;</code>
-     */
-    private $time = 0;
-    /**
+     *uint64 time = 2;
+     *
      * Generated from protobuf field <code>string user_id = 3;</code>
      */
     private $user_id = '';
@@ -50,10 +48,8 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $type = 0;
     /**
-     * Generated from protobuf field <code>uint64 order_status = 11;</code>
-     */
-    private $order_status = 0;
-    /**
+     *uint64 order_status = 11;
+     *
      * Generated from protobuf field <code>string fee_uid = 12;</code>
      */
     private $fee_uid = '';
@@ -66,10 +62,8 @@ class Request extends \Google\Protobuf\Internal\Message
      */
     private $calculate_type = 0;
     /**
-     * Generated from protobuf field <code>uint64 rate_is_reverse = 15;</code>
-     */
-    private $rate_is_reverse = 0;
-    /**
+     *uint64 rate_is_reverse = 15;
+     *
      * Generated from protobuf field <code>string marketer_fee_uid = 16;</code>
      */
     private $marketer_fee_uid = '';
@@ -85,20 +79,20 @@ class Request extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type \CnukServer\Header\Request $header
-     *     @type int|string $time
      *     @type string $user_id
+     *          uint64 time = 2;
      *     @type string $trade_pair
      *     @type string $amount
      *     @type string $rate
      *     @type string $fee
      *     @type string $order_number
      *     @type int|string $type
-     *     @type int|string $order_status
      *     @type string $fee_uid
+     *          uint64 order_status = 11;
      *     @type string $total
      *     @type int|string $calculate_type
-     *     @type int|string $rate_is_reverse
      *     @type string $marketer_fee_uid
+     *          uint64 rate_is_reverse = 15;
      *     @type string $marketer_fee
      * }
      */
@@ -130,28 +124,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint64 time = 2;</code>
-     * @return int|string
-     */
-    public function getTime()
-    {
-        return $this->time;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 time = 2;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setTime($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->time = $var;
-
-        return $this;
-    }
-
-    /**
+     *uint64 time = 2;
+     *
      * Generated from protobuf field <code>string user_id = 3;</code>
      * @return string
      */
@@ -161,6 +135,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     *uint64 time = 2;
+     *
      * Generated from protobuf field <code>string user_id = 3;</code>
      * @param string $var
      * @return $this
@@ -306,28 +282,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint64 order_status = 11;</code>
-     * @return int|string
-     */
-    public function getOrderStatus()
-    {
-        return $this->order_status;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 order_status = 11;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setOrderStatus($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->order_status = $var;
-
-        return $this;
-    }
-
-    /**
+     *uint64 order_status = 11;
+     *
      * Generated from protobuf field <code>string fee_uid = 12;</code>
      * @return string
      */
@@ -337,6 +293,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     *uint64 order_status = 11;
+     *
      * Generated from protobuf field <code>string fee_uid = 12;</code>
      * @param string $var
      * @return $this
@@ -394,28 +352,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint64 rate_is_reverse = 15;</code>
-     * @return int|string
-     */
-    public function getRateIsReverse()
-    {
-        return $this->rate_is_reverse;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint64 rate_is_reverse = 15;</code>
-     * @param int|string $var
-     * @return $this
-     */
-    public function setRateIsReverse($var)
-    {
-        GPBUtil::checkUint64($var);
-        $this->rate_is_reverse = $var;
-
-        return $this;
-    }
-
-    /**
+     *uint64 rate_is_reverse = 15;
+     *
      * Generated from protobuf field <code>string marketer_fee_uid = 16;</code>
      * @return string
      */
@@ -425,6 +363,8 @@ class Request extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     *uint64 rate_is_reverse = 15;
+     *
      * Generated from protobuf field <code>string marketer_fee_uid = 16;</code>
      * @param string $var
      * @return $this

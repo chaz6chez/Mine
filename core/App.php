@@ -77,9 +77,9 @@ class App{
      */
     private function _setHeader(){
         wm_header('Content-Type: application/json;charset=utf-8');
-        wm_header('Access-Control-Allow-Origin: *');
-        wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
-        wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+//        wm_header('Access-Control-Allow-Origin: *');
+//        wm_header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
+//        wm_header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
     }
 
     /**

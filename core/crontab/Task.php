@@ -8,8 +8,8 @@
 
 namespace core\crontab;
 
+use Api\Common\Service\CardCenter\CardCenterTimer;
 use Api\V1\Service\CtocOrder;
-use Api\V1\Service\Visa;
 use core\lib\Autoload;
 use core\lib\Config;
 use \Workerman\Worker;
@@ -82,13 +82,21 @@ class Task extends Worker{
 
         cli_echo_debug("Task Server Start","# : {$worker->workerId}|{$worker->id}");
 
-        // 每30秒执行一次，清理过期订单
-        $this->timer = Timer::add(30,function(){
-            CtocOrder::instance()->cancelExpireOrder();
-        });
-        // 每10分钟执行一次，检查更新visa消费者状态
-        $this->visa_timer = Timer::add(600,function(){
-            Visa::instance()->taskUpdateVisaStatus();
+//        // 每30秒执行一次，清理过期订单
+//        $this->timer = Timer::add(30,function(){
+//            log_add('ctc_timer','ctc_timer',__METHOD__);
+//            CtocOrder::instance()->cancelExpireOrder();
+//        });
+        // 每5分钟执行一次，检查更新visa消费者状态
+        $this->visa_timer = Timer::add(300,function(){
+//            Visa::instance()->taskUpdateVisaStatus();
+            $res = CardCenterTimer::instance()->taskUpdateVisaStatus(false);
+            if($res->hasError()){
+                log_add($res->getMessage(),'visa_task_error',__METHOD__);
+                return;
+            }
+            log_add($res->getData(),'visa_task_success',__METHOD__);
+            return;
         });
     }
 
