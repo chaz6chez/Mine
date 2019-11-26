@@ -159,6 +159,13 @@ class Request {
     }
 
     /**
+     * @return string
+     */
+    public function getMethod(){
+        return strtolower($_SERVER['REQUEST_METHOD']);
+    }
+
+    /**
      * 判断是否是post请求
      * @return bool
      */

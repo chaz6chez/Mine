@@ -72,7 +72,7 @@ class Service extends Instance {
      * @param string $pattern
      * @return array|Output|mixed
      */
-    protected function output($pattern = 'arr') {
+    protected function output($pattern = Output::TYPE_ARRAY) {
         if (!$this->_output or !$this->_output instanceof Output) {
             $this->_output = new Output();
         }
@@ -80,7 +80,7 @@ class Service extends Instance {
             $this->_output->setPattern($pattern);
         }
         if (is_array($pattern)) {
-            $this->_output->setPattern('arr');
+            $this->_output->setPattern(Output::TYPE_ARRAY);
             if (isset($pattern['errCode']) && isset($pattern['message']) && isset($pattern['data'])) {
                 return $this->_output->output($pattern['errCode'], $pattern['message'], $pattern['data']);
             } else {

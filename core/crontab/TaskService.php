@@ -231,17 +231,17 @@ class TaskService extends Worker{
     private function _Cron(){
         # 每分钟执行一次
         $this->upperHalf = Timer::add(60,function(){
-//            if($this->corn->isDue()){
+            if($this->corn->isDue()){
                 $res = call_user_func([$this->serviceObj,$this->upperFunc]);
                 if(!$res[0]){ # 失败记录日志
-                    log_add($res[1],"task_{$this->name}",__METHOD__);
+                    log_add($res[1],"task_failed_{$this->name}",set_tag(__METHOD__, date('H:i:s')));
                 }
                 if($this->doubleLine){
                     $this->_CronLowerHalf($res[1]);
                 }
-//            }
-            cli_echo_debug($this->corn->getPreviousRunDate()->getTimestamp());
-            cli_echo_debug($this->corn->getNextRunDate()->getTimestamp());
+            }
+            cli_echo_debug($this->corn->getPreviousRunDate());
+            cli_echo_debug($this->corn->getNextRunDate());
         });
     }
 
@@ -260,7 +260,7 @@ class TaskService extends Worker{
                 $res = call_user_func([$this->serviceObj,$this->lowerFunc]);
             }
             if(!$res[0]){ # 失败记录日志
-                log_add($res[1],"task_{$this->name}",__METHOD__);
+                log_add($res[1],"task_failed_{$this->name}",set_tag(__METHOD__, date('H:i:s')));
             }
         },[$param],false);
     }

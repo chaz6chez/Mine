@@ -65,7 +65,7 @@ abstract class Controller {
      * @param string $pattern
      * @return Output
      */
-    protected function output($pattern = 'json') {
+    protected function output($pattern = Output::TYPE_JSON) {
         if (!$this->_output or !$this->_output instanceof Output) {
             $this->_output = new Output();
         }
@@ -79,6 +79,22 @@ abstract class Controller {
             } else {
                 $this->_output->success($pattern);
             }
+        }
+        return $this->_output;
+    }
+
+    /**
+     * 获取输出器对象
+     * @param string $pattern
+     * @return Output
+     */
+    protected function http(string $pattern = Output::TYPE_HTTP) {
+        if (!$this->_output or !$this->_output instanceof Output) {
+            $this->_output = new Output();
+        }
+        $this->_output->_apiRequestId = $this->_apiRequestId;
+        if(is_string($pattern)){
+            $this->_output->setPattern($pattern);
         }
         return $this->_output;
     }

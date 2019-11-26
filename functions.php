@@ -1020,7 +1020,7 @@ if(!function_exists('password_checker')){
 }
 
 /**
- * 密码检查
+ * 获取返回信息的 tag
  */
 if(!function_exists('get_tag')){
 
@@ -1031,6 +1031,24 @@ if(!function_exists('get_tag')){
     function get_tag($string) {
         preg_match_all('/\[(?<tag>[\s\S]*?)\]/',$string,$res);
         return isset($res['tag'][0]) ? $res['tag'][0] : null;
+    }
+}
+
+/**
+ * 设置返回信息的 tag
+ */
+if(!function_exists('set_tag')){
+
+    /**
+     * @param string $string
+     * @param string $tag
+     * @return string
+     */
+    function set_tag(string $string,string $tag) {
+        if($tag){
+            return "{$string}[{$tag}]";
+        }
+        return $string;
     }
 }
 
@@ -1088,7 +1106,7 @@ if(!function_exists('lock_decode')){
      * @return string
      */
     function lock_decode($txt,$key = 'ukexpay_workerman') {
-        $txt = passport_key(base64_urldecode($txt), $key);
+        $txt = passport_key(base64_urldecode((string)$txt), $key);
         $tmp = '';
         for ($i = 0; $i < strlen($txt); $i++) {
             $tmp .= $txt[$i] ^ $txt[++$i];
@@ -1207,7 +1225,8 @@ if(!function_exists('response_checker_do')){
      */
     function response_checker_do() {
         if(is_array($GLOBALS['RESPONSE_QUEUE']) and $GLOBALS['RESPONSE_QUEUE']){
-            foreach ($GLOBALS['RESPONSE_QUEUE'] as $response){
+            foreach ($GLOBALS['RESPONSE_QUEUE'] as $key => $response){
+                unset($GLOBALS['RESPONSE_QUEUE'][$key]);
                 if($response instanceof \core\lib\Response){
                     if($response->hasError()){
                         return $response;
@@ -1217,5 +1236,65 @@ if(!function_exists('response_checker_do')){
         }
         $GLOBALS['RESPONSE_QUEUE'] = null;
         return new \core\lib\Response;
+    }
+}
+
+/**
+ * response检查
+ */
+if(!function_exists('response_checker_do')){
+
+    /**
+     * @return \core\lib\Response|mixed
+     */
+    function response_checker_do() {
+        if(is_array($GLOBALS['RESPONSE_QUEUE']) and $GLOBALS['RESPONSE_QUEUE']){
+            foreach ($GLOBALS['RESPONSE_QUEUE'] as $key => $response){
+                unset($GLOBALS['RESPONSE_QUEUE'][$key]);
+                if($response instanceof \core\lib\Response){
+                    if($response->hasError()){
+                        return $response;
+                    }
+                }
+            }
+        }
+        $GLOBALS['RESPONSE_QUEUE'] = null;
+        return new \core\lib\Response;
+    }
+}
+
+/**
+ * 数组key中下划线替换为中横线
+ */
+if(!function_exists('array_key_replace')){
+
+    /**
+     * @param array $array
+     * @return array
+     */
+    function array_key_replace(array $array) {
+        $result = [];
+        foreach ($array as $key => $value){
+            $k = str_replace('_','-',$key);
+            $result[$k] = $value;
+        }
+        return $result;
+    }
+}
+
+if(!function_exists('get_float_length')){
+
+    /**
+     * @param $num
+     * @return int
+     */
+    function get_float_length($num) {
+        $count = 0;
+        $temp = explode ( '.', (string) $num );
+        if (sizeof ( $temp ) > 1) {
+            $decimal = end ( $temp );
+            $count = strlen ( $decimal );
+        }
+        return $count;
     }
 }

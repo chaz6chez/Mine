@@ -55,17 +55,21 @@ class Template extends Instance{
      * 数据分配
      * @param $tplVar
      * @param null $value
+     * @param string $default
      */
-    public function assign($tplVar, $value = null) {
+    public function assign($tplVar, $value = null, $default = null) {
+        if($default === null){
+            $default = '{$' . $tplVar . '}';
+        }
         if (is_array($tplVar)) {
             foreach ($tplVar as $key => $val) {
                 if ($key != '') {
-                    $this->_tplVars[$key] = $val;
+                    $this->_tplVars[$key] = !$val ? $default : $val;
                 }
             }
         } else {
             if ($tplVar != '') {
-                $this->_tplVars[$tplVar] = $value;
+                $this->_tplVars[$tplVar] = !$value ? $default : $value;
             }
         }
     }
@@ -102,7 +106,7 @@ class Template extends Instance{
             $arr = explode('.', $m[0]);
             array_shift($arr);
 
-            $r = '';
+            $r = $m[0];
             if(isset($this->_tplVars[$m[1]])){
                 $r = $this->_tplVars[$m[1]];
                 foreach ($arr as $a) {

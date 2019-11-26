@@ -128,7 +128,6 @@ class Tools{
 
     /**
      * @param $path
-     * @return mixed
      */
     public static function LauncherDefines($path){
         if(file_exists($file = $path.'/launcher_defines.php')){
@@ -140,7 +139,6 @@ class Tools{
 
     /**
      * @param $path
-     * @return mixed
      */
     public static function LauncherBase($path){
         foreach(glob("{$path}/launcher_*.php") as $launcher) {
@@ -149,6 +147,7 @@ class Tools{
             }
             require_once $launcher;
         }
+        return;
     }
 
     /**
@@ -164,5 +163,20 @@ class Tools{
             return true;
         }
         return false;
+    }
+
+    /**
+     * 主进程启动判断器
+     * @param bool $throw
+     * @return bool
+     */
+    public static function processChecker($throw = true){
+        $cmd = 'ps axu|grep "WorkerMan: master process"|grep -v "grep"|wc -l';
+        $ret = shell_exec($cmd);
+        if($throw){
+            echo "master process is ready\n";
+            exit;
+        }
+        return (rtrim($ret, "\r\n") === '0') ? false : true;
     }
 }

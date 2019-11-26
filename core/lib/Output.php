@@ -7,6 +7,13 @@
 namespace core\lib;
 
 class Output {
+    const TYPE_HTTP  = 'http';
+    const TYPE_JSON  = 'json';
+    const TYPE_ARRAY = 'arr';
+    const TYPE_XML   = 'xml';
+    const TYPE_HTML  = 'html';
+
+
     private $pattern = 'json';
     private $_cross = false;
     public $_apiRequestId = false;
@@ -45,6 +52,7 @@ class Output {
      */
     public function error($msg = '', $code = '500', $data = '') {
         if (!$msg) {
+            $code = $this->pattern == self::TYPE_HTTP ? 'HTTP_500' : $code;
             return $this->output($code, 'System is busy', $data);
         } else {
             if (is_array($msg) && !empty($msg['code'])) {
@@ -52,10 +60,14 @@ class Output {
                 $data = $msg['data'];
                 $msg = $msg['msg'];
             }
-            $err = explode("|", $msg);
+            $err = explode('|', $msg);
             if (is_array($err) && count($err) > 1) {
                 $msg = $err[1];
                 $code = $err[0];
+            }
+            if($this->pattern == self::TYPE_HTTP){
+                $msg = "{$msg}[$code]";
+                $code = 'HTTP_500';
             }
             return $this->output($code, $msg, $data);
         }
@@ -135,14 +147,20 @@ class Output {
         $code = (string)$code;
         $json = array_merge(self::$_data, compact('status','code', 'msg', 'data', 'timestamp'));
         switch ($this->pattern) {
-            case 'arr':
+            case self::TYPE_ARRAY:
                 return $json;
                 break;
-            case 'xml':
+            case self::TYPE_XML:
                 echo array2xml($json);
                 break;
-            case 'html':
+            case self::TYPE_HTML:
                 echo $msg;
+                break;
+            case self::TYPE_HTTP:
+                if(!$status){
+                    wm_header("HTTP/1.1 500 Internal Server Error");
+                }
+                echo json_encode($json, JSON_UNESCAPED_UNICODE);
                 break;
             default:
                 echo json_encode($json, JSON_UNESCAPED_UNICODE);
@@ -153,12 +171,7 @@ class Output {
             //todo 接口数据默认给记录
         }
         # debug
-        if (
-            defined('DEBUG') and
-            DEBUG
-        ){
-            cli_echo($json,'RESPONSE');
-        }
+        cli_echo_debug($json,'RESPONSE');
         # worker man 主动断开连接
         if($this->_end){
             wm_close();

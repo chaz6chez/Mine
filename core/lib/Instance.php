@@ -29,13 +29,15 @@ abstract class Instance{
     private static $_use_count = 0;     # 已占用的数量
 
     protected static $_time    = 0;     # 当前时间
-    protected static $_class   = null;  # 唤起的类名
+    protected static $_class   = null;  # 最后一次唤起的类名
+    protected static $_parent  = null;  # 最后一次唤起的父类
 
 
     /**
      * Service constructor.
      */
     public function __construct() {
+        $this->_base();
         $this->_initConfig();
         $this->_init();
     }
@@ -44,6 +46,14 @@ abstract class Instance{
      * 载入配置内容
      */
     abstract protected function _initConfig();
+
+    /**
+     * 基础加载
+     */
+    private function _base(){
+        self::$_class = get_called_class();
+        self::$_parent = get_parent_class(self::$_class);
+    }
 
     /**
      * 读取配置

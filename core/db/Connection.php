@@ -614,7 +614,7 @@ class Connection{
         return $where;
     }
 
-    public function _getLog(){
+    public function getLog(){
         if(!$this->checker()) return false;
         return $this->_medoo->log();
     }

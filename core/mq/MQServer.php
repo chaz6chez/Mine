@@ -92,7 +92,7 @@ class MQServer extends Worker{
 
         }catch (\Exception $e){
             $error = $e->getMessage();
-            log_add("[$worker->workerId|$worker->id] Rabbit Server Error [$error]",'MQ',__METHOD__);
+            log_add("[$worker->workerId|$worker->id] Rabbit Server Error [$error]",'mq_server',__METHOD__);
             cli_echo_debug("Rabbit Server Error [$error]","# : {$worker->workerId}|{$worker->id}");
             return;
         }
