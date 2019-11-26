@@ -7,7 +7,8 @@
     "chaz6chez/structure": "dev-master",
     "workerman/workerman":"3.5.*",
     "dragonmantank/cron-expression": "~2.0",
-    "php-amqplib/php-amqplib": "2.7.*"
+    "php-amqplib/php-amqplib": "2.7.*",
+    "monolog/monolog": "2.0.*"
   },
   "license": "MIT",
   "authors": [
@@ -18,7 +19,8 @@
   ],
   "autoload": {
     "psr-4": {
-      "core\\": "core/"
+      "Mine\\": "lib/",
+      "Example\\": "examples/"
     }
   },
   "minimum-stability": "stable"
