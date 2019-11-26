@@ -6,7 +6,6 @@
 # -------------------------- #
 namespace Mine\Base;
 
-
 use Mine\Core\Output;
 use Mine\Core\Request;
 use Mine\Helper\Tools;

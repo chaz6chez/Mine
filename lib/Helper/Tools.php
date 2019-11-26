@@ -346,4 +346,19 @@ class Tools{
             return strtoupper($match[1]);
         }, $str));
     }
+
+    public static function ArrayToXml($arr) {
+        $xml = "<xml>";
+        foreach ($arr as $key => $val) {
+            if (is_array($val)) {
+                $xml .= "<" . $key . ">" . array2xml($val) . "</" . $key . ">";
+            } elseif (is_numeric($val)) {
+                $xml .= "<" . $key . ">" . $val . "</" . $key . ">";
+            } else {
+                $xml .= "<" . $key . "><![CDATA[" . $val . "]]></" . $key . ">";
+            }
+        }
+        $xml .= "</xml>";
+        return $xml;
+    }
 }

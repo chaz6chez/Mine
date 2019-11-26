@@ -8,17 +8,11 @@ namespace Mine\Base;
 
 use Mine\Core\Config;
 use Mine\Core\Instance;
-use Mine\Core\Output;
 use Mine\Core\Response;
 use Mine\Definition\Define;
 use Mine\Helper\Arr;
 
 class Service extends Instance {
-
-    /**
-     * @var Output
-     */
-    private $_output;
 
     /**
      * @var Response
@@ -42,7 +36,6 @@ class Service extends Instance {
         }
     }
 
-
     /**
      * 响应
      * @param $response
@@ -51,35 +44,5 @@ class Service extends Instance {
     protected function response($response = []) {
         $this->_response = new Response($response);
         return $this->_response;
-    }
-
-    /**
-     * 获取输出器对象
-     * @param string $pattern
-     * @return array|Output|mixed
-     */
-    protected function output($pattern = Output::TYPE_ARRAY) {
-        if (
-            !$this->_output or
-            !$this->_output instanceof Output
-        ) {
-            $this->_output = new Output();
-        }
-        if(is_string($pattern)){
-            $this->_output->setPattern($pattern);
-        }
-        if (is_array($pattern)) {
-            $this->_output->setPattern(Output::TYPE_ARRAY);
-            if (
-                isset($pattern['errCode']) and
-                isset($pattern['message']) and
-                isset($pattern['data'])
-            ) {
-                return $this->_output->output($pattern['errCode'], $pattern['message'], $pattern['data']);
-            } else {
-                return $this->_output->success($pattern);
-            }
-        }
-        return $this->_output;
     }
 }

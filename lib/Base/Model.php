@@ -6,7 +6,6 @@
 # -------------------------- #
 namespace Mine\Model;
 
-
 use Mine\Db\Connection;
 use Mine\Db\Db;
 

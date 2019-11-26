@@ -6,7 +6,6 @@
 # -------------------------- #
 namespace Mine;
 
-
 use Mine\Helper\Tools;
 use Mine\Core\Autoload;
 use Mine\Core\Config;

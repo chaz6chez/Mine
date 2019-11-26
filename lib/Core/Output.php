@@ -14,6 +14,7 @@ class Output {
     const TYPE_ARRAY = 'arr';
     const TYPE_XML   = 'xml';
     const TYPE_HTML  = 'html';
+    const TYPE_OBJ   = 'object';
 
 
     private $pattern = 'json';
@@ -76,15 +77,6 @@ class Output {
     }
 
     /**
-     * @param $languageCode
-     * @param string $data
-     * @return array
-     */
-    public function ecode($languageCode,$data = ''){
-        return $this->output($languageCode, 'error', $data);
-    }
-
-    /**
      * 成功
      * @param string $data
      * @param string $msg
@@ -105,7 +97,7 @@ class Output {
     /**
      * @return bool
      */
-    public function getCross(){
+    public function getCross() : bool{
         return $this->_cross;
     }
 
@@ -153,7 +145,7 @@ class Output {
                 return $json;
                 break;
             case self::TYPE_XML:
-                echo array2xml($json);
+                echo Tools::ArrayToXml($json);
                 break;
             case self::TYPE_HTML:
                 echo $msg;
