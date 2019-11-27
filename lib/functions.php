@@ -35,17 +35,7 @@ if (!function_exists('dump')) {
      * @return array|mixed
      */
     function dump($var, $moreVars = []) {
-        \Symfony\Component\VarDumper\VarDumper::dump($var);
-
-        foreach ($moreVars as $var) {
-            \Symfony\Component\VarDumper\VarDumper::dump($var);
-        }
-
-        if (1 < func_num_args()) {
-            return func_get_args();
-        }
-
-        return $var;
+        return \Mine\Helper\Tools::Dump($var, $moreVars);
     }
 }
 
@@ -123,9 +113,9 @@ if (!function_exists('set_config')) {
      */
     function set_config($key, $value = null) {
         if (is_null($value)) {
-            return \core\lib\Config::get($key);
+            return \Mine\Core\Config::get($key);
         }
-        return \core\lib\Config::set($key, $value);
+        return \Mine\Core\Config::set($key, $value);
     }
 }
 
@@ -138,7 +128,7 @@ if(!function_exists('camel2lower')) {
      * @return string
      */
     function camel2lower($str) {
-        return strtolower(trim(preg_replace('/[A-Z]/', '_\\0', $str), '_'));
+        return \Mine\Helper\Tools::CamelToLower($str);
     }
 }
 
@@ -151,9 +141,7 @@ if(!function_exists('lower2camel')) {
      * @return string
      */
     function lower2camel($str) {
-        return ucfirst(preg_replace_callback('/_([a-zA-Z])/', function ($match) {
-            return strtoupper($match[1]);
-        }, $str));
+        return \Mine\Helper\Tools::LowerToCamel($str);
     }
 }
 
@@ -219,18 +207,7 @@ if(!function_exists('array2xml')) {
      * @return string
      */
     function array2xml($arr) {
-        $xml = "<xml>";
-        foreach ($arr as $key => $val) {
-            if (is_array($val)) {
-                $xml .= "<" . $key . ">" . array2xml($val) . "</" . $key . ">";
-            } elseif (is_numeric($val)) {
-                $xml .= "<" . $key . ">" . $val . "</" . $key . ">";
-            } else {
-                $xml .= "<" . $key . "><![CDATA[" . $val . "]]></" . $key . ">";
-            }
-        }
-        $xml .= "</xml>";
-        return $xml;
+        return \Mine\Helper\Tools::ArrayToXml($arr);
     }
 }
 
@@ -295,11 +272,11 @@ if(!function_exists('object2array')) {
  */
 if (!function_exists('request')) {
     /**
-     * @return \core\lib\Request
+     * @return \Mine\Core\Request
      */
     function request()
     {
-        return new \core\lib\Request();
+        return new \Mine\Core\Request();
     }
 }
 
@@ -400,7 +377,7 @@ if(!function_exists('get_memory_used')){
      * @return float
      */
     function get_memory_used(){
-        return round(memory_get_usage(false) / 1024 / 1024, 2);
+        return \Mine\Helper\Tools::getMemoryUsed();
     }
 }
 
@@ -432,7 +409,7 @@ if(!function_exists('get_variable_name')){
 if(!function_exists('wm_close')){
 
     function wm_close(){
-        $_SERVER['HTTP_CONNECTION'] = 'close';
+        \Mine\Helper\Tools::Close();
     }
 }
 
@@ -443,36 +420,7 @@ if(!function_exists('wm_close')){
 if(!function_exists('wm_end')){
 
     function wm_end($msg = '',$close = false){
-        if($close){
-            $_SERVER['HTTP_CONNECTION'] = 'close';
-        }
-        \Workerman\Protocols\Http::end($msg);
-    }
-}
-
-/**
- * WorkerMan 控制台输出
- */
-if(!function_exists('cli_echo')){
-
-    /**
-     * @param string $msg
-     * @param string $tag
-     */
-    function cli_echo($msg = '',$tag = '#'){
-        if(is_object($msg)){
-            if($msg instanceof Exception){
-                $msg = $msg->getMessage() . ':' . $msg->getCode();
-            }else{
-                return dump($msg);
-            }
-        }
-        if(is_array($msg)  or is_bool($msg)){
-            \Workerman\Worker::safeEcho("[{$tag}] ", false);
-            return dump($msg);
-        }else{
-            \Workerman\Worker::safeEcho("[{$tag}] $msg\n", false);
-        }
+        \Mine\Helper\Tools::End($msg, $close);
     }
 }
 
@@ -487,23 +435,7 @@ if(!function_exists('cli_echo_debug')){
      * @return array|mixed
      */
     function cli_echo_debug($msg = '',$tag = '#'){
-        if(defined('DEBUG') and DEBUG){
-            if(is_object($msg)){
-                if($msg instanceof Exception){
-                    $msg = $msg->getMessage() . ':' . $msg->getCode();
-                }else{
-                    return dump($msg);
-
-                }
-            }
-            if(is_array($msg) or is_bool($msg)){
-                \Workerman\Worker::safeEcho("[{$tag}] ", false);
-                return dump($msg);
-            }else{
-                $msg = (string)$msg;
-                \Workerman\Worker::safeEcho("[{$tag}] {$msg}\n", false);
-            }
-        }
+        return \Mine\Helper\Tools::SafeEcho($msg, $tag);
     }
 }
 
@@ -517,7 +449,7 @@ if(!function_exists('wm_header')){
      * @param int $http_response_header
      */
     function wm_header($content,$replace = true,$http_response_header = 0){
-        \Workerman\Protocols\Http::header($content,$replace,$http_response_header);
+        \Mine\Helper\Tools::Header($content, $replace, $http_response_header);
     }
 }
 
@@ -529,20 +461,7 @@ if(!function_exists('wm_500')){
      * @param string $msg
      */
     function wm_500($msg = '500 Internal Server Error'){
-        @ob_clean();
-        wm_header("HTTP/1.1 500 Internal Server Error");
-        if(defined('DEBUG') and DEBUG){
-            $msg = explode('|',$msg);
-            if(count($msg)>1){
-                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
-            }else{
-                cli_echo($msg[0],'SYSTEM ERROR');
-            }
-        }
-        log_add($msg,'SYSTEM',__METHOD__);
-        wm_end(
-            '<html><head><title>500 Internal Server Error</title></head><body><center><h3>500 Internal Server Error [Server]</h3></center></body></html>'
-            ,true);
+        \Mine\Helper\Tools::Http500($msg);
     }
 }
 
@@ -554,19 +473,7 @@ if(!function_exists('wm_404')){
      * @param string $msg
      */
     function wm_404($msg = '404 Not Found'){
-        @ob_clean();
-        wm_header("HTTP/1.1 404 Not Found");
-        if(defined('DEBUG') and DEBUG){
-            $msg = explode('|',$msg);
-            if(count($msg)>1){
-                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
-            }else{
-                cli_echo($msg[0],'SYSTEM ERROR');
-            }
-        }
-        wm_end(
-            '<html><head><title>404 File not found</title></head><body><center><h3>404 Not Found [Server]</h3></center></body></html>'
-        ,true);
+        \Mine\Helper\Tools::Http404($msg);
     }
 }
 
@@ -578,19 +485,7 @@ if(!function_exists('wm_403')){
      * @param string $msg
      */
     function wm_403($msg = '403 Forbidden'){
-        @ob_clean();
-        wm_header("HTTP/1.1 403 Forbidden");
-        if(defined('DEBUG') and DEBUG){
-            $msg = explode('|',$msg);
-            if(count($msg)>1){
-                cli_echo($msg[0] . ' : ' . $msg[1],'SYSTEM ERROR');
-            }else{
-                cli_echo($msg[0],'SYSTEM ERROR');
-            }
-        }
-        wm_end(
-            '<h1>403 Forbidden [Server]</h1>'
-            ,true);
+        \Mine\Helper\Tools::Http403($msg);
     }
 }
 
@@ -616,10 +511,7 @@ if(!function_exists('new_token')){
      * @return string
      */
     function new_token($uid = 0){
-        if($uid != 0){
-            return md5(md5(rand(0, 10000) .$uid. md5(time()), md5(uniqid())));
-        }
-        return md5(md5(rand(0, 10000) . md5(time()), md5(uniqid())));
+        return \Mine\Helper\Tools::uuid($uid);
     }
 }
 
@@ -941,16 +833,7 @@ if(!function_exists('is_json')){
      * @return bool|mixed
      */
     function is_json($string,$get = false){
-        if(@json_decode($string)){
-            if(json_last_error() != JSON_ERROR_NONE){
-                return false;
-            }
-            if($get){
-                return json_decode($string,true);
-            }
-            return true;
-        }
-        return false;
+        return \Mine\Helper\Tools::isJson($string, $get);
     }
 }
 
@@ -1197,8 +1080,8 @@ if(!function_exists('env')){
      * @return array|bool|false|mixed|null|string
      */
     function env($name = null,$default = null) {
-        \core\lib\Env::init();
-        return \core\lib\Env::get($name,$default);
+        \Mine\Core\Env::init();
+        return \Mine\Core\Env::get($name,$default);
     }
 }
 
@@ -1207,10 +1090,10 @@ if(!function_exists('env')){
  */
 if(!function_exists('response_checker_add')){
     /**
-     * @param \core\lib\Response $response
-     * @return \core\lib\Response
+     * @param \Mine\Core\Response $response
+     * @return \Mine\Core\Response
      */
-    function response_checker_add(\core\lib\Response $response) {
+    function response_checker_add(\Mine\Core\Response $response) {
         return $GLOBALS['RESPONSE_QUEUE'][] = $response;
     }
 }
@@ -1221,13 +1104,13 @@ if(!function_exists('response_checker_add')){
 if(!function_exists('response_checker_do')){
 
     /**
-     * @return \core\lib\Response|mixed
+     * @return \Mine\Core\Response
      */
     function response_checker_do() {
         if(is_array($GLOBALS['RESPONSE_QUEUE']) and $GLOBALS['RESPONSE_QUEUE']){
             foreach ($GLOBALS['RESPONSE_QUEUE'] as $key => $response){
                 unset($GLOBALS['RESPONSE_QUEUE'][$key]);
-                if($response instanceof \core\lib\Response){
+                if($response instanceof \Mine\Core\Response){
                     if($response->hasError()){
                         return $response;
                     }
@@ -1235,7 +1118,7 @@ if(!function_exists('response_checker_do')){
             }
         }
         $GLOBALS['RESPONSE_QUEUE'] = null;
-        return new \core\lib\Response;
+        return new \Mine\Core\Response();
     }
 }
 
@@ -1245,13 +1128,13 @@ if(!function_exists('response_checker_do')){
 if(!function_exists('response_checker_do')){
 
     /**
-     * @return \core\lib\Response|mixed
+     * @return \Mine\Core\Response|mixed
      */
     function response_checker_do() {
         if(is_array($GLOBALS['RESPONSE_QUEUE']) and $GLOBALS['RESPONSE_QUEUE']){
             foreach ($GLOBALS['RESPONSE_QUEUE'] as $key => $response){
                 unset($GLOBALS['RESPONSE_QUEUE'][$key]);
-                if($response instanceof \core\lib\Response){
+                if($response instanceof \Mine\Core\Response){
                     if($response->hasError()){
                         return $response;
                     }
@@ -1259,7 +1142,7 @@ if(!function_exists('response_checker_do')){
             }
         }
         $GLOBALS['RESPONSE_QUEUE'] = null;
-        return new \core\lib\Response;
+        return new \Mine\Core\Response;
     }
 }
 

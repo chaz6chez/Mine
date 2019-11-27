@@ -195,6 +195,17 @@ class Tools{
     /**
      * @param $path
      */
+    public static function LauncherFunctions($path){
+        if(file_exists($file = $path.'/functions.php')){
+            require_once $file;
+            return;
+        }
+        exit('functions file of the launcher was not found'.PHP_EOL);
+    }
+
+    /**
+     * @param $path
+     */
     public static function LauncherBase($path){
         foreach(glob("{$path}/launcher_*.php") as $launcher) {
             if(!file_exists($launcher)){
@@ -219,6 +230,13 @@ class Tools{
             exit;
         }
         return (rtrim($ret, "\r\n") === '0') ? false : true;
+    }
+
+    /**
+     * @return float
+     */
+    public static function getMemoryUsed(){
+        return round(memory_get_usage(false) / 1024 / 1024, 2);
     }
 
     /**

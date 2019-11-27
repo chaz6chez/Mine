@@ -79,7 +79,7 @@ class CoreServer extends WebServer {
         $this->coreApp->init();
 
         if(Tools::isDebug()){
-            $GLOBALS['WORKER_START_MEMORY'] = get_memory_used();
+            $GLOBALS['WORKER_START_MEMORY'] = Tools::getMemoryUsed();
         }
 
         parent::onWorkerStart();
@@ -109,7 +109,7 @@ class CoreServer extends WebServer {
         if(Tools::isDebug()){
             Tools::SafeEcho("[#] ---------------- START ----------------\n");
             Tools::SafeEcho($_SERVER,'SERVER INFO');
-            $GLOBALS['REQUEST_START_MEMORY'] = get_memory_used();
+            $GLOBALS['REQUEST_START_MEMORY'] = Tools::getMemoryUsed();
         }
 
         # 域名解析
@@ -199,7 +199,7 @@ class CoreServer extends WebServer {
 
             # 内存占用
             if(Tools::isDebug()){
-                $GLOBALS['REQUEST_END_MEMORY'] = get_memory_used();
+                $GLOBALS['REQUEST_END_MEMORY'] = Tools::getMemoryUsed();
                 $rUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['REQUEST_START_MEMORY'];
                 $aUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['WORKER_START_MEMORY'];
                 Tools::SafeEcho("[#] all_memory_used:{$GLOBALS['REQUEST_END_MEMORY']}\n");
