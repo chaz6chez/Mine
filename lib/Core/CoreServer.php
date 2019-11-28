@@ -8,6 +8,7 @@ namespace Mine\Core;
 
 use Mine\Helper\Tools;
 use Mine\App;
+use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http;
 use Workerman\WebServer;
 
@@ -25,6 +26,7 @@ class CoreServer extends WebServer {
     public $allowed        = [];  # 授权的路由
     public $forbidden      = [];  # 拒绝的路由
     public $defaultPath    = '';  # 默认路径
+    public $basePath       = '';  # 默认业务目录
     /**
      * @var App
      */
@@ -64,19 +66,7 @@ class CoreServer extends WebServer {
             self::safeEcho('!!SERVER WARNING!! WORKER_MAN not defined');
             exit;
         }
-        if(!$this->coreApp or !$this->coreApp instanceof App){
-            $this->coreApp = new App();
-        }
-        if($this->defaultPath){
-            $this->coreApp->setDefaultRoute($this->defaultPath);
-        }
-        if($this->allowed){
-            $this->coreApp->setAllowedRoute($this->allowed);
-        }
-        if($this->forbidden){
-            $this->coreApp->setForbiddenRoute($this->forbidden);
-        }
-        $this->coreApp->init();
+        $this->_appInit();
 
         if(Tools::isDebug()){
             $GLOBALS['WORKER_START_MEMORY'] = Tools::getMemoryUsed();
@@ -159,55 +149,7 @@ class CoreServer extends WebServer {
 
         # 框架响应
         if($file === null){
-            if($strrpos = strrpos($path,'.')){
-                $path = substr($path,$strrpos); # 兼容唯一入口
-            }
-
-            if(!isset($this->serverRoot[$_SERVER['SERVER_NAME']])) {
-                #header('HTTP/1.1 403 Forbidden');
-                Http::header('HTTP/1.1 403 Forbidden');
-                $connection->close('<h1>403 Forbidden [Server Name]</h1>');
-                Tools::SafeEcho("[#] -(403 Forbidden)- END -----------------\n");
-                return;
-            }
-
-            $cwd = getcwd();
-            chdir($rootDir);
-            ini_set('display_errors', 'off');
-            ob_start();
-            # 执行框架内容响应.
-            try {
-                # $_SERVER.
-                $_SERVER['REMOTE_ADDR'] = $connection->getRemoteIp();
-                $_SERVER['REMOTE_PORT'] = $connection->getRemotePort();
-                $_SERVER['PATH_INFO']   = $path;
-                $this->coreApp->run();
-            } catch (\Exception $e) {
-                # Jump_exit?
-                if ($e->getMessage() != 'jump_exit') {
-                    self::safeEcho($e);
-                }
-            }
-            $content = ob_get_clean();
-            ini_set('display_errors', 'on');
-            if (strtolower($_SERVER['HTTP_CONNECTION']) === "keep-alive") {
-                $connection->send($content);
-            } else {
-                $connection->close($content);
-            }
-            chdir($cwd);
-
-            # 内存占用
-            if(Tools::isDebug()){
-                $GLOBALS['REQUEST_END_MEMORY'] = Tools::getMemoryUsed();
-                $rUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['REQUEST_START_MEMORY'];
-                $aUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['WORKER_START_MEMORY'];
-                Tools::SafeEcho("[#] all_memory_used:{$GLOBALS['REQUEST_END_MEMORY']}\n");
-                Tools::SafeEcho("[#] run_memory_used:{$aUsedMemory}\n");
-                Tools::SafeEcho("[#] request_memory_used:{$rUsedMemory}\n");
-                Tools::SafeEcho("[#] ----------------- END -----------------\n");
-            }
-
+            $this->_frameResponse($path, $rootDir, $connection);
             return;
         }
 
@@ -243,5 +185,84 @@ class CoreServer extends WebServer {
         $connection->close($html404);
         Tools::SafeEcho("[#] ---(Not Found)--- END -----------------\n");
         return;
+    }
+
+
+    /**
+     * app初始化
+     */
+    private function _appInit() : void {
+        if(!$this->coreApp or !$this->coreApp instanceof App){
+            $this->coreApp = new App();
+        }
+        if($this->basePath){
+            $this->coreApp->setBase($this->basePath);
+        }
+        if($this->defaultPath){
+            $this->coreApp->setDefaultRoute($this->defaultPath);
+        }
+        if($this->allowed){
+            $this->coreApp->setAllowedRoute($this->allowed);
+        }
+        if($this->forbidden){
+            $this->coreApp->setForbiddenRoute($this->forbidden);
+        }
+        $this->coreApp->init();
+    }
+
+    /**
+     * 框架加载
+     * @param $path
+     * @param $rootDir
+     * @param TcpConnection $connection
+     */
+    private function _frameResponse($path, $rootDir, TcpConnection $connection) : void {
+        if($strrpos = strrpos($path,'.')){
+            $path = substr($path,$strrpos); # 兼容唯一入口
+        }
+
+        if(!isset($this->serverRoot[$_SERVER['SERVER_NAME']])) {
+            Http::header('HTTP/1.1 403 Forbidden');
+            $connection->close('<h1>403 Forbidden [Server Name]</h1>');
+            Tools::SafeEcho("[#] -(403 Forbidden)- END -----------------\n");
+            return;
+        }
+
+        $cwd = getcwd();
+        chdir($rootDir);
+        ini_set('display_errors', 'off');
+        ob_start();
+        # 执行框架内容响应.
+        try {
+            # $_SERVER.
+            $_SERVER['REMOTE_ADDR'] = $connection->getRemoteIp();
+            $_SERVER['REMOTE_PORT'] = $connection->getRemotePort();
+            $_SERVER['PATH_INFO']   = $path;
+            $this->coreApp->run();
+        } catch (\Exception $e) {
+            # Jump_exit?
+            if ($e->getMessage() != 'jump_exit') {
+                self::safeEcho($e);
+            }
+        }
+        $content = ob_get_clean();
+        ini_set('display_errors', 'on');
+        if (strtolower($_SERVER['HTTP_CONNECTION']) === 'keep-alive') {
+            $connection->send($content);
+        } else {
+            $connection->close($content);
+        }
+        chdir($cwd);
+
+        # 内存占用
+        if(Tools::isDebug()){
+            $GLOBALS['REQUEST_END_MEMORY'] = Tools::getMemoryUsed();
+            $rUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['REQUEST_START_MEMORY'];
+            $aUsedMemory = $GLOBALS['REQUEST_END_MEMORY']-$GLOBALS['WORKER_START_MEMORY'];
+            Tools::SafeEcho("[#] all_memory_used:{$GLOBALS['REQUEST_END_MEMORY']}\n");
+            Tools::SafeEcho("[#] run_memory_used:{$aUsedMemory}\n");
+            Tools::SafeEcho("[#] request_memory_used:{$rUsedMemory}\n");
+            Tools::SafeEcho("[#] ----------------- END -----------------\n");
+        }
     }
 }
