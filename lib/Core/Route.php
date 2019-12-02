@@ -126,7 +126,7 @@ final class Route{
         if($this->_allowed){
             if(!in_array($this->_mode,$this->_allowed)){
                 $this->clean();
-                Tools::Http404("{$this->_mode} Not Found");
+                Tools::Http404("Mode {$this->_mode} Not Found");
             }
         }
 
@@ -136,7 +136,7 @@ final class Route{
 
         $preg = preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/',$this->_ctrl);
         if($preg > 1){
-            Tools::Http404("{$this->_ctrl} Not Found");
+            Tools::Http404("Controller {$this->_ctrl} Not Found");
         }
 
         $GLOBALS['API_MODULE'] = Tools::CamelToLower($this->_mode);

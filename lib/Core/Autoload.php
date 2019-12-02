@@ -40,6 +40,6 @@ final class Autoload{
      * @param $className
      */
     public function autoload($className){
-        Tools::Http404("{$className} was not found");
+        Tools::Http404("Class {$className} Not Found");
     }
 }

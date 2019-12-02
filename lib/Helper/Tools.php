@@ -9,14 +9,40 @@ namespace Mine\Helper;
 class Tools{
 
     /**
-     * @param null $prefix
+     * @param string $prefix
      * @return string
      */
-    public static function uuid($prefix = null){
+    public static function randomString($prefix = '') : string {
         if(!$prefix){
             return md5(md5(rand(0, 10000) .$prefix. md5(time()), md5(uniqid())));
         }
         return md5(md5(rand(0, 10000) . md5(time()), md5(uniqid())));
+    }
+
+    /**
+     * @param string $prefix
+     * @return string
+     */
+    public static function guid($prefix = '') : string {
+        if(extension_loaded('uuid') and function_exists('uuid_create')){
+            return $prefix . uuid_create();
+        }
+        return self::uuid($prefix);
+    }
+
+    /**
+     * @param $prefix
+     * @return string
+     */
+    public static function uuid($prefix = '') : string {
+        $chars = md5(uniqid(mt_rand(), true));
+        $uuid  = substr($chars,0,8) . '-';
+        $uuid .= substr($chars,8,4) . '-';
+        $uuid .= substr($chars,12,4) . '-';
+        $uuid .= substr($chars,16,4) . '-';
+        $uuid .= substr($chars,20,12);
+        return $prefix . $uuid;
+
     }
     /**
      * 判断是否是唯一键重复的错误
@@ -267,7 +293,7 @@ class Tools{
      * @param string $msg
      * @param bool $echo
      */
-    public static function Http404($msg = '404 Not Found', $echo = false){
+    public static function Http404($msg = '404 Not Found', $echo = true){
         @ob_clean();
         self::Header("HTTP/1.1 404 Not Found");
         if($echo){

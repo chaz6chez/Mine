@@ -289,7 +289,7 @@ class Request {
             }
         }
         $paths = [];
-        $string = Tools::uuid(uniqid('.,#$%^&@'));
+        $string = Tools::randomString(uniqid('.,#$%^&@'));
         $path = $this->uploadPath;
         if($public){
             $path = str_replace($public,'',$this->uploadPath);
@@ -342,7 +342,7 @@ class Request {
             }
         }
         $filePath = '';
-        $string = Tools::uuid(uniqid('.,#$%^&@'));
+        $string = Tools::randomString(uniqid('.,#$%^&@'));
         if($public){
             $path = str_replace($public,'',$this->uploadPath);
         }
@@ -375,7 +375,7 @@ class Request {
             }
         }
         $filePath = '';
-        $string = Tools::uuid(uniqid('.,#$%^&@'));
+        $string = Tools::randomString(uniqid('.,#$%^&@'));
         if($public){
             $path = str_replace($public,'',$this->uploadPath);
         }

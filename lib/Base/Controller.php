@@ -23,7 +23,7 @@ abstract class Controller {
      * @throws \Exception
      */
     public function __call($name, $arguments){
-        Tools::Http404('action ' . $name . ' was not found');
+        Tools::Http404("Action {$name} Not Found");
     }
 
     /**
