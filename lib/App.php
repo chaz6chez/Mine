@@ -21,7 +21,7 @@ use Mine\Core\Route;
  */
 class App{
 
-    protected static $_base = '';
+    protected $_base = '';
 
     private $_allowedRoute   = [];  # 授权的路由
     private $_forbiddenRoute = [];  # 拒绝的路由
@@ -98,8 +98,8 @@ class App{
      */
     private function _setRoute(){
         $routeObj = Route::instance();
-        if(self::$_base){
-            $routeObj->setBase(self::$_base);
+        if($this->_base){
+            $routeObj->setBase($this->_base);
         }
         if($this->_defaultPath){
             $routeObj->setDefaultRoute($this->_defaultPath);

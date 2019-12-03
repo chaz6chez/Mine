@@ -18,4 +18,3 @@ define('API_PATH'   , ROOT_PATH . '/api');
 define('COMMON_PATH', API_PATH . '/Common');
 
 define('BIRTH_TIME' , time());
-define('COIN_UNIT',8);

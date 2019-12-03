@@ -6,6 +6,9 @@
 # -------------------------- #
 namespace Mine\Helper;
 
+use Mine\Core\Config;
+use Mine\Core\Env;
+
 class Tools{
 
     # ******************* Launcher tools ******************* #
@@ -86,8 +89,17 @@ class Tools{
         return;
     }
 
-    public static function LauncherInit(){
-        
+    /**
+     * @param string $configPath
+     * @param string $envPath
+     * @param string $templatePath
+     */
+    public static function LauncherSupport(string $configPath, string $envPath, string $templatePath = ''){
+        Config::setPath($configPath);
+        Env::setDefaultFile($envPath);
+        if($templatePath){
+            Template::setTplDir($templatePath);
+        }
     }
 
 

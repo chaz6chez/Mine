@@ -15,6 +15,7 @@ if (!defined('GLOBAL_START')){
     require_once ROOT_PATH . '/vendor/autoload.php';
     \Mine\Helper\Tools::LauncherDefines(__DIR__);
     \Mine\Helper\Tools::LauncherFunctions(__DIR__);
+    \Mine\Helper\Tools::LauncherSupport(__DIR__,__DIR__);
 }
 use Workerman\Worker;
 use Mine\Core\CoreServer;
@@ -32,7 +33,7 @@ $webServer->count  = 8; # api 进程数
 $webServer->reusePort = DEBUG ? true : false;
 
 # 定义根目录
-$GLOBALS['SERVER_NAME'] = 'm0.ukexpay.jitony.com';
+$GLOBALS['SERVER_NAME'] = 'm0.test.com';
 $webServer->addRoot($GLOBALS['SERVER_NAME'], PUBLIC_PATH);
 
 if (!defined('GLOBAL_START')){
