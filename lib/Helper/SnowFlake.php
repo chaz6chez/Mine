@@ -49,7 +49,7 @@ class SnowFlake {
             $data_center_id > $this->max_data_center_id or
             $data_center_id < 0
         ) {
-            throw new Exception("datacenter Id can't be greater than {$this->max_data_center_id} or less than 0");
+            throw new Exception("data center Id can't be greater than {$this->max_data_center_id} or less than 0");
         }
 
         $this->worker_id      = $worker_id;
@@ -94,9 +94,9 @@ class SnowFlake {
      * @return float
      */
     protected function _tilNextMillis($last_timestamp) {
-        $timestamp = $this->timeGen();
+        $timestamp = $this->_timeGen();
         while ($timestamp <= $last_timestamp) {
-            $timestamp = $this->timeGen();
+            $timestamp = $this->_timeGen();
         }
 
         return $timestamp;

@@ -8,42 +8,87 @@ namespace Mine\Helper;
 
 class Tools{
 
+    # ******************* Launcher tools ******************* #
+
     /**
-     * @param string $prefix
+     * 获取launcher配置
+     * @param $path
+     * @param array $argv
+     * @param bool $base
      * @return string
      */
-    public static function randomString($prefix = '') : string {
-        if(!$prefix){
-            return md5(md5(rand(0, 10000) .$prefix. md5(time()), md5(uniqid())));
+    public static function Launcher($path,array $argv,$base = true){
+        global $LAUNCHER_PATH;
+        if($base){
+            self::LauncherBase($path);
         }
-        return md5(md5(rand(0, 10000) . md5(time()), md5(uniqid())));
-    }
-
-    /**
-     * @param string $prefix
-     * @return string
-     */
-    public static function guid($prefix = '') : string {
-        if(extension_loaded('uuid') and function_exists('uuid_create')){
-            return $prefix . uuid_create();
+        if(isset($argv[3])){
+            if($argv[3] == 'all'){
+                goto res;
+            }
+            if(!file_exists($path = "{$path}/{$argv[3]}")){
+                exit("{$argv[3]} launcher not defined.\n");
+            }
+            $LAUNCHER_PATH = $path;
+            return "{$path}/launcher_*.php";
         }
-        return self::uuid($prefix);
+        res:
+        return $path.'/*/launcher_*.php';
     }
 
     /**
-     * @param $prefix
-     * @return string
+     * @param $file
+     * @param array $argv
+     * @return bool
      */
-    public static function uuid($prefix = '') : string {
-        $chars = md5(uniqid(mt_rand(), true));
-        $uuid  = substr($chars,0,8) . '-';
-        $uuid .= substr($chars,8,4) . '-';
-        $uuid .= substr($chars,12,4) . '-';
-        $uuid .= substr($chars,16,4) . '-';
-        $uuid .= substr($chars,20,12);
-        return $prefix . $uuid;
-
+    public static function LauncherSkip($file,array $argv){
+        global $LAUNCHER_PATH;
+        if(isset($argv[4])){
+            if($file == $argv[4]){
+                return true;
+            }
+        }
+        return false;
     }
+
+    /**
+     * @param $path
+     */
+    public static function LauncherDefines($path){
+        if(file_exists($file = $path.'/launcher_defines.php')){
+            require_once $file;
+            return;
+        }
+        exit('define file of the launcher was not found'.PHP_EOL);
+    }
+
+    /**
+     * @param $path
+     */
+    public static function LauncherFunctions($path){
+        if(file_exists($file = $path.'/functions.php')){
+            require_once $file;
+            return;
+        }
+        exit('functions file of the launcher was not found'.PHP_EOL);
+    }
+
+    /**
+     * @param $path
+     */
+    public static function LauncherBase($path){
+        foreach(glob("{$path}/launcher_*.php") as $launcher) {
+            if(!file_exists($launcher)){
+                exit("{$launcher} file was not found".PHP_EOL);
+            }
+            require_once $launcher;
+        }
+        return;
+    }
+
+
+    # ******************* Checker tools ******************* #
+
     /**
      * 判断是否是唯一键重复的错误
      * @param \PDOException $e
@@ -167,83 +212,6 @@ class Tools{
     }
 
     /**
-     * 获取launcher配置
-     * @param $path
-     * @param array $argv
-     * @param bool $base
-     * @return string
-     */
-    public static function Launcher($path,array $argv,$base = true){
-        global $LAUNCHER_PATH;
-        if($base){
-            self::LauncherBase($path);
-        }
-        if(isset($argv[3])){
-            if($argv[3] == 'all'){
-                goto res;
-            }
-            if(!file_exists($path = "{$path}/{$argv[3]}")){
-                exit("{$argv[3]} launcher not defined.\n");
-            }
-            $LAUNCHER_PATH = $path;
-            return "{$path}/launcher_*.php";
-        }
-        res:
-        return $path.'/*/launcher_*.php';
-    }
-
-    /**
-     * @param $file
-     * @param array $argv
-     * @return bool
-     */
-    public static function LauncherSkip($file,array $argv){
-        global $LAUNCHER_PATH;
-        if(isset($argv[4])){
-            if($file == $argv[4]){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param $path
-     */
-    public static function LauncherDefines($path){
-        if(file_exists($file = $path.'/launcher_defines.php')){
-            require_once $file;
-            return;
-        }
-        exit('define file of the launcher was not found'.PHP_EOL);
-    }
-
-    /**
-     * @param $path
-     */
-    public static function LauncherFunctions($path){
-        if(file_exists($file = $path.'/functions.php')){
-            require_once $file;
-            return;
-        }
-        exit('functions file of the launcher was not found'.PHP_EOL);
-    }
-
-    /**
-     * @param $path
-     */
-    public static function LauncherBase($path){
-        foreach(glob("{$path}/launcher_*.php") as $launcher) {
-            if(!file_exists($launcher)){
-                exit("{$launcher} file was not found".PHP_EOL);
-            }
-            require_once $launcher;
-        }
-        return;
-    }
-
-
-    /**
      * 主进程启动判断器
      * @param bool $throw
      * @return bool
@@ -258,12 +226,66 @@ class Tools{
         return (rtrim($ret, "\r\n") === '0') ? false : true;
     }
 
+    # ******************* Launcher tools ******************* #
+
     /**
      * @return float
      */
     public static function getMemoryUsed(){
         return round(memory_get_usage(false) / 1024 / 1024, 2);
     }
+
+    /**
+     * @param string $prefix
+     * @return string
+     */
+    public static function randomString($prefix = '') : string {
+        return md5(self::UUIDFake($prefix));
+    }
+
+    /**
+     * @param string $prefix
+     * @return string
+     */
+    public static function UUID($prefix = '') : string {
+        if(extension_loaded('uuid') and function_exists('uuid_create')){
+            return $prefix . uuid_create(1);
+        }
+        return self::UUIDFake($prefix);
+    }
+
+    /**
+     * @param string $uuid_a
+     * @param string $uuid_b
+     * @return bool
+     * @throws Exception
+     */
+    public static function UUIDCompare(string $uuid_a,string $uuid_b) : bool {
+        if(
+            extension_loaded('uuid') and
+            function_exists('uuid_compare')
+        ){
+            return uuid_compare($uuid_a,$uuid_b);
+        }
+        throw new Exception('not support: uuid');
+    }
+
+    /**
+     * @param $prefix
+     * @return string
+     */
+    public static function UUIDFake($prefix = '') : string {
+        $chars = md5(uniqid(mt_rand(), true));
+        $uuid  = substr($chars,0,8) . '-';
+        $uuid .= substr($chars,8,4) . '-';
+        $uuid .= substr($chars,12,4) . '-';
+        $uuid .= substr($chars,16,4) . '-';
+        $uuid .= substr($chars,20,12);
+        return $prefix . $uuid;
+
+    }
+
+    # ******************* HTTP tools ******************* #
 
     /**
      * @param $content
@@ -336,6 +358,9 @@ class Tools{
     public static function Close(){
         $_SERVER['HTTP_CONNECTION'] = 'close';
     }
+
+
+    # ******************* Normal tools ******************* #
 
     /**
      * @param string $msg
