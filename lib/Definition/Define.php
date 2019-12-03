@@ -15,4 +15,11 @@ final class Define {
     const CONFIG_SERVICE = 'service';
     const CONFIG_TASK    = 'task';
 
+    const OUTPUT_TYPE_HTTP  = 'http';
+    const OUTPUT_TYPE_JSON  = 'json';
+    const OUTPUT_TYPE_ARRAY = 'arr';
+    const OUTPUT_TYPE_XML   = 'xml';
+    const OUTPUT_TYPE_HTML  = 'html';
+    const OUTPUT_TYPE_OBJ   = 'object';
+
 }

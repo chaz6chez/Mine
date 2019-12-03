@@ -14,9 +14,10 @@ if (!defined('GLOBAL_START')){
     \Mine\Helper\Tools::LauncherFunctions(__DIR__);
 }
 
-try{
-    $a = new \Mine\Helper\SnowFlake(1,2,3);
-    echo $a->nextId();
-}catch (Exception $exception){
-    echo $exception->getMessage();
-}
+$a = [
+    'a' => 's',
+    'b' => '1',
+    'c' => '00'
+];
+$a = implode($a,',');
+echo $a;

@@ -9,9 +9,8 @@ namespace Mine\Core;
 /**
  * 环境变量类
  *
- *  1.默认加载server目录的.env文件
- *  2.init仅执行一次，多次加载请使用load
- *  3.系统环境变量get时使用env.前缀
+ *  1.init仅执行一次，多次加载请使用load
+ *  2.系统环境变量get时使用env.前缀
  *
  * Class Env
  * @package core\lib
@@ -33,7 +32,43 @@ class Env {
     /**
      * @var string
      */
-    public static $defaultFile = '';
+    protected static $_defaultFile = '';
+
+    /**
+     * @param string $file
+     * @return string
+     */
+    public static function setDefaultFile(string $file){
+        self::$_defaultFile = $file;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getDefaultFile() : string {
+        return self::$_defaultFile;
+    }
+
+    /**
+     * 设置加载文件
+     * @param string $file
+     * @return string
+     */
+    public static function setFile(string $file){
+        self::$_file = self::$_defaultFile;
+        if($file) {
+            self::$_file = $file;
+        }
+        return self::$_file;
+    }
+
+    /**
+     * 获取当前加载的文件
+     * @return string
+     */
+    public static function getFile() : string {
+        return self::$_file;
+    }
 
     /**
      * 系统环境变量预加载
@@ -77,27 +112,6 @@ class Env {
         $file = self::setFile($file);
         $env = parse_ini_file($file, true);
         self::set($env);
-    }
-
-    /**
-     * 设置加载文件
-     * @param string $file
-     * @return string
-     */
-    public static function setFile(string $file){
-        self::$_file = self::$defaultFile;
-        if($file) {
-            self::$_file = $file;
-        }
-        return self::$_file;
-    }
-
-    /**
-     * 获取当前加载的文件
-     * @return string
-     */
-    public static function getFile(){
-        return self::$_file;
     }
 
     /**

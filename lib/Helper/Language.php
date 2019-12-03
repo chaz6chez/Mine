@@ -28,7 +28,7 @@ class Language {
 
     protected static $_messageList = [];
 
-    protected $_rootPath = API_PATH.'/Language/';
+    protected $_rootPath = '/Language/';
 
     protected $_language;
 
@@ -90,15 +90,15 @@ class Language {
      * @return $this
      */
     final private function load($language){
-        $path = $this->_rootPath.$language.'.php';
+        $path = "{$this->_rootPath}{$language}.php";
         if($language != $this->_language){
             if(is_file($path) and file_exists($path)){
                 self::$_messageList = require $path;
                 $this->_language = $language;
             }else{
-                $path = $this->_rootPath.$this->_defaultLanguage.'.php';
+                $path = "{$this->_rootPath}{$this->_defaultLanguage}.php";
                 if(!is_file($path) or !file_exists($path)){
-                    wm_500("language package was found :{$path}");
+                    Tools::Http500("language package was found :{$path}");
                 }
                 self::$_messageList = require $path;
                 $this->_language = $this->_defaultLanguage;

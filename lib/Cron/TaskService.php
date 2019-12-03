@@ -234,7 +234,7 @@ class TaskService extends Worker{
             if($this->corn->isDue()){
                 list($key, $res) = call_user_func([$this->serviceObj,$this->upperFunc]);
                 if(!$key){ # 失败记录日志
-                    log_add($res,"task_failed_{$this->name}",set_tag(__METHOD__, date('H:i:s')));
+                    # todo 日志
                 }
                 if($this->doubleLine){
                     $this->_CronLowerHalf($res);
@@ -260,7 +260,7 @@ class TaskService extends Worker{
                 list($key, $res) = call_user_func([$this->serviceObj,$this->lowerFunc]);
             }
             if(!$key){ # 失败记录日志
-                log_add($res,"task_failed_{$this->name}",set_tag(__METHOD__, date('H:i:s')));
+                # todo 日志
             }
         },[$param],false);
     }

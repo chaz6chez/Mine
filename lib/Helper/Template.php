@@ -15,11 +15,26 @@ class Template extends Instance{
     protected $_safeMode = false;
     protected $_tplExt   = '.tpl';
     protected $_tplVars  = [];
-    protected $_tplDir   = COMMON_PATH.'/Template';
     protected $_language = 'zh-cn';
     protected $_title    = 'title';
 
+    private static $_tplDir   = '/Template';
+
     protected function _initConfig() {}
+
+    /**
+     * @return string
+     */
+    public static function getTplDir() : string {
+        return self::$_tplDir;
+    }
+
+    /**
+     * @param string $path
+     */
+    public static function setTplDir(string $path){
+        self::$_tplDir = $path;
+    }
 
     /**
      * 获取标题
@@ -43,7 +58,7 @@ class Template extends Instance{
      * @return $this
      */
     public function language($language){
-        if(is_dir($this->_tplDir."/{$language}/")){
+        if(is_dir(self::$_tplDir."/{$language}/")){
             $this->_language = $language;
         }else{
             $this->_language = 'en-uk';
@@ -81,7 +96,7 @@ class Template extends Instance{
      */
     public function assemble($templateName) {
         $content = '';
-        $tpl = $this->_tplDir."/{$this->_language}/".$templateName.$this->_tplExt;
+        $tpl = self::$_tplDir."/{$this->_language}/{$templateName}{$this->_tplExt}";
         if(is_file($tpl)){
             $content = file_get_contents($tpl);
             $content = $this->_compile($content);

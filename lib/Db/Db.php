@@ -52,7 +52,6 @@ class Db extends Instance {
             $this->_servers[$name]->setActive($conf);
         }catch (\Exception $e){
             //todo 日志
-            log_add("mysql server exception ->{$e->getMessage()}",'MYSQL',__METHOD__);
         }
         return $this->_servers[$name];
     }

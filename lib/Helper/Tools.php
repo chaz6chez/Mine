@@ -86,6 +86,10 @@ class Tools{
         return;
     }
 
+    public static function LauncherInit(){
+        
+    }
+
 
     # ******************* Checker tools ******************* #
 
@@ -228,6 +232,12 @@ class Tools{
 
     # ******************* Launcher tools ******************* #
 
+    /**
+     * @return int|mixed
+     */
+    public static function getNowTime(){
+        return isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();
+    }
     /**
      * @return float
      */

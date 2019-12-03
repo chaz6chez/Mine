@@ -6,22 +6,26 @@
 # -------------------------- #
 namespace Mine\Core;
 
+use Mine\Definition\Define;
 use Mine\Helper\Tools;
 
 class Output {
-    const TYPE_HTTP  = 'http';
-    const TYPE_JSON  = 'json';
-    const TYPE_ARRAY = 'arr';
-    const TYPE_XML   = 'xml';
-    const TYPE_HTML  = 'html';
-    const TYPE_OBJ   = 'object';
+    const TYPE_HTTP  = Define::OUTPUT_TYPE_HTTP;
+    const TYPE_JSON  = Define::OUTPUT_TYPE_JSON;
+    const TYPE_ARRAY = Define::OUTPUT_TYPE_ARRAY;
+    const TYPE_XML   = Define::OUTPUT_TYPE_XML;
+    const TYPE_HTML  = Define::OUTPUT_TYPE_HTML;
+    const TYPE_OBJ   = Define::OUTPUT_TYPE_OBJ;
 
-
-    private $pattern = 'json';
-    private $_cross = false;
-    public $_apiRequestId = false;
-    public $_end = false;
-    private static $_data = [
+    private $_pattern      = Define::OUTPUT_TYPE_JSON;
+    private $_cross        = false;
+    private $_end          = false;
+    private $_allowHeaders = [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type, Accept'
+    ];
+    private static $_data  = [
         'status'  => 1,
         'code'    => 0,
         'msg'     => '',
@@ -32,80 +36,64 @@ class Output {
      * @param $pattern
      * @return $this
      */
-    public function setPattern($pattern) {
-        $this->pattern = $pattern;
+    public function setPattern(string $pattern) {
+        $this->_pattern = $pattern;
         return $this;
     }
 
     /**
-     * @param $end
+     * @return string
+     */
+    public function getPattern() : string {
+        return $this->_pattern;
+    }
+
+    /**
+     * @param bool $end
      * @return $this
      */
-    public function end($end){
-        $this->_end = is_bool($end) ? $end : false;
-        return $this;
-    }
-
-    /**
-     * 失败
-     * @param string $msg
-     * @param string $code
-     * @param string $data
-     * @return array
-     */
-    public function error($msg = '', $code = '500', $data = '') {
-        if (!$msg) {
-            $code = $this->pattern == self::TYPE_HTTP ? 'HTTP_500' : $code;
-            return $this->output($code, 'System is busy', $data);
-        } else {
-            if (is_array($msg) && !empty($msg['code'])) {
-                $code = $msg['code'];
-                $data = $msg['data'];
-                $msg = $msg['msg'];
-            }
-            $err = explode('|', $msg);
-            if (is_array($err) && count($err) > 1) {
-                $msg = $err[1];
-                $code = $err[0];
-            }
-            if($this->pattern == self::TYPE_HTTP){
-                $msg = "{$msg}[$code]";
-                $code = 'HTTP_500';
-            }
-            return $this->output($code, $msg, $data);
-        }
-    }
-
-    /**
-     * 成功
-     * @param string $data
-     * @param string $msg
-     * @return array
-     */
-    public function success($data = '',$msg = 'success') {
-        return $this->output('0', $msg, $data);
-    }
-
-    /**
-     * @return $this
-     */
-    public function cross(){
-        $this->_cross = true;
+    public function setEnd(bool $end){
+        $this->_end = $end;
         return $this;
     }
 
     /**
      * @return bool
      */
-    public function getCross() : bool{
-        return $this->_cross;
+    public function getEnd() : bool {
+        return $this->_end;
     }
 
     /**
      * @param bool $cross
+     * @return $this
      */
-    public function setCross(bool $cross){
+    public function setCross(bool $cross = true){
         $this->_cross = $cross;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getCross() : bool {
+        return $this->_cross;
+    }
+
+    /**
+     * @param array $allowHeaders
+     */
+    public function setAllowHeaders(array $allowHeaders){
+        if($allowHeaders){
+            $this->_allowHeaders = array_merge($this->_allowHeaders, $allowHeaders);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowHeaders() : array {
+        return $this->_allowHeaders;
     }
 
     /**
@@ -121,8 +109,8 @@ class Output {
             $timestamp = isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();
         }
         if (
-            $this->pattern == 'html' or
-            $this->pattern == 'xml'
+            $this->_pattern == Define::OUTPUT_TYPE_HTML or
+            $this->_pattern == Define::OUTPUT_TYPE_XML
         ) {
             Tools::Header('Content-Type: text/html;charset=utf-8');
         }else{
@@ -131,7 +119,11 @@ class Output {
         if ($this->_cross){
             Tools::Header('Access-Control-Allow-Origin: *');
             Tools::Header('Access-Control-Allow-Method:POST,GET,PUT,OPTION');
-            Tools::Header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, DEVICE-ID, DEVICE-NAME, DEVICE-OS, UID, TOKEN, SIGN, TIMESTAMP, LANGUAGE');
+            if($this->_allowHeaders){
+                $headers = implode($this->_allowHeaders,',');
+                Tools::Header("Access-Control-Allow-Headers: {$headers}");
+            }
+
             $this->_cross = false;
         }
         $status = !empty($code) ? 0 : 1;
@@ -140,7 +132,7 @@ class Output {
         $code = $code === null ? '' : $code;
         $code = (string)$code;
         $json = array_merge(self::$_data, compact('status','code', 'msg', 'data', 'timestamp'));
-        switch ($this->pattern) {
+        switch ($this->_pattern) {
             case self::TYPE_ARRAY:
                 return $json;
                 break;
@@ -160,10 +152,6 @@ class Output {
                 echo json_encode($json, JSON_UNESCAPED_UNICODE);
                 break;
         }
-        # 记录接口输出内容
-        if ($this->_apiRequestId) {
-            //todo 接口数据默认给记录
-        }
         # debug
         Tools::SafeEcho($json,'RESPONSE');
         # worker man 主动断开连接
@@ -172,5 +160,45 @@ class Output {
         }
         Tools::End();
         return [];
+    }
+
+    /**
+     * 成功
+     * @param string $data
+     * @param string $msg
+     * @return array
+     */
+    public function success($data = '',$msg = 'success') {
+        return $this->output('0', $msg, $data);
+    }
+
+    /**
+     * 失败
+     * @param string $msg
+     * @param string $code
+     * @param string $data
+     * @return array
+     */
+    public function error($msg = '', $code = '500', $data = '') {
+        if (!$msg) {
+            $code = $this->_pattern == self::TYPE_HTTP ? 'HTTP_500' : $code;
+            return $this->output($code, 'System is busy', $data);
+        } else {
+            if (is_array($msg) && !empty($msg['code'])) {
+                $code = $msg['code'];
+                $data = $msg['data'];
+                $msg = $msg['msg'];
+            }
+            $err = explode('|', $msg);
+            if (is_array($err) && count($err) > 1) {
+                $msg = $err[1];
+                $code = $err[0];
+            }
+            if($this->_pattern == self::TYPE_HTTP){
+                $msg = "{$msg}[$code]";
+                $code = 'HTTP_500';
+            }
+            return $this->output($code, $msg, $data);
+        }
     }
 }

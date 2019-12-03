@@ -15,7 +15,6 @@ abstract class Controller {
 
     protected $_output;
     protected $_request;
-    protected $_apiRequestId = false;
 
     /**
      * @param $name
@@ -30,7 +29,7 @@ abstract class Controller {
      * Controller constructor.
      */
     public function __construct() {
-        $this->_now = isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();    # 设置时间
+        $this->_now = Tools::getNowTime();    # 设置时间
         $this->_preInit();
         $this->_init();
     }
@@ -71,7 +70,6 @@ abstract class Controller {
         ) {
             $this->_output = new Output();
         }
-        $this->_output->_apiRequestId = $this->_apiRequestId;
         if(is_string($pattern)){
             $this->_output->setPattern($pattern);
         }
@@ -101,7 +99,6 @@ abstract class Controller {
         ) {
             $this->_output = new Output();
         }
-        $this->_output->_apiRequestId = $this->_apiRequestId;
         if(is_string($pattern)){
             $this->_output->setPattern($pattern);
         }

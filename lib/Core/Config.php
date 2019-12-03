@@ -48,7 +48,7 @@ class Config {
     /**
      * @return string
      */
-    public static function getPath(){
+    public static function getPath() : string {
         return self::$_path;
     }
 

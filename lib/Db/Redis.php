@@ -60,7 +60,6 @@ class Redis extends Driver {
         }catch (\Exception $e){
             $this->is_active = false;
             //todo 日志
-            log_add('redis server exception','REDIS',__METHOD__);
         }
     }
 
@@ -343,7 +342,6 @@ class Redis extends Driver {
             $this->handler->ping();
         }catch (\RedisException $e){
             // todo 日志
-            log_add($e->getMessage() . ':' . $e->getCode(),'REDIS',__METHOD__);
             if(Tools::isRedisTimeout($e)){
                 if($this->options['persistent'] and $this->handler instanceof \Redis){
                     $this->handler->close();
@@ -354,11 +352,16 @@ class Redis extends Driver {
                 self::$_instance = new self();
                 return true;
             }
-            return !$throw ? false : wm_500('redis server timeout');
+            if($throw){
+                Tools::Http500('redis server timeout');
+            }
+            return false;
         }catch (\Exception $e){
             // todo 日志
-            log_add($e->getMessage() . ':' . $e->getCode(),'REDIS',__METHOD__);
-            return !$throw ? false : wm_500('redis server timeout');
+            if($throw){
+                Tools::Http500('redis server timeout');
+            }
+            return false;
         }
         return true;
     }

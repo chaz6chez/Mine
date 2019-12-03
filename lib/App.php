@@ -21,12 +21,25 @@ use Mine\Core\Route;
  */
 class App{
 
-    protected $_base = '';
+    protected static $_base = '';
 
     private $_allowedRoute   = [];  # 授权的路由
     private $_forbiddenRoute = [];  # 拒绝的路由
     private $_defaultPath    = '';  # 默认路径
 
+    /**
+     * @param string $base
+     */
+    public function setBase(string $base){
+        $this->_base = $base;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBase() : string {
+        return $this->_base;
+    }
     /**
      * 加载
      * @return $this
@@ -85,8 +98,8 @@ class App{
      */
     private function _setRoute(){
         $routeObj = Route::instance();
-        if($this->_base){
-            $routeObj->setBase($this->_base);
+        if(self::$_base){
+            $routeObj->setBase(self::$_base);
         }
         if($this->_defaultPath){
             $routeObj->setDefaultRoute($this->_defaultPath);
@@ -98,13 +111,6 @@ class App{
             $routeObj->setForbidden($this->_forbiddenRoute);
         }
         $routeObj->init()->run();
-    }
-
-    /**
-     * @param string $base
-     */
-    public function setBase(string $base){
-        $this->_base = $base;
     }
 
     /**
