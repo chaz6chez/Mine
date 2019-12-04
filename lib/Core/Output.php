@@ -189,8 +189,8 @@ class Output {
                 $data = $msg['data'];
                 $msg = $msg['msg'];
             }
-            $err = explode('|', $msg);
-            if (is_array($err) && count($err) > 1) {
+            list($bool,$err) = $this->parse($msg);
+            if ($bool) {
                 $msg = $err[1];
                 $code = $err[0];
             }
@@ -200,5 +200,20 @@ class Output {
             }
             return $this->output($code, $msg, $data);
         }
+    }
+
+    /**
+     * @param string $msg
+     * @return array
+     */
+    public function parse(string $msg){
+        $msg = explode('|', $msg);
+        if (
+            is_array($msg) and
+            count($msg) > 1
+        ) {
+            return [true,$msg];
+        }
+        return [false,$msg];
     }
 }
