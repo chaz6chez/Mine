@@ -95,11 +95,23 @@ class Tools{
      * @param string $templatePath
      */
     public static function LauncherSupport(string $configPath, string $envPath, string $templatePath = ''){
-        Config::setPath($configPath);
-        Env::setDefaultFile($envPath);
+        self::LauncherConfig($configPath);
+        self::LauncherEnv($envPath);
         if($templatePath){
-            Template::setTplDir($templatePath);
+            self::LauncherTemplate($templatePath);
         }
+    }
+
+    public static function LauncherConfig(string $configPath){
+        Config::setPath($configPath);
+    }
+
+    public static function LauncherEnv(string $envPath){
+        Env::setDefaultFile($envPath);
+    }
+
+    public static function LauncherTemplate(string $templatePath){
+        Template::setTplDir($templatePath);
     }
 
 
