@@ -168,6 +168,8 @@ class Output {
         }
         $this->status = !empty($this->code) ? 0 : 1;
         $this->fields();
+        $array = $this->getArray();
+        $json = $this->getJson();
         $this->_clean();
         if($sign){
             $sign = call_user_func($sign);
@@ -175,10 +177,10 @@ class Output {
         }
         switch ($this->_pattern) {
             case self::TYPE_ARRAY:
-                return $this->_array;
+                return $array;
                 break;
             case self::TYPE_XML:
-                echo Tools::ArrayToXml($this->_array);
+                echo Tools::ArrayToXml($array);
                 break;
             case self::TYPE_HTML:
                 echo $this->msg;
@@ -187,14 +189,14 @@ class Output {
                 if(!$this->status){
                     Tools::Header("HTTP/1.1 500 Internal Server Error");
                 }
-                echo $this->_json;
+                echo $json;
                 break;
             default:
-                echo $this->_json;
+                echo $json;
                 break;
         }
         # debug
-        Tools::SafeEcho($this->_array,'RESPONSE');
+        Tools::SafeEcho($array,'RESPONSE');
         # worker man 主动断开连接
         if($this->_end){
             Tools::Close();
