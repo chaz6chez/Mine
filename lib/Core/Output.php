@@ -31,7 +31,16 @@ class Output {
     public $msg    = '';
     public $data   = '';
 
-    protected $_json = '';
+    protected $_json  = '';
+    protected $_array = [];
+
+    public function getJson(){
+        return $this->_json;
+    }
+
+    public function getArray(){
+        return $this->_array;
+    }
 
     public function _clean(){
         $this->status = 1;
@@ -39,28 +48,33 @@ class Output {
         $this->msg    = '';
         $this->data   = '';
         $this->_json  = '';
+        $this->_array = [];
     }
 
     /**
      * 反射获取对象属性
-     * @return array
      */
-    public function getFields() {
-        try{
-            $class = new \ReflectionClass($this);
-            $public = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
+    public function fields() {
+        if(
+            $this->_array or
+            $this->_json
+        ){
+            try{
+                $class = new \ReflectionClass($this);
+                $public = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
 
-            $res = [];
-            foreach ($public as $item){
-                $name = $item->getName();
-                $res[$name] = $this->$name;
+                $res = [];
+                foreach ($public as $item){
+                    $name = $item->getName();
+                    $res[$name] = $this->$name;
+                }
+
+            }catch (\Exception $exception){
+                $res = '';
             }
-
-        }catch (\Exception $exception){
-            $res = '';
+            $this->_array = $res;
+            $this->_json = json_encode($res,JSON_UNESCAPED_UNICODE);
         }
-        $this->_json = json_encode($res,JSON_UNESCAPED_UNICODE);
-        return $res;
     }
 
     /**
@@ -153,7 +167,7 @@ class Output {
             $this->_cross = false;
         }
         $this->status = !empty($this->code) ? 0 : 1;
-        $array = $this->getFields();
+        $this->fields();
         $this->_clean();
         if($sign){
             $sign = call_user_func($sign);
@@ -161,10 +175,10 @@ class Output {
         }
         switch ($this->_pattern) {
             case self::TYPE_ARRAY:
-                return $array;
+                return $this->_array;
                 break;
             case self::TYPE_XML:
-                echo Tools::ArrayToXml($array);
+                echo Tools::ArrayToXml($this->_array);
                 break;
             case self::TYPE_HTML:
                 echo $this->msg;
@@ -180,7 +194,7 @@ class Output {
                 break;
         }
         # debug
-        Tools::SafeEcho($array,'RESPONSE');
+        Tools::SafeEcho($this->_array,'RESPONSE');
         # worker man 主动断开连接
         if($this->_end){
             Tools::Close();
