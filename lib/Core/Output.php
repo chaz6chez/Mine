@@ -31,19 +31,15 @@ class Output {
     public $msg    = '';
     public $data   = '';
 
-    public function clean(){
+    protected $_json = '';
+
+    public function _clean(){
         $this->status = 1;
         $this->code   = 0;
         $this->msg    = '';
         $this->data   = '';
+        $this->_json  = '';
     }
-
-    private static $_data  = [
-        'status'  => 1,
-        'code'    => 0,
-        'msg'     => '',
-        'data'    => '',
-    ];
 
     /**
      * 反射获取对象属性
@@ -59,10 +55,12 @@ class Output {
                 $name = $item->getName();
                 $res[$name] = $this->$name;
             }
-            return $res;
+
         }catch (\Exception $exception){
-            return [];
+            $res = '';
         }
+        $this->_json = json_encode($res,JSON_UNESCAPED_UNICODE);
+        return $res;
     }
 
     /**
@@ -156,8 +154,7 @@ class Output {
         }
         $this->status = !empty($this->code) ? 0 : 1;
         $array = $this->getFields();
-        $json = json_encode($array, JSON_UNESCAPED_UNICODE);
-        $this->clean();
+        $this->_clean();
         if($sign){
             $sign = call_user_func($sign);
             Tools::Header("SIGN: {$sign}");
@@ -176,10 +173,10 @@ class Output {
                 if(!$this->status){
                     Tools::Header("HTTP/1.1 500 Internal Server Error");
                 }
-                echo $json;
+                echo $this->_json;
                 break;
             default:
-                echo $json;
+                echo $this->_json;
                 break;
         }
         # debug
