@@ -101,13 +101,12 @@ class Output {
      * @param $code
      * @param $msg
      * @param array $data
-     * @param int $timestamp
+     * @param callable|null $sign
      * @return array
      */
-    public function output($code, $msg, $data = [], $timestamp = 0) {
-        if(!$timestamp){
-            $timestamp = isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();
-        }
+    public function output($code, $msg, $data = [], callable $sign = null) {
+        $timestamp = isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();
+        Tools::Header("TIMESTAMP: {$timestamp}");
         if (
             $this->_pattern == Define::OUTPUT_TYPE_HTML or
             $this->_pattern == Define::OUTPUT_TYPE_XML
@@ -131,13 +130,18 @@ class Output {
         $msg = $msg === null ? '' : $msg;
         $code = $code === null ? '' : $code;
         $code = (string)$code;
-        $json = array_merge(self::$_data, compact('status','code', 'msg', 'data', 'timestamp'));
+        $array = array_merge(self::$_data, compact('status','code', 'msg', 'data'));
+        $json = json_encode($array, JSON_UNESCAPED_UNICODE);
+        if($sign){
+            $sign = call_user_func($sign);
+            Tools::Header("SIGN: {$sign}");
+        }
         switch ($this->_pattern) {
             case self::TYPE_ARRAY:
-                return $json;
+                return $array;
                 break;
             case self::TYPE_XML:
-                echo Tools::ArrayToXml($json);
+                echo Tools::ArrayToXml($array);
                 break;
             case self::TYPE_HTML:
                 echo $msg;
@@ -146,14 +150,14 @@ class Output {
                 if(!$status){
                     Tools::Header("HTTP/1.1 500 Internal Server Error");
                 }
-                echo json_encode($json, JSON_UNESCAPED_UNICODE);
+                echo $json;
                 break;
             default:
-                echo json_encode($json, JSON_UNESCAPED_UNICODE);
+                echo $json;
                 break;
         }
         # debug
-        Tools::SafeEcho($json,'RESPONSE');
+        Tools::SafeEcho($array,'RESPONSE');
         # worker man 主动断开连接
         if($this->_end){
             Tools::Close();
