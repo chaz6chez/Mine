@@ -25,12 +25,45 @@ class Output {
         'X-Requested-With',
         'Content-Type, Accept'
     ];
+
+    public $status = 1;
+    public $code   = 0;
+    public $msg    = '';
+    public $data   = '';
+
+    public function clean(){
+        $this->status = 1;
+        $this->code   = 0;
+        $this->msg    = '';
+        $this->data   = '';
+    }
+
     private static $_data  = [
         'status'  => 1,
         'code'    => 0,
         'msg'     => '',
         'data'    => '',
     ];
+
+    /**
+     * 反射获取对象属性
+     * @return array
+     */
+    public function getFields() {
+        try{
+            $class = new \ReflectionClass($this);
+            $public = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+            $res = [];
+            foreach ($public as $item){
+                $name = $item->getName();
+                $res[$name] = $this->$name;
+            }
+            return $res;
+        }catch (\Exception $exception){
+            return [];
+        }
+    }
 
     /**
      * @param $pattern
@@ -98,13 +131,10 @@ class Output {
 
     /**
      * 输出
-     * @param $code
-     * @param $msg
-     * @param array $data
      * @param callable|null $sign
      * @return array
      */
-    public function output($code, $msg, $data = [], callable $sign = null) {
+    public function output(callable $sign = null) {
         $timestamp = isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();
         Tools::Header("TIMESTAMP: {$timestamp}");
         if (
@@ -122,16 +152,12 @@ class Output {
                 $headers = implode($this->_allowHeaders,',');
                 Tools::Header("Access-Control-Allow-Headers: {$headers}");
             }
-
             $this->_cross = false;
         }
-        $status = !empty($code) ? 0 : 1;
-        $data = $data === null ? '' : $data;
-        $msg = $msg === null ? '' : $msg;
-        $code = $code === null ? '' : $code;
-        $code = (string)$code;
-        $array = array_merge(self::$_data, compact('status','code', 'msg', 'data'));
+        $this->status = !empty($this->code) ? 0 : 1;
+        $array = $this->getFields();
         $json = json_encode($array, JSON_UNESCAPED_UNICODE);
+        $this->clean();
         if($sign){
             $sign = call_user_func($sign);
             Tools::Header("SIGN: {$sign}");
@@ -144,10 +170,10 @@ class Output {
                 echo Tools::ArrayToXml($array);
                 break;
             case self::TYPE_HTML:
-                echo $msg;
+                echo $this->msg;
                 break;
             case self::TYPE_HTTP:
-                if(!$status){
+                if(!$this->status){
                     Tools::Header("HTTP/1.1 500 Internal Server Error");
                 }
                 echo $json;
@@ -173,7 +199,10 @@ class Output {
      * @return array
      */
     public function success($data = '',$msg = 'success') {
-        return $this->output('0', $msg, $data);
+        $this->code = (string)'0';
+        $this->msg  = (string)$msg;
+        $this->data = $data;
+        return $this->output();
     }
 
     /**
@@ -186,24 +215,26 @@ class Output {
     public function error($msg = '', $code = '500', $data = '') {
         if (!$msg) {
             $code = $this->_pattern == self::TYPE_HTTP ? 'HTTP_500' : $code;
-            return $this->output($code, 'System is busy', $data);
-        } else {
-            if (is_array($msg) && !empty($msg['code'])) {
-                $code = $msg['code'];
-                $data = $msg['data'];
-                $msg = $msg['msg'];
-            }
-            list($bool,$err) = $this->parse($msg);
-            if ($bool) {
-                $msg = $err[1];
-                $code = $err[0];
-            }
-            if($this->_pattern == self::TYPE_HTTP){
-                $msg = "{$msg}[$code]";
-                $code = 'HTTP_500';
-            }
-            return $this->output($code, $msg, $data);
+            $msg = 'System is busy';
         }
+        if (is_array($msg) && !empty($msg['code'])) {
+            $code = $msg['code'];
+            $data = $msg['data'];
+            $msg = $msg['msg'];
+        }
+        list($bool,$err) = $this->parse($msg);
+        if ($bool) {
+            $msg = $err[1];
+            $code = $err[0];
+        }
+        if($this->_pattern == self::TYPE_HTTP){
+            $msg = "{$msg}[$code]";
+            $code = 'HTTP_500';
+        }
+        $this->code = (string)$code;
+        $this->msg  = (string)$msg;
+        $this->data = $data;
+        return $this->output();
     }
 
     /**
