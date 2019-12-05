@@ -56,8 +56,8 @@ class Output {
      */
     public function fields() {
         if(
-            $this->_array or
-            $this->_json
+            !$this->_array or
+            !$this->_json
         ){
             try{
                 $class = new \ReflectionClass($this);
