@@ -186,9 +186,7 @@ class Output {
                 echo $this->msg;
                 break;
             case self::TYPE_HTTP:
-                if(!$this->status){
-                    Tools::Header("HTTP/1.1 500 Internal Server Error");
-                }
+                Tools::Header("HTTP/1.1 500 Internal Server Error");
                 echo $json;
                 break;
             default:
