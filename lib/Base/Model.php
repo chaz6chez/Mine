@@ -4,7 +4,7 @@
 #  Email: admin@chaz6chez.cn #
 #  Date: 2018/10/17          #
 # -------------------------- #
-namespace Mine\Model;
+namespace Mine\Base;
 
 use Mine\Db\Connection;
 use Mine\Db\Db;
