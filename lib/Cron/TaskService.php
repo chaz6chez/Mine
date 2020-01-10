@@ -232,6 +232,9 @@ class TaskService extends Worker{
         # 每分钟执行一次
         $this->upperHalf = Timer::add(60,function(){
             if($this->corn->isDue()){
+                if($res = call_user_func([$this->serviceObj,'instance'])){
+                    $this->serviceObj = $res;
+                }
                 list($key, $res) = call_user_func([$this->serviceObj,$this->upperFunc]);
                 if(!$key){ # 失败记录日志
                     # todo 日志
