@@ -17,11 +17,14 @@ use Mine\Db\Db;
  * @package core\base
  */
 class Model {
+    const STATUS_IDLE = 0;
+    const STATUS_BUSY = 1;
 
     protected $_table;
     protected $_dbName;
+    protected $_status   = self::STATUS_IDLE;
     protected $_dbMaster = [];
-    protected $_dbSlave = [];
+    protected $_dbSlave  = [];
     private static $_instances = [];
 
     /**
@@ -75,11 +78,18 @@ class Model {
      */
     final public static function instance() {
         $class = get_called_class();
-        # 容器中不存在
+        # 容器中不存在 新增
         if (!isset(self::$_instances[$class]) or !self::$_instances[$class] instanceof Model) {
             self::GC();
             return self::$_instances[$class] = new $class();
         }
+        # 容器中存在 更新位置
+        else{
+            $obj = self::$_instances[$class];
+            unset(self::$_instances[$class]);
+            self::$_instances[$class] = $obj;
+        }
+
         return self::$_instances[$class];
     }
 
