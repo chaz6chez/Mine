@@ -82,8 +82,8 @@ class SnowFlake {
         $this->last_timestamp = $timestamp;
 
         $gmpTimestamp    = gmp_init($this->_leftShift(bcsub($timestamp, self::TWEPOCH), $this->timestamp_left_shift));
-        $gmpDataCenterId = gmp_init($this->_leftShift($this->datacenterId, $this->data_center_id_shift));
-        $gmpWorkerId     = gmp_init($this->_leftShift($this->workerId, $this->worker_id_shift));
+        $gmpDataCenterId = gmp_init($this->_leftShift($this->data_center_id, $this->data_center_id_shift));
+        $gmpWorkerId     = gmp_init($this->_leftShift($this->worker_id, $this->worker_id_shift));
         $gmpSequence     = gmp_init($this->sequence);
 
         return gmp_strval(gmp_or(gmp_or(gmp_or($gmpTimestamp, $gmpDataCenterId), $gmpWorkerId), $gmpSequence));
