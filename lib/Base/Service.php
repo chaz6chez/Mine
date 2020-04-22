@@ -23,6 +23,10 @@ class Service extends Instance {
      * 载入配置内容
      */
     protected function _initConfig(){
+        $mode = explode('\\', self::$_class);
+        $file = API_PATH . "/{$mode[1]}/configs.php";
+        Config::load($file);
+
         $config = Config::get(Define::CONFIG_SERVICE);
         $config = isset($config[self::$_class]) ? $config[self::$_class] : [];
         if (!is_null($this->_config)) {

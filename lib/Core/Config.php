@@ -28,6 +28,8 @@ class Config {
 
     protected static $_path = '';
 
+    protected static $_tag = [];
+
     /**
      * 初始化
      * 加载系统配置,环境配置
@@ -53,6 +55,32 @@ class Config {
     }
 
     /**
+     * @param string $path
+     * @param bool $tag
+     */
+    public static function setTag(string $path, bool $tag){
+        self::$_tag[$path] = $tag;
+    }
+
+    /**
+     * @param string $path
+     * @return bool
+     */
+    public static function getTag(string $path) : bool {
+        if(!isset(self::$_tag[$path])){
+            return false;
+        }
+        return self::$_tag[$path];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getTags() : array {
+        return self::$_tag;
+    }
+
+    /**
      * 加载一个配置文件合并到配置缓存中
      * @param $path
      */
@@ -60,8 +88,12 @@ class Config {
         if(is_array($path)){
             $config = $path;
         }else if(file_exists($path)){
-            self::setPath($path);
-            $config = require self::getPath();
+            $config = [];
+            if(!self::getTag($path)){
+                self::setPath($path);
+                $config = require self::getPath();
+                self::setTag($path, true);
+            }
         }else{
             $config = [];
         }

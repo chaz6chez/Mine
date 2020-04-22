@@ -79,7 +79,10 @@ abstract class Controller {
                 isset($pattern['message']) and
                 isset($pattern['data'])
             ) {
-                $this->_output->output($pattern['errCode'], $pattern['message'], $pattern['data']);
+                $this->_output->code = $pattern['errCode'];
+                $this->_output->msg  = $pattern['message'];
+                $this->_output->data = $pattern['data'];
+                $this->_output->error($pattern['message'], $pattern['errCode'], $pattern['data']);
             } else {
                 $this->_output->success($pattern);
             }
