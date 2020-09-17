@@ -11,6 +11,10 @@ use Mine\Core\Env;
 
 class Tools{
 
+    public static function log($module,$log){
+        //todo
+    }
+
     # ******************* Launcher tools ******************* #
 
     /**

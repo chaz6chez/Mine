@@ -10,19 +10,24 @@ namespace Mine\Db;
 use Mine\Helper\Arr;
 use Mine\Helper\Exception;
 
+/**
+ * 数据库连接方法
+ *  1.以链式调用的方式，组合拼接为medoo执行方法
+ *
+ * Class Connection
+ * @package Mine\Db
+ */
 class Connection{
 
     /**
      * @var Medoo
      */
     protected $_medoo;
-
     /**
      * 当前连接是否被激活(是否连接)
      * @var bool
      */
     protected $_active = false;
-
     protected $_error = '';
 
     /**
@@ -31,15 +36,15 @@ class Connection{
      */
     protected $_config = [
         'database_type' => 'mysql',
-        'server' => '',
-        'username' => '',
-        'password' => '',
+        'server'        => '',
+        'username'      => '',
+        'password'      => '',
         'database_file' => '',
-        'port' => 3306,
-        'charset' => 'utf8',
+        'port'          => 3306,
+        'charset'       => 'utf8',
         'database_name' => '',
-        'option' => [],
-        'prefix' => '',
+        'option'        => [],
+        'prefix'        => '',
     ];
 
     /**

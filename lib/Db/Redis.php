@@ -246,6 +246,15 @@ class Redis extends Driver {
     }
 
     /**
+     * @param $index
+     * @return $this
+     */
+    public function select($index){
+        if($this->call()) $this->handler = $this->handler->select($index);
+        return $this;
+    }
+
+    /**
      * 写入缓存
      * @access public
      * @param string $name 缓存变量名
@@ -339,9 +348,9 @@ class Redis extends Driver {
      */
     public function call($throw = false){
         try{
-            $this->handler->ping();
+            $this->handler->ping('');
         }catch (\RedisException $e){
-            // todo 日志
+            $this->_log($e);
             if(Tools::isRedisTimeout($e)){
                 if($this->options['persistent'] and $this->handler instanceof \Redis){
                     $this->handler->close();
@@ -357,12 +366,19 @@ class Redis extends Driver {
             }
             return false;
         }catch (\Exception $e){
-            // todo 日志
+            $this->_log($e);
             if($throw){
                 Tools::Http500('redis server timeout');
             }
             return false;
         }
         return true;
+    }
+
+    protected function _log(\Exception $e){
+        Tools::log(Define::CONFIG_REDIS,[
+            $e->getCode(),
+            $e->getMessage()
+        ]);
     }
 }

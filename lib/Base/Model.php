@@ -12,6 +12,7 @@ use Mine\Db\Db;
 /**
  * 模型类是一个享元模式的单例容器
  * 与 Instance类相同
+ *  1.
  *
  * Class Model
  * @package core\base
@@ -25,7 +26,17 @@ class Model {
     protected $_status   = self::STATUS_IDLE;
     protected $_dbMaster = [];
     protected $_dbSlave  = [];
+    protected $_slave    = false;
     private static $_instances = [];
+
+    public function setSlave(bool $key){
+        $this->_slave = $key;
+        return $this;
+    }
+
+    public function getSlave() : bool {
+        return $this->_slave;
+    }
 
     /**
      * Model constructor.
@@ -69,10 +80,12 @@ class Model {
         }
     }
 
+
     /**
      * 单例模式
      *
-     *  对象会存入单例容器，随着进程而保持，不会被PHP GC主动回收
+     *  1.对象会存入单例容器，随着进程而保持，不会被PHP GC主动回收
+     *  2.与Instance类不同的是，每次调用都会执行队列更新
      *
      * @return static
      */
@@ -145,11 +158,27 @@ class Model {
         } else {
             $dbName = $name;
         }
-        if (!isset($this->_dbMaster[$dbName]) or !$this->_dbMaster[$dbName] instanceof Connection) {
-            $this->_dbMaster[$dbName] = $this->db()->dbName($dbName);
+        if($this->getSlave()){
+            if (
+                !isset($this->_dbSlave[$dbName]) or
+                !$this->_dbSlave[$dbName] instanceof Connection
+            ) {
+                $res = $this->_dbSlave[$dbName] = $this->db()->dbNameSlave($dbName);
+            }else{
+                $res = $this->_dbSlave[$dbName];
+            }
+        }else{
+            if (
+                !isset($this->_dbMaster[$dbName]) or
+                !$this->_dbMaster[$dbName] instanceof Connection
+            ) {
+                $res = $this->_dbMaster[$dbName] = $this->db()->dbName($dbName);
+            }else{
+                $res = $this->_dbMaster[$dbName];
+            }
         }
 
-        return $this->_dbMaster[$dbName];
+        return $res;
     }
 
     /**
