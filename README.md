@@ -6,12 +6,18 @@ A simple API framework for WorkerMan
 ***
 
 ## 更新
+**2020-09-17**
+1) 新增DB支持Master/Slave切换；
+2) 新增TaskService基础定时器服务；
+3) 代码调整；
+
 **2019-06-24**
 1) 新增Response类、Env类；
 2) Tool类新增一些启动器的辅助方法函数；
 3) 调整Service类与Instance类中部分方法；
 4) 修复Connection类中可能导致数据库操作异常的BUG；
-5) 
+5) 移除Permanent常驻单例容器组件；
+
 
 **2019-02-11**
 1) 修复框架BUG：数据库驱动组件、缓存、CoreServer等BUG；
