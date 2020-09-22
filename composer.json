@@ -17,6 +17,9 @@
     }
   ],
   "autoload": {
+    "files": [
+      "lib/functions.php"
+    ],
     "psr-4": {
       "Mine\\": "lib/",
       "Example\\": "examples/"

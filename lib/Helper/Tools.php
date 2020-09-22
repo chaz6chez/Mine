@@ -136,16 +136,14 @@ class Tools{
      * @return bool|mixed
      */
     public static function isJson($string,bool $get = false){
-        if(@json_decode($string)){
-            if(json_last_error() != JSON_ERROR_NONE){
-                return false;
-            }
-            if($get){
-                return json_decode($string,true);
-            }
-            return true;
+        @json_decode($string);
+        if(json_last_error() != JSON_ERROR_NONE){
+            return false;
         }
-        return false;
+        if($get){
+            return json_decode($string,true);
+        }
+        return true;
     }
 
     /**
