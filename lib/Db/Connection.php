@@ -160,12 +160,17 @@ class Connection{
      * @return Connection
      */
     public function field($field) {
+        if(is_string($field)){
+            $field = explode(',', $field);
+        }
+
         if (is_array($field)) {
             if (is_array($this->_field)) {
                 $this->_field = array_merge($this->_field, $field);
                 return $this;
             }
         }
+
         $this->_field = $field;
 
         return $this;
