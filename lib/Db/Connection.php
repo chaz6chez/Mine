@@ -160,7 +160,7 @@ class Connection{
      * @return Connection
      */
     public function field($field) {
-        if(is_string($field)){
+        if(is_string($field) and $field !== '*'){
             $field = explode(',', $field);
         }
 
