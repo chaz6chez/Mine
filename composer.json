@@ -1,5 +1,6 @@
 {
   "name": "chaz6chez/wm-api-core",
+  "version": "2.0",
   "require": {
     "php": ">=7.3.3",
     "symfony/var-dumper": "4.2.*",
