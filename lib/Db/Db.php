@@ -85,7 +85,7 @@ class Db extends Instance {
             $conf = $this->_config[$name];
         }
         if (
-            !isset($this->_servers[$name]) and
+            !isset($this->_servers[$name]) or
             !$this->_servers[$name] instanceof Connection
         ) {
             $this->_servers[$name] = $this->connect();
