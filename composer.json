@@ -1,13 +1,12 @@
 {
   "name": "chaz6chez/wm-api-core",
   "require": {
-    "php": ">=7.2.0",
+    "php": ">=7.3.3",
     "symfony/var-dumper": "4.2.*",
     "chaz6chez/structure": "1.0.*",
     "workerman/workerman":"3.5.*",
     "dragonmantank/cron-expression": "~2.0",
-    "php-amqplib/php-amqplib": "2.7.*",
-    "monolog/monolog": "2.0.*"
+    "php-amqplib/php-amqplib": "2.7.*"
   },
   "license": "MIT",
   "authors": [
