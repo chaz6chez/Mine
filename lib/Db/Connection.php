@@ -60,6 +60,7 @@ class Connection{
     protected $_limit;
     protected $_group;
     protected $_cache = false;
+    protected $_single = false;
 
     /**
      * 加载配置
@@ -152,6 +153,15 @@ class Connection{
      */
     public function join($join) {
         $this->_join = array_merge_recursive($this->_join, $join);
+        return $this;
+    }
+
+    /**
+     * @param bool $single
+     * @return $this
+     */
+    public function single(bool $single = true){
+        $this->_single = $single;
         return $this;
     }
 
@@ -252,9 +262,9 @@ class Connection{
     public function select() {
         if(!$this->checker()) return false;
         if ($this->_join) {
-            $res = $this->_medoo->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
+            $res = $this->_medoo->setSingle($this->_single)->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
         } else {
-            $res = $this->_medoo->select($this->_table, $this->_field, $this->_getWhere());
+            $res = $this->_medoo->setSingle($this->_single)->select($this->_table, $this->_field, $this->_getWhere());
         }
         $this->cleanup();
         return $res;
@@ -269,9 +279,9 @@ class Connection{
         $res = null;
         $this->limit(1);
         if ($this->_join) {
-            $res = $this->_medoo->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
+            $res = $this->_medoo->setSingle($this->_single)->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
         } else {
-            $res = $this->_medoo->select($this->_table, $this->_field, $this->_getWhere());
+            $res = $this->_medoo->setSingle($this->_single)->select($this->_table, $this->_field, $this->_getWhere());
         }
         $this->cleanup();
         return $res ? $res[0] : $res;
@@ -345,7 +355,7 @@ class Connection{
      */
     public function replace($columns) {
         if(!$this->checker()) return false;
-        $res = $this->_medoo->replace($this->_table, $columns, $this->_getWhere());
+        $res = $this->_medoo->setSingle($this->_single)->replace($this->_table, $columns, $this->_getWhere());
         $this->cleanup();
         return $res;
     }
@@ -353,7 +363,7 @@ class Connection{
 
     public function get() {
         if(!$this->checker()) return false;
-        $res = $this->_medoo->get($this->_table, $this->_field, $this->_getWhere());
+        $res = $this->_medoo->setSingle($this->_single)->get($this->_table, $this->_field, $this->_getWhere());
         $this->cleanup();
         return $res;
     }
@@ -587,6 +597,7 @@ class Connection{
         $this->_limit = null;
         $this->_group = null;
         $this->_cache = true;
+        $this->_single= false;
     }
 
     public function getParams() {

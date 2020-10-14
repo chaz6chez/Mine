@@ -51,6 +51,10 @@ class Raw {
  *  2019-06-17 :
  *      1.新增 hasTable()        : 用于判断是否含有该表
  *
+ *  2020-10-14 :
+ *      1.新增 setSingle()        : 用于设置field 单字段获取时是否是键值对
+ *      2.新增 getSingle()        : 用于获取当前single属性
+ *
  * @package Api\Core\Db
  */
 class Medoo {
@@ -75,6 +79,7 @@ class Medoo {
     protected $options     = []; # config
     protected $option      = []; # config->option
     protected $inTran      = false;
+    protected $single      = false;
 
     public function __construct(array $options) {
         $this->options = $options;
@@ -1097,7 +1102,8 @@ class Medoo {
             return $query->fetchAll(PDO::FETCH_ASSOC);
         }
 
-        if ($is_single) {
+        if ($is_single and $this->getSingle()) {
+            $this->setSingle();
             return $query->fetchAll(PDO::FETCH_COLUMN);
         }
 
@@ -1306,7 +1312,8 @@ class Medoo {
 
                 $this->dataMap($data[0], $columns, $column_map, $stack);
 
-                if ($is_single) {
+                if ($is_single and $this->getSingle()) {
+                    $this->setSingle();
                     return $stack[$column_map[$column][0]];
                 }
 
@@ -1383,6 +1390,15 @@ class Medoo {
         }
 
         return false;
+    }
+
+    public function setSingle(bool $single = false){
+        $this->single = $single;
+        return $this;
+    }
+
+    public function getSingle(){
+        return $this->single;
     }
 
     public function lastQuery() {
