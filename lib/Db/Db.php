@@ -84,14 +84,12 @@ class Db extends Instance {
         if(!$conf){
             $conf = $this->_config[$name];
         }
-        if (
-            !isset($this->_servers[$name]) or
-            !$this->_servers[$name] instanceof Connection
-        ) {
-            $this->_servers[$name] = $this->connect();
-        }
         try{
-            $this->_servers[$name]->setActive($conf);
+            if(($server = $this->_servers[$name]) instanceof Connection){
+                $this->_servers[$name] = $server->setActive($conf);
+            }else{
+                $this->_servers[$name] = $this->connect()->setActive($conf);
+            }
         }catch (\Exception $e){
             $this->_log($e);
         }
@@ -108,18 +106,16 @@ class Db extends Instance {
         if(!$conf){
             $conf = isset($this->_config[$name]['slave']) ?? [];
         }
-        if (
-            !isset($this->_servers[$name]) and
-            !$this->_servers[$name] instanceof Connection
-        ) {
-            $this->_servers[$name] = $this->connect();
-        }
         try{
-            $this->_servers[$name]->setActive($conf);
+            if(($server = $this->_servers["{$name}_slave"]) instanceof Connection){
+                $this->_servers["{$name}_slave"] = $server->setActive($conf);
+            }else{
+                $this->_servers["{$name}_slave"] = $this->connect()->setActive($conf);
+            }
         }catch (\Exception $e){
             $this->_log($e);
         }
-        return $this->_servers[$name];
+        return $this->_servers["{$name}_slave"];
     }
 
     /**

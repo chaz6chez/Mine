@@ -62,6 +62,7 @@ class Connection{
     protected $_cache = false;
     protected $_single = false;
 
+
     /**
      * 加载配置
      */
@@ -71,6 +72,7 @@ class Connection{
     /**
      * 激活连接
      * @param array $conf
+     * @return $this
      */
     public function setActive($conf = []) {
         if (is_null($this->_medoo)) {
@@ -91,6 +93,7 @@ class Connection{
                 $this->_error = 'not support: PDO';
             }
         }
+        return $this;
     }
 
     /**
@@ -272,16 +275,21 @@ class Connection{
 
     /**
      * 获取单条数据
+     * @param bool $for_update
      * @return array|bool|mixed
      */
-    public function find() {
+    public function find($for_update = false) {
         if(!$this->checker()) return false;
         $res = null;
         $this->limit(1);
+        $medoo = $this->_medoo->setSingle($this->_single);
+        $where = $for_update ? $this->_getWhere([
+            'FOR UPDATE' => true
+        ]) : $this->_getWhere();
         if ($this->_join) {
-            $res = $this->_medoo->setSingle($this->_single)->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
+            $res = $medoo->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
         } else {
-            $res = $this->_medoo->setSingle($this->_single)->select($this->_table, $this->_field, $this->_getWhere());
+            $res = $medoo->select($this->_table, $this->_field, $where);
         }
         $this->cleanup();
         return $res ? $res[0] : $res;
@@ -361,9 +369,15 @@ class Connection{
     }
 
 
-    public function get() {
+    public function get($for_update = false) {
         if(!$this->checker()) return false;
-        $res = $this->_medoo->setSingle($this->_single)->get($this->_table, $this->_field, $this->_getWhere());
+        $res = $this->_medoo->setSingle($this->_single)->get(
+            $this->_table,
+            $this->_field,
+            $for_update ? $this->_getWhere([
+                'FOR UPDATE' => true
+            ]) : $this->_getWhere()
+        );
         $this->cleanup();
         return $res;
     }
@@ -519,7 +533,6 @@ class Connection{
                 "{$e->getCode()}|{$e->getMessage()}"
             ];
         }
-
     }
 
     /**
@@ -590,26 +603,26 @@ class Connection{
      */
     public function cleanup() {
 //        $this->_table = null;
-        $this->_join = [];
-        $this->_field = '*';
-        $this->_where = [];
-        $this->_order = null;
-        $this->_limit = null;
-        $this->_group = null;
-        $this->_cache = true;
-        $this->_single= false;
+        $this->_join       = [];
+        $this->_field      = '*';
+        $this->_where      = [];
+        $this->_order      = null;
+        $this->_limit      = null;
+        $this->_group      = null;
+        $this->_cache      = true;
+        $this->_single     = false;
     }
 
     public function getParams() {
         return [
-            'table' => $this->_table,
-            'join' => $this->_join,
-            'field' => $this->_field,
-            'where' => $this->_where,
-            'order' => $this->_order,
-            'limit' => $this->_limit,
-            'group' => $this->_group,
-            'cache' => $this->_cache,
+            'table'      => $this->_table,
+            'join'       => $this->_join,
+            'field'      => $this->_field,
+            'where'      => $this->_where,
+            'order'      => $this->_order,
+            'limit'      => $this->_limit,
+            'group'      => $this->_group,
+            'cache'      => $this->_cache,
         ];
     }
 
@@ -624,7 +637,7 @@ class Connection{
         empty($params['cache']) || $this->_cache = $params['cache'];
     }
 
-    protected function _getWhere() {
+    protected function _getWhere(array $array = []) {
         $where = $this->_where;
         if ($this->_order) {
             $where['ORDER'] = $this->_order;
@@ -635,7 +648,7 @@ class Connection{
         if ($this->_group) {
             $where['GROUP'] = $this->_group;
         }
-        return $where;
+        return array_merge($where,$array);
     }
 
     public function getLog(){

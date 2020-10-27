@@ -752,7 +752,7 @@ class Medoo {
             $where_keys = array_keys($where);
 
             $conditions = array_diff_key($where, array_flip(
-                ['GROUP', 'ORDER', 'HAVING', 'LIMIT', 'LIKE', 'MATCH']
+                ['GROUP', 'ORDER', 'HAVING', 'LIMIT', 'LIKE', 'MATCH', 'FOR UPDATE']
             ));
 
             if (!empty($conditions)) {
@@ -865,6 +865,10 @@ class Medoo {
                 ) {
                     $where_clause .= ' LIMIT ' . $LIMIT[1] . ' OFFSET ' . $LIMIT[0];
                 }
+            }
+
+            if (isset($where['FOR UPDATE']) && !in_array($this->type, ['oracle', 'mssql'])) {
+                $where_clause .= ' FOR UPDATE';
             }
         } elseif ($raw = $this->buildRaw($where, $map)) {
             $where_clause .= ' ' . $raw;

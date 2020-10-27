@@ -78,6 +78,13 @@ abstract class Instance{
     }
 
     /**
+     * @param array $configs
+     */
+    public function setConfigs(array $configs){
+        $this->_config = $configs;
+    }
+
+    /**
      * 获取时间
      * @return int|mixed
      */

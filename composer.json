@@ -2,6 +2,8 @@
   "name": "chaz6chez/wm-api-core",
   "require": {
     "php": ">=7.3.3",
+    "ext-pdo": "*",
+    "ext-json": "*",
     "symfony/var-dumper": "4.2.*",
     "chaz6chez/structure": "1.0.*",
     "workerman/workerman":"3.5.*",
