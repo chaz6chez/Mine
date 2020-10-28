@@ -85,7 +85,10 @@ class Db extends Instance {
             $conf = $this->_config[$name];
         }
         try{
-            if(($server = $this->_servers[$name]) instanceof Connection){
+            if(
+                isset($this->_servers[$name]) and
+                ($server = $this->_servers[$name]) instanceof Connection
+            ){
                 $this->_servers[$name] = $server->setActive($conf);
             }else{
                 $this->_servers[$name] = $this->connect()->setActive($conf);
@@ -107,7 +110,10 @@ class Db extends Instance {
             $conf = isset($this->_config[$name]['slave']) ?? [];
         }
         try{
-            if(($server = $this->_servers["{$name}_slave"]) instanceof Connection){
+            if(
+                isset($this->_servers["{$name}_slave"]) and
+                ($server = $this->_servers["{$name}_slave"]) instanceof Connection
+            ){
                 $this->_servers["{$name}_slave"] = $server->setActive($conf);
             }else{
                 $this->_servers["{$name}_slave"] = $this->connect()->setActive($conf);
