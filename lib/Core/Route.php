@@ -29,7 +29,7 @@ final class Route{
     public $_ctrl    = 'Index';
     public $_action  = 'Index';
     private $_allowed    = [];
-    private $_forbidden  = ['Common'];
+    private $_forbidden  = [];
     private static $_instance;
     public static $_API_MODULE = 'unknown';
 
