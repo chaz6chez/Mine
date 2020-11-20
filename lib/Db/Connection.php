@@ -62,7 +62,6 @@ class Connection{
     protected $_cache = false;
     protected $_single = false;
 
-
     /**
      * 加载配置
      */
@@ -84,7 +83,10 @@ class Connection{
                     $this->_medoo = new Medoo($this->_config);
                 }catch (\PDOException $e){
                     $this->_active = false;
-                    $this->_error = 'db server exception';
+                    $this->_error = "db server exception : {$e->getMessage()}";
+                }catch(\Exception $e){
+                    $this->_active = false;
+                    $this->_error = "exception : {$e->getMessage()}";
                 }
                 $this->_active = true;
                 $this->_error = '';
@@ -109,7 +111,7 @@ class Connection{
     /**
      * @return string
      */
-    public function getError(){
+    public function getDbError(){
         return $this->_error;
     }
 
@@ -256,7 +258,6 @@ class Connection{
         $this->_group = $group;
         return $this;
     }
-
 
     /**
      * 获取多条数据
@@ -508,6 +509,10 @@ class Connection{
         return $this->_medoo->exec($query);
     }
 
+    public function isPDOStatement($data){
+        return boolval($data instanceof \PDOStatement);
+    }
+
     /**
      * 开启事务
      * @param bool $throw
@@ -567,8 +572,6 @@ class Connection{
                 "{$e->getCode()}|{$e->getMessage()}"
             ];
         }
-
-
     }
 
     /**
@@ -611,6 +614,7 @@ class Connection{
         $this->_group      = null;
         $this->_cache      = true;
         $this->_single     = false;
+        $this->_error      = $this->_medoo->error();
     }
 
     public function getParams() {

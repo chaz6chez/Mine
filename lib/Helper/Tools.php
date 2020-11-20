@@ -11,8 +11,21 @@ use Mine\Core\Env;
 
 class Tools{
 
-    public static function log($module,$log){
-        //todo
+    public static function log($module,$log,$dir){
+        $dir = "{$dir}/{$module}";
+        $name = date('Y-m-d') . '.log';
+        if(!is_dir($dir)){
+            if(!mkdir($dir,0755,true)){
+                return false;
+            }
+        }
+        $log = is_scalar($log) ? (string)$log : json_encode($log,JSON_UNESCAPED_UNICODE);
+
+        if(file_exists($path = "{$dir}/{$name}")){
+            return file_put_contents($path, date('H:i:s') . " [LOG] {$log}\n",FILE_APPEND | LOCK_EX);
+        }else{
+            return file_put_contents($path, date('H:i:s') . " [LOG] {$log}\n", LOCK_EX);
+        }
     }
 
     # ******************* Launcher tools ******************* #

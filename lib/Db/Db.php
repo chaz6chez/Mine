@@ -85,13 +85,17 @@ class Db extends Instance {
             $conf = $this->_config[$name];
         }
         try{
-            if(
-                isset($this->_servers[$name]) and
-                ($server = $this->_servers[$name]) instanceof Connection
-            ){
+            if(!isset($this->_servers[$name])){
+                $this->_servers[$name] = $this->connect();
+            }
+            $server = $this->_servers[$name];
+            if($server instanceof Connection){
                 $this->_servers[$name] = $server->setActive($conf);
             }else{
-                $this->_servers[$name] = $this->connect()->setActive($conf);
+                $this->_servers[$name] = $server = $this->connect()->setActive($conf);
+            }
+            if(!$server->checker()){
+                $this->_log($server->getDbError());
             }
         }catch (\Exception $e){
             $this->_log($e);
@@ -110,13 +114,17 @@ class Db extends Instance {
             $conf = isset($this->_config[$name]['slave']) ?? [];
         }
         try{
-            if(
-                isset($this->_servers["{$name}_slave"]) and
-                ($server = $this->_servers["{$name}_slave"]) instanceof Connection
-            ){
+            if(!isset($this->_servers["{$name}_slave"])){
+                $this->_servers["{$name}_slave"] = $this->connect();
+            }
+            $server = $this->_servers["{$name}_slave"];
+            if($server instanceof Connection){
                 $this->_servers["{$name}_slave"] = $server->setActive($conf);
             }else{
-                $this->_servers["{$name}_slave"] = $this->connect()->setActive($conf);
+                $this->_servers["{$name}_slave"] = $server = $this->connect()->setActive($conf);
+            }
+            if(!$server->checker()){
+                $this->_log($server->getDbError());
             }
         }catch (\Exception $e){
             $this->_log($e);
@@ -126,12 +134,15 @@ class Db extends Instance {
 
     /**
      * log
-     * @param \Exception $exception
+     * @param \Exception|string|array $exception
      */
-    protected function _log(\Exception $exception){
-        Tools::log(Define::CONFIG_DB,[
-            $exception->getCode(),
-            $exception->getMessage()
-        ]);
+    protected function _log($exception){
+        if($exception instanceof \Exception){
+            Tools::log(Define::CONFIG_DB,[
+                $exception->getCode(),
+                $exception->getMessage()
+            ]);
+        }
+        Tools::log(Define::CONFIG_DB, $exception);
     }
 }
