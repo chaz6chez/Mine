@@ -137,12 +137,14 @@ class Db extends Instance {
      * @param \Exception|string|array $exception
      */
     protected function _log($exception){
-        if($exception instanceof \Exception){
-            Tools::log(Define::CONFIG_DB,[
-                $exception->getCode(),
-                $exception->getMessage()
-            ]);
+        if(defined('LOG_PATH')){
+            if($exception instanceof \Exception){
+                Tools::log(Define::CONFIG_DB,[
+                    $exception->getCode(),
+                    $exception->getMessage()
+                ],LOG_PATH);
+            }
+            Tools::log(Define::CONFIG_DB, $exception,LOG_PATH);
         }
-        Tools::log(Define::CONFIG_DB, $exception);
     }
 }
