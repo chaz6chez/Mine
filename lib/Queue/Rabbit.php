@@ -43,7 +43,7 @@ class Rabbit extends Instance {
     public $_message      = [];
     public $_queueName    = 'SEND';
     public $_exchangeName = 'SEND';
-    public $_type         = 'direct';
+    public $_type         = self::EXCHANGE_TYPE_DIRECT;
     public $_passive      = true;
     public $_durable      = true;
     public $_autoDelete   = true;
