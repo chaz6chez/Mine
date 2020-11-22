@@ -5,7 +5,7 @@
 #  Date: 2018/10/24            #
 # -------------------------- #
 namespace Mine\Queue;
-
+use Mine\Core\Instance;
 
 /**
  * 消费者路标类
@@ -24,7 +24,13 @@ namespace Mine\Queue;
  * Class MQConsumer
  * @package core\mq
  */
-class MQConsumer extends Service {
+class MQConsumer extends Instance {
+
+    protected function _initConfig(){
+        // TODO: Implement _initConfig() method.
+    }
+
+
     /**
      * 队列指路标
      * @param \AMQPEnvelope $even

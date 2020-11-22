@@ -16,18 +16,16 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class Rabbit extends Instance {
-
     /**
      * @var AMQPStreamConnection
      */
     private $_connection = null;
-
     /**
      * @var AMQPChannel
      */
     private $_channel = null;
-
-    private $_channelId = '';
+    private $_channel_id = '';
+    private $_last_msg = [];
 
     /**
      * @var array 配置
@@ -50,8 +48,6 @@ class Rabbit extends Instance {
     public $_durable      = true;
     public $_autoDelete   = true;
 
-    private $_lastMsg = [];
-
     const EXCHANGE_TYPE_DIRECT = 'direct';
     const EXCHANGE_TYPE_FANOUT = 'fanout';
     const EXCHANGE_TYPE_TOPIC  = 'topic';
@@ -70,10 +66,16 @@ class Rabbit extends Instance {
     /**
      * 组件初始化
      */
-    public function _init(){
+    protected function _init(){
         parent::_init();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function ext(){
         if(!extension_loaded('amqp')){
-            Tools::Http500('not support: amqp');
+            throw new Exception('not support: amqp');
         }
     }
 
@@ -95,7 +97,6 @@ class Rabbit extends Instance {
             }catch (\Exception $e){
                 throw new Exception("rabbitMQ server connect error [{$e->getMessage()}]");
             }
-
         }
         return $this->_connection;
     }
@@ -106,6 +107,7 @@ class Rabbit extends Instance {
      * @throws Exception
      */
     public function active(){
+        self::ext();
         $this->_connection();
         return $this;
     }
@@ -143,7 +145,7 @@ class Rabbit extends Instance {
         if(!$channelId){
             return $this->_channel = $this->_connection->channel();
         }else{
-            $this->_channelId = $channelId;
+            $this->_channel_id = $channelId;
             return $this->_channel = $this->_connection->channel($channelId);
         }
     }
@@ -153,7 +155,6 @@ class Rabbit extends Instance {
      * @return $this
      */
     public function exchangeDeclare(){
-
         $this->_channel->exchange_declare(
             $this->_exchangeName,
             $this->_type,
@@ -191,7 +192,6 @@ class Rabbit extends Instance {
      * @return $this
      */
     public function basicConsume($callback = null){
-
         if($callback){
             $this->_channel->basic_consume(
                 $this->_queueName,
@@ -246,7 +246,7 @@ class Rabbit extends Instance {
      * 清除
      */
     protected function cleanUp(){
-        $this->_lastMsg = json_decode(json_encode($this), true);
+        $this->_last_msg = json_decode(json_encode($this), true);
         $this->_queueName = '';
         $this->_exchangeName = '';
         $this->_type = 'direct';
@@ -306,4 +306,11 @@ class Rabbit extends Instance {
         return [true,$mix];
     }
 
+    public function getLastMsg(){
+        return $this->_last_msg;
+    }
+
+    public function getChannelId(){
+        return $this->_channel_id;
+    }
 }
