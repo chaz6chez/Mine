@@ -23,6 +23,8 @@ use Mine\Core\Instance;
  *
  * Class MQConsumer
  * @package core\mq
+ *
+ * @deprecated
  */
 class MQConsumer extends Instance {
 
