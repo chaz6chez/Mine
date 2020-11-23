@@ -213,7 +213,7 @@ class MQServer extends Worker{
             Timer::del($this->timer);
         }
         $this->queue = null;
-        $this->channel = null;
+        ($this->channel instanceof \AMQPChannel) ? $this->channel->close(): $this->channel = null;
         ($this->connection instanceof \AMQPConnection) ? $this->connection->disconnect() : $this->connection = null;
         $message = $msg ? "Rabbit Server Stop [{$msg}]" : "Rabbit Server Stop ";
         Tools::SafeEcho($message,"# : {$worker->workerId}|{$worker->id}");
