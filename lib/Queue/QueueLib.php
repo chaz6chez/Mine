@@ -6,15 +6,6 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class QueueLib extends QueueAbstract {
-
-    const EXCHANGE_TYPE_DIRECT = 'direct';
-    const EXCHANGE_TYPE_FANOUT = 'fanout';
-    const EXCHANGE_TYPE_TOPIC  = 'topic';
-    const EXCHANGE_TYPE_HEADER = 'header';
-
-    const MESSAGE_DURABLE_YES  = 2;
-    const MESSAGE_DURABLE_NO   = 1;
-
     /**
      * @var AMQPStreamConnection
      */
@@ -23,14 +14,6 @@ class QueueLib extends QueueAbstract {
      * @var AMQPChannel
      */
     private $_channel    = null;
-
-    public $_queue_name    = 'SEND';
-    public $_exchange_name = 'SEND';
-
-    /**
-     * @var string 交换机类型
-     */
-    protected $_exchange_type = self::EXCHANGE_TYPE_DIRECT;
     /**
      * @var bool 判断交换机是否存在
      */
@@ -90,8 +73,8 @@ class QueueLib extends QueueAbstract {
      */
     public function exchange(string $name = null, string $type = null){
         $this->channel()->exchange_declare(
-            $this->_exchange_name = $name === null ? $name : $this->_exchange_name,
-            $this->_exchange_type = $type === null ? $type : $this->_exchange_type,
+            $this->_exchange_name = $name !== null ? $name : $this->_exchange_name,
+            $this->_exchange_type = $type !== null ? $type : $this->_exchange_type,
             $this->_passive,
             $this->_durable,
             $this->_auto_delete
@@ -106,7 +89,7 @@ class QueueLib extends QueueAbstract {
      */
     public function queue(string $name = null){
         $this->channel()->queue_declare(
-            $this->_queue_name = $name === null ? $name : $this->_queue_name,
+            $this->_queue_name = $name !== null ? $name : $this->_queue_name,
             $this->_passive,
             $this->_durable,
             $this->_auto_delete

@@ -6,6 +6,18 @@ use Mine\Core\Instance;
 use Mine\Definition\Define;
 
 abstract class QueueAbstract extends Instance {
+    const EXCHANGE_TYPE_DIRECT = 'direct';
+    const EXCHANGE_TYPE_FANOUT = 'fanout';
+    const EXCHANGE_TYPE_TOPIC  = 'topic';
+    const EXCHANGE_TYPE_HEADER = 'header';
+
+    const MESSAGE_DURABLE_YES  = 2;
+    const MESSAGE_DURABLE_NO   = 1;
+
+    public $_queue_name    = 'SEND';
+    public $_exchange_name = 'SEND';
+    public $_exchange_type = self::EXCHANGE_TYPE_DIRECT;
+
     /**
      * @var array 配置
      */
@@ -50,9 +62,9 @@ abstract class QueueAbstract extends Instance {
     }
 
     abstract public function connection();
-    abstract public function exchange(string $name, string $type);
-    abstract public function channel(int $count);
-    abstract public function queue(string $name);
+    abstract public function exchange(string $name = null, string $type = null);
+    abstract public function channel(int $count = 1);
+    abstract public function queue(string $name = null);
     abstract public function closeConnection();
     abstract public function closeChannel();
 }

@@ -7,12 +7,13 @@
 namespace Mine\Queue;
 
 use Mine\Core\Config;
+use Mine\Core\Response;
 use Mine\Definition\Define;
 use Mine\Helper\Tools;
 use Workerman\Lib\Timer;
 use Workerman\Worker;
 
-class MQServer extends Worker{
+class QueueConsumers extends Worker{
 
     /**
      * @var array
@@ -27,25 +28,10 @@ class MQServer extends Worker{
     protected $serviceObj   = null;
     protected $action       = null;
     protected $configPath   = null;
-    protected $functionPath = null;
-
-    private $eventLimit  = 20000;
-    private $eventCount  = 0;
-    private $interval    = 0.01;
+    protected $_even;
+    protected $_queue;
     /**
-     * @var \AMQPConnection
-     */
-    protected $connection = null;
-    /**
-     * @var \AMQPChannel
-     */
-    protected $channel = null;
-    /**
-     * @var \AMQPQueue
-     */
-    protected $queue = null;
-    /**
-     * @var Rabbit
+     * @var QueueBaseLib
      */
     protected $client = null;
 
@@ -54,18 +40,36 @@ class MQServer extends Worker{
      */
     protected $timer = null;
 
+    private $eventLimit  = 20000;
+    private $eventCount  = 0;
+    private $interval    = 0.01;
+    /**
+     * @var callable
+     */
+    public $_error_callback = null;
+    /**
+     * @var callable
+     */
+    public $_success_callback = null;
     /**
      * @param string $name
      */
     public function setName(string $name){
         $this->name = $name;
     }
-
     /**
      * @return string
      */
     public function getName() : string {
         return $this->name;
+    }
+
+    public function getEven() : \AMQPEnvelope{
+        return $this->_even;
+    }
+
+    public function getQueue() : \AMQPQueue{
+        return $this->_queue;
     }
 
     /**
@@ -104,52 +108,26 @@ class MQServer extends Worker{
     }
 
     /**
-     * function init
-     */
-    public function funcInit(){
-        if($this->functionPath){
-            if(file_exists($this->functionPath)){
-                require_once $this->functionPath;
-            }
-        }
-    }
-
-    /**
      * start
      * @param Worker $worker
      */
     public function onWorkerStart($worker){
-        $this->funcInit();
         $this->confInit();
         Tools::SafeEcho("Rabbit Server Start","# : {$worker->workerId}|{$worker->id}");
         $this->_checker($worker);
-
-        $rabbit = Rabbit::instance();
-        $this->connection = new \AMQPConnection([
-            'host'     => $rabbit->_config['host'],
-            'virtual'  => $rabbit->_config['vhost'],
-            'port'     => $rabbit->_config['port'],
-            'login'    => $rabbit->_config['username'],
-            'password' => $rabbit->_config['password'],
-        ]);
+        $this->client = QueueBaseLib::instance();
         try{
-            $this->connection->connect();
-            $this->channel = new \AMQPChannel($this->connection);
-            $exchange = new \AMQPExchange($this->channel);
-            $exchange->setName($rabbit->_exchangeName);
-            $exchange->setType($rabbit->_type);
-            $this->queue = new \AMQPQueue($this->channel);
-            $this->queue->setName($rabbit->_queueName);
-            $this->queue->bind($rabbit->_exchangeName);
+            $this->_queue = $this->client->createQueue();
+            $this->timer = Timer::add($this->interval,function(){
+                $this->restart();
+                $this->queueConsume(); # 非阻塞调用
+            });
         }catch (\Exception $e){
             $error = $e->getMessage();
             $this->_stop($worker,$error);
             return;
         }
-        $this->timer = Timer::add($this->interval,function(){
-            $this->restart();
-            $this->queueConsume(); # 非阻塞调用
-        });
+        return;
     }
 
     /**
@@ -168,20 +146,35 @@ class MQServer extends Worker{
 
     /**
      * 队列消费
-     *
-     * 非阻塞
      */
     protected function queueConsume(){
         try{
-            // 非阻塞调用
-            if($even = $this->queue->get()){
-                list($key, $res) = call_user_func([$this->serviceObj,$this->action],[$even,$this->queue]);
-                //MQConsumers::instance()->MQRoute($even,$this->queue);
-            }
-        }catch (\Exception $e){
-            $error = $e->getMessage();
-            Tools::SafeEcho("Consumers Error [$error]","#");
+            $this->_even = $this->getQueue()->get();
+        }catch (\Exception $exception){
+            Tools::SafeEcho("Consumers Error : {$exception->getMessage()}[{$exception->getCode()}]","#");
+            return;
         }
+        if($this->getEven()){
+            try {
+                $res = call_user_func(
+                    [$this->serviceObj,$this->action],
+                    [$this->getEven(), $this->getQueue()]
+                );
+                if($res instanceof Response){
+                    if($res->hasError() and $this->_error_callback){
+                        call_user_func($this->_error_callback, $this);
+                        return;
+                    }
+                    if($this->_success_callback){
+                        call_user_func($this->_success_callback, $this);
+                    }
+                }
+                $this->getQueue()->ack($this->getEven()->getDeliveryTag());
+            }catch(\Exception $exception){
+                $this->getQueue()->nack($this->getEven()->getDeliveryTag());
+            }
+        }
+        return;
     }
 
     /**
@@ -212,9 +205,8 @@ class MQServer extends Worker{
         if($this->timer){
             Timer::del($this->timer);
         }
-        $this->queue = null;
-        ($this->channel instanceof \AMQPChannel) ? $this->channel->close(): $this->channel = null;
-        ($this->connection instanceof \AMQPConnection) ? $this->connection->disconnect() : $this->connection = null;
+        $this->client->closeChannel();
+        $this->client->closeConnection();
         $message = $msg ? "Rabbit Server Stop [{$msg}]" : "Rabbit Server Stop ";
         Tools::SafeEcho($message,"# : {$worker->workerId}|{$worker->id}");
         if($exit){
@@ -230,7 +222,6 @@ class MQServer extends Worker{
         if(!$this->config) {
             $this->_stop($worker,'CONFIG');
         }
-
         try{
             $this->serviceObj = call_user_func([$this->service,'::instance']);
         }catch (\Exception $e){

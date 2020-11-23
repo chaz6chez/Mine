@@ -24,9 +24,6 @@ class QueueBaseLib extends QueueAbstract {
      */
     protected $_exception;
 
-    public function getQueue(){
-        return $this->_queue;
-    }
     public function getExchange(){
         return $this->_exchange;
     }
@@ -75,16 +72,17 @@ class QueueBaseLib extends QueueAbstract {
      * @throws \AMQPConnectionException
      * @throws \AMQPExchangeException
      */
-    public function exchange(string $name, string $type){
+    public function exchange(string $name = null, string $type = null){
         if(!$this->_exchange instanceof \AMQPExchange){
             $this->_exchange = new \AMQPExchange($this->_channel);
         }
-        $this->_exchange->setName($name);
-        $this->_exchange->setType($type);
+        $this->_exchange->setName($this->_exchange_name = $name !== null ? $name : $this->_exchange_name);
+        $this->_exchange->setType($this->_exchange_type = $type !== null ? $type : $this->_exchange_type);
     }
 
     /**
-     * @param $name
+     * @param string|null $name
+     * @return \AMQPQueue
      * @throws \AMQPChannelException
      * @throws \AMQPConnectionException
      * @throws \AMQPQueueException
@@ -93,8 +91,9 @@ class QueueBaseLib extends QueueAbstract {
         if(!$this->_queue instanceof \AMQPQueue){
             $this->_queue = new \AMQPQueue($this->_channel);
         }
-        $this->_queue->setName($name === null ? $this->_exchange->getName() : $name);
-        $this->_queue->bind($this->_exchange->getName());
+        $this->_queue->setName($this->_queue_name = $name !== null ? $this->_queue_name : $name);
+        $this->_queue->bind($this->_exchange_name);
+        return $this->_queue;
     }
 
     public function closeChannel(){
@@ -123,7 +122,7 @@ class QueueBaseLib extends QueueAbstract {
         $this->_exception = null;
     }
 
-    public function createQueue($exchange_name, $exchange_type, $queue_name){
+    public function createQueue($exchange_name = null, $exchange_type = null, $queue_name = null){
         try{
             $this->connection();
             $this->channel();
