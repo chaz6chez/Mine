@@ -17,19 +17,22 @@ class QueueConsumers extends Worker{
 
     /**
      * @var array
-     *
-     *  WorkerName => [
-     *      'service'         => 服务的组件地址 例:Api\V1\Service\Trade,
-     *      'function'        => 上半区执行方法 例:,
-     * ]
      */
-    protected $config       = [];
-    protected $service      = null;
-    protected $serviceObj   = null;
-    protected $action       = null;
-    protected $configPath   = null;
+    protected $config = [
+        'service'     => 'Mine\Queue\QueueRoute',
+        'event_limit' => 20000,
+        'interval'    => 0.01
+    ];
+
+    /**
+     * @var \AMQPEnvelope
+     */
     protected $_even;
+    /**
+     * @var \AMQPQueue
+     */
     protected $_queue;
+
     /**
      * @var QueueBaseLib
      */
@@ -40,9 +43,14 @@ class QueueConsumers extends Worker{
      */
     protected $timer = null;
 
-    private $eventLimit  = 20000;
-    private $eventCount  = 0;
+    private $service     = null;
+    private $event_limit = 0;
+    private $event_count = 0;
     private $interval    = 0.01;
+    /**
+     * @var QueueBody
+     */
+    private $body;
     /**
      * @var callable
      */
@@ -51,35 +59,88 @@ class QueueConsumers extends Worker{
      * @var callable
      */
     public $_success_callback = null;
-    /**
-     * @param string $name
-     */
-    public function setName(string $name){
-        $this->name = $name;
-    }
-    /**
-     * @return string
-     */
-    public function getName() : string {
-        return $this->name;
-    }
 
-    public function getEven() : \AMQPEnvelope{
-        return $this->_even;
-    }
-
-    public function getQueue() : \AMQPQueue{
-        return $this->_queue;
-    }
+    /**
+     * @var string
+     */
+    public $_log_path = null;
 
     /**
      * MQServer constructor.
      */
     public function __construct() {
         parent::__construct();
-        if($this->name == 'none'){
+        if($this->name === 'none' or !$this->name){
             $this->setName('queue_server');
         }
+    }
+
+    /**
+     * config init
+     */
+    protected function _init(){
+        Config::init();
+        $config = Config::get(Define::CONFIG_QUEUE);
+        $this->config = isset($config[$this->getName()]) ? $config[$this->getName()] : $this->config;
+        $this->service = isset($this->config['service']) ? $this->config['service'] : null;
+        $this->event_limit = isset($this->config['event_limit']) ? (int)$this->config['event_limit'] : $this->event_limit;
+        $this->interval = isset($this->config['interval']) ? (float)$this->config['interval'] : $this->interval;
+        $this->body = !$this->body instanceof QueueBody ? QueueBody::factory() : $this->body;
+    }
+
+    /**
+     * 计数重启
+     */
+    protected function _restart(){
+        if(
+            $this->event_limit !== 0 and
+            ++$this->event_count > $this->event_limit
+        ){
+            $this->event_count = 0;
+            Worker::stopAll();
+        }
+    }
+
+    /**
+     * @param $log
+     * @param $tag
+     * @param string $module
+     */
+    protected function _log($log, $tag, $module = Define::CONFIG_QUEUE){
+        if($this->_log_path){
+            if($log instanceof \Exception){
+                $log = "{$log->getCode()} : {$log->getMessage()}";
+            }
+            Tools::log($module, $log, $this->_log_path, $tag);
+        }
+    }
+
+    protected function _ack(){
+        try {
+            $this->getQueue()->ack($this->getEven()->getDeliveryTag());
+        }catch(\Exception $exception){
+            $this->_log($exception, 'ACK',Define::CONFIG_QUEUE . '_ack');
+        }
+    }
+    protected function _nack(){
+        try {
+            $this->getQueue()->nack($this->getEven()->getDeliveryTag());
+        }catch(\Exception $exception){
+            $this->_log($exception, 'NACK',Define::CONFIG_QUEUE . '_nack');
+        }
+    }
+
+    public function setName(string $name){
+        $this->name = $name;
+    }
+    public function getName() : string {
+        return $this->name;
+    }
+    public function getEven(){
+        return $this->_even;
+    }
+    public function getQueue(){
+        return $this->_queue;
     }
 
     /**
@@ -92,62 +153,34 @@ class QueueConsumers extends Worker{
     }
 
     /**
-     * config init
-     */
-    public function confInit(){
-        Config::init();
-        if($this->configPath){
-            if(file_exists($this->configPath)){
-                Config::load($this->configPath);
-            }
-        }
-        $config = Config::get(Define::CONFIG_QUEUE);
-        $this->config = isset($config[$this->getName()]) ? $config[$this->getName()] : [];
-        $this->service = isset($this->config['service']) ? $this->config['service'] : null;
-        $this->action = isset($this->config['function']) ? $this->config['function'] : null;
-    }
-
-    /**
      * start
      * @param Worker $worker
      */
     public function onWorkerStart($worker){
-        $this->confInit();
         Tools::SafeEcho("Rabbit Server Start","# : {$worker->workerId}|{$worker->id}");
-        $this->_checker($worker);
+        $this->_init();
+
         $this->client = QueueBaseLib::instance();
         try{
             $this->_queue = $this->client->createQueue();
+            if($this->_queue === false){
+                exit("{$this->client->getException()->getMessage()} : {$this->client->getException()->getCode()} \n");
+            }
             $this->timer = Timer::add($this->interval,function(){
-                $this->restart();
+                $this->_restart();
                 $this->queueConsume(); # 非阻塞调用
             });
         }catch (\Exception $e){
-            $error = $e->getMessage();
-            $this->_stop($worker,$error);
+            $this->_log($e, 'WORKER START');
             return;
         }
         return;
     }
 
     /**
-     * @param float $interval
-     */
-    public function setInterval(float $interval){
-        $this->interval = $interval;
-    }
-
-    /**
-     * @param int $limit
-     */
-    public function setEventLimit(int $limit){
-        $this->eventLimit = $limit;
-    }
-
-    /**
      * 队列消费
      */
-    protected function queueConsume(){
+    public function queueConsume(){
         try{
             $this->_even = $this->getQueue()->get();
         }catch (\Exception $exception){
@@ -155,36 +188,41 @@ class QueueConsumers extends Worker{
             return;
         }
         if($this->getEven()){
-            try {
-                $res = call_user_func(
-                    [$this->serviceObj,$this->action],
-                    [$this->getEven(), $this->getQueue()]
-                );
-                if($res instanceof Response){
-                    if($res->hasError() and $this->_error_callback){
-                        call_user_func($this->_error_callback, $this);
-                        return;
+            $this->body->clean(true);
+            $this->body->create($this->client::decode($this->getEven()->getBody()));
+            //todo
+            if(class_exists($this->service) and is_subclass_of($this->service, QueueRoute::class)){
+                try {
+                    $serviceObj = call_user_func([$this->service, '::instance']);
+                    $res = call_user_func(
+                        [$serviceObj, QueueRoute::ENTRANCE],
+                        [$this->getEven(), $this->getQueue()]
+                    );
+                    if($res instanceof Response){
+                        if($res->hasError()){
+                            if(is_callable($this->_error_callback)){
+                                call_user_func($this->_error_callback, $this);
+                            }
+                        }else{
+                            if(is_callable($this->_success_callback)){
+                                call_user_func($this->_success_callback, $this);
+                            }
+                        }
                     }
-                    if($this->_success_callback){
-                        call_user_func($this->_success_callback, $this);
-                    }
+                }catch(\Exception $exception){
+                    $this->_log($exception,'SERVICE EXCEPTION');
+                    $this->_nack();
+                    return;
                 }
-                $this->getQueue()->ack($this->getEven()->getDeliveryTag());
-            }catch(\Exception $exception){
-                $this->getQueue()->nack($this->getEven()->getDeliveryTag());
+                $this->_ack();
+                return;
             }
+            # 非路由消息日志保存
+            $this->_log($this->getEven()->getBody(), 'NOT ROUTE',Define::CONFIG_QUEUE . '_route');
+            $this->_ack();
+            return;
         }
         return;
-    }
-
-    /**
-     * 计数重启
-     */
-    private function restart(){
-        if(++$this->eventCount > $this->eventLimit){
-            $this->eventCount = 0;
-            Worker::stopAll();
-        }
     }
 
     /**
@@ -192,47 +230,13 @@ class QueueConsumers extends Worker{
      * @param Worker $worker
      */
     public function onWorkerStop($worker){
-        $this->_stop($worker);
-    }
-
-    /**
-     * 停止
-     * @param $worker
-     * @param null $msg
-     * @param bool $exit
-     */
-    private function _stop($worker,$msg = null,$exit = true){
         if($this->timer){
             Timer::del($this->timer);
         }
-        $this->client->closeChannel();
-        $this->client->closeConnection();
-        $message = $msg ? "Rabbit Server Stop [{$msg}]" : "Rabbit Server Stop ";
-        Tools::SafeEcho($message,"# : {$worker->workerId}|{$worker->id}");
-        if($exit){
-            exit('Rabbit Server'.PHP_EOL);
+        if($this->client instanceof QueueConsumers){
+            $this->client->closeChannel();
+            $this->client->closeConnection();
         }
-    }
-
-    /**
-     * 检查
-     * @param $worker
-     */
-    private function _checker($worker){
-        if(!$this->config) {
-            $this->_stop($worker,'CONFIG');
-        }
-        try{
-            $this->serviceObj = call_user_func([$this->service,'::instance']);
-        }catch (\Exception $e){
-            try{
-                $this->serviceObj = new $this->service;
-            }catch (\Exception $e){
-                $this->_stop($worker,$e->getMessage());
-            }
-        }
-        if(!method_exists($this->serviceObj,$this->action)){
-            $this->_stop($worker,'Function Not Found');
-        }
+        Tools::SafeEcho("Rabbit Server Stop ","# : {$worker->workerId}|{$worker->id}");
     }
 }

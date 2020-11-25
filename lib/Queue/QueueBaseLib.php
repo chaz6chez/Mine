@@ -91,7 +91,7 @@ class QueueBaseLib extends QueueAbstract {
         if(!$this->_queue instanceof \AMQPQueue){
             $this->_queue = new \AMQPQueue($this->_channel);
         }
-        $this->_queue->setName($this->_queue_name = $name !== null ? $this->_queue_name : $name);
+        $this->_queue->setName($this->_queue_name = $name === null ? $this->_queue_name : $name);
         $this->_queue->bind($this->_exchange_name);
         return $this->_queue;
     }

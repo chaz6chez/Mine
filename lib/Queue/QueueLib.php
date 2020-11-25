@@ -33,6 +33,9 @@ class QueueLib extends QueueAbstract {
      * @throws \Exception
      */
     public function connection(){
+        if(!$this->getConfig()){
+            throw new \Exception('config error', -500);
+        }
         if(!$this->_connection or !$this->_connection instanceof AMQPStreamConnection){
             $this->_connection = new AMQPStreamConnection(
                 $this->getConfig('host'),
@@ -92,9 +95,12 @@ class QueueLib extends QueueAbstract {
             $this->_queue_name = $name !== null ? $name : $this->_queue_name,
             $this->_passive,
             $this->_durable,
+            false,
             $this->_auto_delete
         );
         $this->_channel->queue_bind($this->_queue_name,$this->_exchange_name);
+
+
         return $this;
     }
 
@@ -120,9 +126,9 @@ class QueueLib extends QueueAbstract {
 
     public function publish(array $message, $close_connect = false){
         try{
-            $this->queue(true);
+            $this->queue();
             $message = new AMQPMessage(
-                json_encode($message, JSON_UNESCAPED_UNICODE),
+                self::encode($message),
                 [
                     'content_type' => 'text/plain',
                     'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT
@@ -136,7 +142,6 @@ class QueueLib extends QueueAbstract {
         }catch(\Exception $exception){
             return [false,$exception->getMessage()];
         }
-
         return [true,null];
     }
 

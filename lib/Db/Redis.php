@@ -379,6 +379,6 @@ class Redis extends Driver {
         Tools::log(Define::CONFIG_REDIS,[
             $e->getCode(),
             $e->getMessage()
-        ]);
+        ],LOG_PATH);
     }
 }

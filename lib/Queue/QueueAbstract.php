@@ -18,10 +18,11 @@ abstract class QueueAbstract extends Instance {
     public $_exchange_name = 'SEND';
     public $_exchange_type = self::EXCHANGE_TYPE_DIRECT;
 
+    protected $_config;
     /**
      * @var array 配置
      */
-    protected static $_config = [
+    protected static $config = [
         'host'     => '127.0.0.1',
         'vhost'    => '/',
         'port'     => 5672,
@@ -32,16 +33,16 @@ abstract class QueueAbstract extends Instance {
     ];
 
     public static function config(array $config, $add = false){
-        self::$_config = $add ? array_merge(self::$_config, $config) : $config;
+        self::$config = $add ? array_merge(self::$config, $config) : $config;
     }
 
     /**
      * 配置
      */
     protected function _initConfig() {
-        self::$_config = Config::get(Define::CONFIG_MQ);
-        self::$_config = isset(self::$_config['rabbit']) ? self::$_config['rabbit'] : [];
-        $this->setConfigs(self::$_config);
+        self::$config = Config::get(Define::CONFIG_MQ);
+        self::$config = isset(self::$config['rabbit']) ? self::$config['rabbit'] : [];
+        $this->setConfigs(self::$config);
     }
 
     /**
@@ -59,6 +60,17 @@ abstract class QueueAbstract extends Instance {
         if(!extension_loaded('amqp')){
             throw new \Exception('not support: amqp');
         }
+        if(!extension_loaded('bcmath')){
+            throw new \Exception('not support: bcmath');
+        }
+    }
+
+    public static function decode(string $string){
+        return json_decode($string, true);
+    }
+
+    public static function encode(array $message){
+        return json_encode($message, JSON_UNESCAPED_UNICODE);
     }
 
     abstract public function connection();
