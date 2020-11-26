@@ -9,8 +9,8 @@ return [
             'host'  => '127.0.0.1',
             'vhost' => '/',
             'port'  => '5672',
-            'username' => 'worker',
-            'password' => 'worker',
+            'username' => 'zbc',
+            'password' => 'zbc',
             'tag'      => 'management'
         ],
     ],

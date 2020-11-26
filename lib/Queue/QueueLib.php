@@ -7,17 +7,19 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class QueueLib extends QueueAbstract {
     /**
-     * @var AMQPStreamConnection
+     * @var AMQPStreamConnection|null
      */
-    private $_connection = null;
+    protected $_connection = null;
     /**
-     * @var AMQPChannel
+     * @var AMQPChannel|null
      */
-    private $_channel    = null;
+    protected $_channel    = null;
     /**
      * @var bool 判断交换机是否存在
+     *      false:没有就新增
+     *      true:没有就会抛出404异常
      */
-    protected $_passive       = true;
+    protected $_passive       = false;
     /**
      * @var bool 持久化
      */
@@ -63,8 +65,8 @@ class QueueLib extends QueueAbstract {
     public function channel(int $count = 1){
         if(!$this->_channel instanceof AMQPChannel){
             $this->_channel = $this->connection()->channel();
-            $this->_channel->basic_qos(null, $count, null);
         }
+        $this->_channel->basic_qos(null, $count, null);
         return $this->_channel;
     }
 
@@ -98,9 +100,7 @@ class QueueLib extends QueueAbstract {
             false,
             $this->_auto_delete
         );
-        $this->_channel->queue_bind($this->_queue_name,$this->_exchange_name);
-
-
+        $this->channel()->queue_bind($this->_queue_name,$this->_exchange_name);
         return $this;
     }
 
@@ -126,7 +126,7 @@ class QueueLib extends QueueAbstract {
 
     public function publish(array $message, $close_connect = false){
         try{
-            $this->queue();
+            $this->exchange()->queue();
             $message = new AMQPMessage(
                 self::encode($message),
                 [
@@ -140,7 +140,7 @@ class QueueLib extends QueueAbstract {
                 $this->closeConnection();
             }
         }catch(\Exception $exception){
-            return [false,$exception->getMessage()];
+            return [false,$exception->getMessage() .':'. $exception->getCode()];
         }
         return [true,null];
     }

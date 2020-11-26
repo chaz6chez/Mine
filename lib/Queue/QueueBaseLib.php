@@ -19,6 +19,7 @@ class QueueBaseLib extends QueueAbstract {
      * @var \AMQPQueue
      */
     protected $_queue;
+    protected $_declare = true;
     /**
      * @var \Exception
      */
@@ -32,6 +33,9 @@ class QueueBaseLib extends QueueAbstract {
     }
     public function getChannelId() {
         return $this->_channel_id;
+    }
+    public function declare(bool $declare){
+        $this->_declare = $declare;
     }
 
     /**
@@ -67,8 +71,9 @@ class QueueBaseLib extends QueueAbstract {
     }
 
     /**
-     * @param $name
-     * @param $type
+     * @param string|null $name
+     * @param string|null $type
+     * @throws \AMQPChannelException
      * @throws \AMQPConnectionException
      * @throws \AMQPExchangeException
      */
@@ -78,6 +83,10 @@ class QueueBaseLib extends QueueAbstract {
         }
         $this->_exchange->setName($this->_exchange_name = $name !== null ? $name : $this->_exchange_name);
         $this->_exchange->setType($this->_exchange_type = $type !== null ? $type : $this->_exchange_type);
+        if($this->_declare){
+            $this->_exchange->setFlags(AMQP_DURABLE);
+            $this->_exchange->declareExchange();
+        }
     }
 
     /**
@@ -92,6 +101,10 @@ class QueueBaseLib extends QueueAbstract {
             $this->_queue = new \AMQPQueue($this->_channel);
         }
         $this->_queue->setName($this->_queue_name = $name === null ? $this->_queue_name : $name);
+        if($this->_declare){
+            $this->_queue->setFlags(AMQP_DURABLE);
+            $this->_queue->declareQueue();
+        }
         $this->_queue->bind($this->_exchange_name);
         return $this->_queue;
     }

@@ -162,7 +162,7 @@ class QueueConsumers extends Worker{
 
         $this->client = QueueBaseLib::instance();
         try{
-            $this->_queue = $this->client->createQueue();
+            $this->_queue = $this->client->createQueue('ccc',$this->client::EXCHANGE_TYPE_DIRECT,'ccc');
             if($this->_queue === false){
                 exit("{$this->client->getException()->getMessage()} : {$this->client->getException()->getCode()} \n");
             }
