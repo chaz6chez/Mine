@@ -76,7 +76,7 @@ class QueueConsumers extends Worker{
         if($name !== null){
             self::setName($name);
         }
-        $this->setName(self::getName() ? self::getName() : 'queue_server');
+        $this->name = self::getName() ? self::getName() : 'queueServer';
         $this->_init();
     }
 
@@ -86,7 +86,7 @@ class QueueConsumers extends Worker{
     protected function _init(){
         Config::init();
         $config            = Config::get(Define::CONFIG_QUEUE);
-        $this->config      = isset($config[$this->getName()]) ? $config[$this->getName()] : $this->config;
+        $this->config      = isset($config[$this->name]) ? $config[$this->name] : $this->config;
         $this->route       = isset($this->config['route']) ? $this->config['route'] : null;
         $this->event_limit = isset($this->config['event_limit']) ? (int)$this->config['event_limit'] : $this->event_limit;
         $this->interval    = isset($this->config['interval']) ? (float)$this->config['interval'] : $this->interval;

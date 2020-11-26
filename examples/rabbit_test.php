@@ -20,7 +20,7 @@ $queue = \Mine\Queue\QueueLib::instance();
 $i = 0;
 do{
     $i++;
-    $res = $queue->publishUseRoute('queue_server',\Mine\Queue\QueueRoute::ENTRANCE, [
+    $res = $queue->publishUseRoute('QueueServer',\Mine\Queue\QueueRoute::ENTRANCE, [
         'test' => 'test' . $i
     ]);
 }while($i < 10000);

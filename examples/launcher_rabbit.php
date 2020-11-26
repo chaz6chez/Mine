@@ -17,8 +17,8 @@ if (!defined('GLOBAL_START')){
 use Mine\Queue\QueueConsumers;
 use Workerman\Worker;
 
-//QueueConsumers::setName('queue_server');
-$mqServer = new QueueConsumers('queue_server');
+//QueueConsumers::setName('QueueServer');
+$mqServer = new QueueConsumers('QueueServer');
 $mqServer->_log_path = __DIR__ . '/log';
 
 # 进程数

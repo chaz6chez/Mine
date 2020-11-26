@@ -16,7 +16,7 @@ return [
     ],
     # 队列方法
     'queue' => [
-        'queue_server' => [
+        'QueueServer' => [
             'route'         => 'Example\Common\Queue\QueueExample',
             'event_limit'   => 0,
             'interval'      => 0.02
