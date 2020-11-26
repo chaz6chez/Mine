@@ -68,10 +68,14 @@ class QueueConsumers extends Worker{
     public $_log_path = null;
 
     /**
-     * MQServer constructor.
+     * QueueConsumers constructor.
+     * @param string $name
      */
-    public function __construct() {
+    public function __construct(string $name = null) {
         parent::__construct();
+        if($name !== null){
+            self::setName($name);
+        }
         $this->setName(self::getName() ? self::getName() : 'queue_server');
         $this->_init();
     }
