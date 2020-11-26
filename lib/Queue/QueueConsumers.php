@@ -15,6 +15,7 @@ use Workerman\Worker;
 
 class QueueConsumers extends Worker{
 
+    protected static $_name;
     /**
      * @var array
      *
@@ -71,9 +72,7 @@ class QueueConsumers extends Worker{
      */
     public function __construct() {
         parent::__construct();
-        if($this->name === 'none' or !$this->name){
-            $this->setName('queue_server');
-        }
+        $this->setName(self::getName() ? self::getName() : 'queue_server');
         $this->_init();
     }
 
@@ -173,11 +172,11 @@ class QueueConsumers extends Worker{
         }
     }
 
-    public function setName(string $name){
-        $this->name = $name;
+    public static function setName(string $name){
+        self::$_name = $name;
     }
-    public function getName() : string {
-        return $this->name;
+    public static function getName() : string {
+        return self::$_name;
     }
     public function getEven(){
         return $this->_even;
