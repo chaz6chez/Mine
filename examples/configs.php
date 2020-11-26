@@ -9,16 +9,17 @@ return [
             'host'  => '127.0.0.1',
             'vhost' => '/',
             'port'  => '5672',
-            'username' => 'zbc',
-            'password' => 'zbc',
+            'username' => 'worker',
+            'password' => 'worker',
             'tag'      => 'management'
         ],
     ],
     # 队列方法
     'queue' => [
         'queue_server' => [
-            'service'         => 'Example\Common\Controller',
-            'function'        => 'index',
+            'route'         => 'Example\Common\Queue\QueueExample',
+            'event_limit'   => 0,
+            'interval'      => 0.02
         ]
     ],
 ];

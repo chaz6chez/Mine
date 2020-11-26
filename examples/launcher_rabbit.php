@@ -21,9 +21,9 @@ $mqServer = new QueueConsumers();
 $mqServer->_log_path = __DIR__ . '/log';
 
 # 进程数
-$mqServer->count   = 1;  # 消费者数量
+$mqServer->count   = 8;  # 消费者数量
 
 if (!defined('GLOBAL_START')){
-    Worker::$logFile = LOG_PATH."/{$webServer->name}.log";
+    Worker::$logFile = LOG_PATH."/{$mqServer->getName()}.log";
     Worker::runAll();
 }

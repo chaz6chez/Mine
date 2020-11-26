@@ -1,6 +1,12 @@
 <?php
 namespace Mine\Queue;
 
+/**
+ * 基于 amqp 拓展开发的amqp库
+ *
+ * Class QueueBaseLib
+ * @package Mine\Queue
+ */
 class QueueBaseLib extends QueueAbstract {
     /**
      * @var \AMQPConnection
@@ -73,6 +79,7 @@ class QueueBaseLib extends QueueAbstract {
     /**
      * @param string|null $name
      * @param string|null $type
+     * @return \AMQPExchange
      * @throws \AMQPChannelException
      * @throws \AMQPConnectionException
      * @throws \AMQPExchangeException
@@ -87,6 +94,7 @@ class QueueBaseLib extends QueueAbstract {
             $this->_exchange->setFlags(AMQP_DURABLE);
             $this->_exchange->declareExchange();
         }
+        return $this->_exchange;
     }
 
     /**
@@ -118,6 +126,10 @@ class QueueBaseLib extends QueueAbstract {
         return false;
     }
 
+    /**
+     * 关闭connection
+     * @return bool
+     */
     public function closeConnection(){
         if($this->_connection instanceof \AMQPConnection){
             $this->_connection->disconnect();
@@ -127,6 +139,9 @@ class QueueBaseLib extends QueueAbstract {
         return false;
     }
 
+    /**
+     * 清洗
+     */
     public function clean(){
         $this->_channel = null;
         $this->_channel_id = null;
@@ -135,6 +150,13 @@ class QueueBaseLib extends QueueAbstract {
         $this->_exception = null;
     }
 
+    /**
+     * 创建队列
+     * @param null $exchange_name
+     * @param null $exchange_type
+     * @param null $queue_name
+     * @return \AMQPQueue|bool
+     */
     public function createQueue($exchange_name = null, $exchange_type = null, $queue_name = null){
         try{
             $this->connection();

@@ -17,12 +17,14 @@ class QueueConsumers extends Worker{
 
     /**
      * @var array
+     *
+     *  [
+     *      'service'     => 'Mine\Queue\QueueRoute',
+     *      'event_limit' => 20000,
+     *      'interval'    => 0.01
+     *  ]
      */
-    protected $config = [
-        'service'     => 'Mine\Queue\QueueRoute',
-        'event_limit' => 20000,
-        'interval'    => 0.01
-    ];
+    protected $config = [];
 
     /**
      * @var \AMQPEnvelope
@@ -43,14 +45,13 @@ class QueueConsumers extends Worker{
      */
     protected $timer = null;
 
-    private $service     = null;
+    /**
+     * @var QueueRoute
+     */
+    private $route       = null;
     private $event_limit = 0;
     private $event_count = 0;
     private $interval    = 0.01;
-    /**
-     * @var QueueBody
-     */
-    private $body;
     /**
      * @var callable
      */
@@ -73,6 +74,7 @@ class QueueConsumers extends Worker{
         if($this->name === 'none' or !$this->name){
             $this->setName('queue_server');
         }
+        $this->_init();
     }
 
     /**
@@ -80,12 +82,53 @@ class QueueConsumers extends Worker{
      */
     protected function _init(){
         Config::init();
-        $config = Config::get(Define::CONFIG_QUEUE);
-        $this->config = isset($config[$this->getName()]) ? $config[$this->getName()] : $this->config;
-        $this->service = isset($this->config['service']) ? $this->config['service'] : null;
+        $config            = Config::get(Define::CONFIG_QUEUE);
+        $this->config      = isset($config[$this->getName()]) ? $config[$this->getName()] : $this->config;
+        $this->route       = isset($this->config['route']) ? $this->config['route'] : null;
         $this->event_limit = isset($this->config['event_limit']) ? (int)$this->config['event_limit'] : $this->event_limit;
-        $this->interval = isset($this->config['interval']) ? (float)$this->config['interval'] : $this->interval;
-        $this->body = !$this->body instanceof QueueBody ? QueueBody::factory() : $this->body;
+        $this->interval    = isset($this->config['interval']) ? (float)$this->config['interval'] : $this->interval;
+        $this->_route();
+    }
+
+    /**
+     * 检查路由
+     */
+    protected function _route(){
+        if(!is_subclass_of($this->route, QueueRoute::class)){
+            $this->_exit('Queue Route Illegal');
+        }
+        try {
+            $this->route = call_user_func([$this->route, 'instance']);
+            if(!$this->route->getExchangeName()){
+                $this->_exit('Queue Route Exception [exchange_name]');
+            }
+            if(!$this->route->getExchangeType()){
+                $this->_exit('Queue Route Exception [exchange_type]');
+            }
+            if(!$this->route->getQueueName()){
+                $this->_exit('Queue Route Exception [queue_name]');
+            }
+            return;
+        }catch(\Exception $exception){
+            $this->_exit("Queue Route Exception [{$exception->getMessage()}]", $exception->getCode());
+        }
+        $this->_exit('Queue Route Exception [instanceof]');
+    }
+
+    /**
+     * 退出
+     * @param string $error
+     * @param string $code
+     */
+    protected function _exit(string $error, string $code = '500'){
+        static::safeEcho(" -----------------------<w> ERROR </w>----------------------------- \r\n");
+        static::safeEcho(' > <w>message</w>:' . " {$error} \r\n");
+        static::safeEcho(' > <w>code   </w>:' . " {$code} \r\n");
+        if(!$this->route){
+            static::safeEcho(' > <w>route  </w>:' . " {$this->route} \r\n");
+        }
+        static::safeEcho(" -----------------------<w> ERROR </w>----------------------------- \r\n");
+        exit;
     }
 
     /**
@@ -157,16 +200,21 @@ class QueueConsumers extends Worker{
      * @param Worker $worker
      */
     public function onWorkerStart($worker){
-        Tools::SafeEcho("Rabbit Server Start","# : {$worker->workerId}|{$worker->id}");
-        $this->_init();
-
+        Tools::SafeEcho("Rabbit Server Start","# : {$worker->id}");
         $this->client = QueueBaseLib::instance();
         try{
-            $this->_queue = $this->client->createQueue('ccc',$this->client::EXCHANGE_TYPE_DIRECT,'ccc');
+            $this->_queue = $this->client->createQueue(
+                $this->route->getExchangeName(),
+                $this->route->getExchangeType(),
+                $this->route->getQueueName()
+            );
             if($this->_queue === false){
-                exit("{$this->client->getException()->getMessage()} : {$this->client->getException()->getCode()} \n");
+                $this->_exit($this->client->getException()->getMessage(),$this->client->getException()->getCode());
             }
-            $this->timer = Timer::add($this->interval,function(){
+            if($this->route->getChannelCount() > 0){
+                $this->_queue->getChannel()->qos(null,$this->route->getChannelCount());
+            }
+            $this->timer = Timer::add($this->interval, function(){
                 $this->_restart();
                 $this->queueConsume(); # 非阻塞调用
             });
@@ -188,15 +236,11 @@ class QueueConsumers extends Worker{
             return;
         }
         if($this->getEven()){
-            $this->body->clean(true);
-            $this->body->create($this->client::decode($this->getEven()->getBody()));
-            //todo
-            if(class_exists($this->service) and is_subclass_of($this->service, QueueRoute::class)){
+            if($this->route->verify($this->getEven()->getBody())){
                 try {
-                    $serviceObj = call_user_func([$this->service, '::instance']);
                     $res = call_user_func(
-                        [$serviceObj, QueueRoute::ENTRANCE],
-                        [$this->getEven(), $this->getQueue()]
+                        [$this->route, $this->route->getMethod()],
+                        $this->getEven(), $this->getQueue()
                     );
                     if($res instanceof Response){
                         if($res->hasError()){
