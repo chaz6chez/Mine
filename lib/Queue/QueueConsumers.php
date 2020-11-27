@@ -69,21 +69,23 @@ class QueueConsumers extends Worker{
 
     /**
      * QueueConsumers constructor.
-     * @param string $name
+     * @param string|null $name
+     * @param bool $check_connection
      */
-    public function __construct(string $name = null) {
+    public function __construct(string $name = null, bool $check_connection = true) {
         parent::__construct();
         if($name !== null){
             self::setName($name);
         }
         $this->name = self::getName() ? self::getName() : 'queueServer';
-        $this->_init();
+        $this->_init($check_connection);
     }
 
     /**
      * config init
+     * @param bool $connection
      */
-    protected function _init(){
+    protected function _init(bool $connection = true){
         Config::init();
         $config            = Config::get(Define::CONFIG_QUEUE);
         $this->config      = isset($config[$this->name]) ? $config[$this->name] : $this->config;
@@ -91,6 +93,26 @@ class QueueConsumers extends Worker{
         $this->event_limit = isset($this->config['event_limit']) ? (int)$this->config['event_limit'] : $this->event_limit;
         $this->interval    = isset($this->config['interval']) ? (float)$this->config['interval'] : $this->interval;
         $this->_route();
+        if($connection){
+            $this->_connection();
+        }
+    }
+
+    /**
+     * 检查连接
+     */
+    protected function _connection(){
+        try {
+            static::safeEcho(" > <w>Connection checking ...</w> \r\n");
+            $client = QueueBaseLib::factory();
+            if(!$client->connection()->isConnected()){
+                $this->_exit('Queue Server Connection Failed');
+            }
+            $client->connection()->disconnect();
+            static::safeEcho(" > <w>Connection succeeded ...</w> \r\n");
+        }catch(\Exception $exception){
+            $this->_exit('Queue Server Connection Failed : ' . $exception->getMessage(), $exception->getCode());
+        }
     }
 
     /**
@@ -124,13 +146,13 @@ class QueueConsumers extends Worker{
      * @param string $code
      */
     protected function _exit(string $error, string $code = '500'){
-        static::safeEcho(" -----------------------<w> ERROR </w>----------------------------- \r\n");
+        static::safeEcho(" ----------------------- ERROR ----------------------------- \r\n");
         static::safeEcho(' > <w>message</w>:' . " {$error} \r\n");
         static::safeEcho(' > <w>code   </w>:' . " {$code} \r\n");
         if(!$this->route){
             static::safeEcho(' > <w>route  </w>:' . " {$this->route} \r\n");
         }
-        static::safeEcho(" -----------------------<w> ERROR </w>----------------------------- \r\n");
+        static::safeEcho(" ----------------------- ERROR ----------------------------- \r\n");
         exit;
     }
 
@@ -203,7 +225,7 @@ class QueueConsumers extends Worker{
      * @param Worker $worker
      */
     public function onWorkerStart($worker){
-        Tools::SafeEcho("Rabbit Server Start","# : {$worker->id}");
+        Tools::SafeEcho("Rabbit Server Start",$worker->id);
         $this->client = QueueBaseLib::instance();
         try{
             $this->_queue = $this->client->createQueue(
@@ -235,7 +257,7 @@ class QueueConsumers extends Worker{
         try{
             $this->_even = $this->getQueue()->get();
         }catch (\Exception $exception){
-            Tools::SafeEcho("Consumers Error : {$exception->getMessage()}[{$exception->getCode()}]","#");
+            Tools::SafeEcho("Consumers Error : {$exception->getMessage()}[{$exception->getCode()}]",$this->id);
             return;
         }
         if($this->getEven()){
@@ -284,6 +306,6 @@ class QueueConsumers extends Worker{
             $this->client->closeChannel();
             $this->client->closeConnection();
         }
-        Tools::SafeEcho("Rabbit Server Stop ","# : {$worker->workerId}|{$worker->id}");
+        Tools::SafeEcho("Rabbit Server Stop ",$worker->id);
     }
 }

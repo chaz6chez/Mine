@@ -9,7 +9,7 @@
 if (!defined('GLOBAL_START')){
     ini_set('date.timezone','Asia/Shanghai');
     define('ROOT_PATH', dirname(__DIR__));
-    define('LOG_PATH', dirname(__DIR__));
+    define('LOG_PATH', __DIR__ . '/log');
     require_once ROOT_PATH . '/vendor/autoload.php';
     \Mine\Helper\Tools::LauncherDefines(__DIR__);
     \Mine\Helper\Tools::LauncherConfig(__DIR__ . '/configs.php');
@@ -22,7 +22,8 @@ $mqServer = new QueueConsumers('QueueServer');
 $mqServer->_log_path = __DIR__ . '/log';
 
 # 进程数
-$mqServer->count   = 8;  # 消费者数量
+$mqServer->count   = 2;  # 消费者数量
+$mqServer->reusePort = true;
 
 if (!defined('GLOBAL_START')){
     Worker::$logFile = LOG_PATH."/{$mqServer->getName()}.log";

@@ -45,17 +45,19 @@ class QueueBaseLib extends QueueAbstract {
     }
 
     /**
+     * @param float $timeout
      * @return \AMQPConnection
      * @throws \AMQPConnectionException
      */
-    public function connection(){
+    public function connection(float $timeout = 3.0){
         if(!$this->_connection instanceof \AMQPConnection){
             $this->_connection = new \AMQPConnection([
-                'host'     => $this->getConfig('host'),
-                'virtual'  => $this->getConfig('vhost'),
-                'port'     => $this->getConfig('port'),
-                'login'    => $this->getConfig('username'),
-                'password' => $this->getConfig('password'),
+                'host'            => $this->getConfig('host'),
+                'virtual'         => $this->getConfig('vhost'),
+                'port'            => $this->getConfig('port'),
+                'login'           => $this->getConfig('username'),
+                'password'        => $this->getConfig('password'),
+                'connect_timeout' => $timeout
             ]);
         }
         $this->_connection->connect();
