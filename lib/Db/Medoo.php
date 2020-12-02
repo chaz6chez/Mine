@@ -317,21 +317,17 @@ class Medoo {
     }
 
     public function connection() {
-        $option = isset($this->options['option']) ? $this->options['option'] : [];
         # 设置抛出异常
-        $option = array_merge($option,[
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]);
+        $this->option = $this->option + [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ];
 
         $this->pdo = new PDO(
             $this->dsn,
             isset($this->options['username']) ? $this->options['username'] : null,
             isset($this->options['password']) ? $this->options['password'] : null,
-            $option
+            $this->option
         );
-
-        # 设置抛出异常
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
     public function closeConnection() {
