@@ -14,6 +14,7 @@ use Mine\Helper\Exception;
 use Mine\Helper\Tools;
 use PDO;
 use PDOException;
+use PDOStatement;
 use InvalidArgumentException;
 
 class Raw {
@@ -31,29 +32,31 @@ class Raw {
  *  # medoo : https://medoo.lvtao.net #
  *  # ------------------------------- #
  *
- *  1.需要PDO拓展
- *
- *  2018-10-18 :
- *      1.调整 exec()            : WorkerMan 长连接适配
- *      2.新增 connection()      : 连接方法
- *      3.新增 closeConnection() : 关闭连接
- *  2018-11-13 :
- *      1.修复长连接异常BUG
- *      2.修复事务相关BUG
- *  2018-11-14 :
- *      1.优化、调整方法结构
- *      2.新增 command()         : 命令集方法
- *      2.新增 reconnect()       : 用于重连，请在 closeConnection()后调用
+ *  2020-12-11 :
+ *      1.取消默认SET SQL_MODE=ANSI_QUOTES,在112行
+ *      2.解决tableQuote()、columnQuote()处理后PDO::prepare会抛出异常问题
+ *      3.新增_error()方法，用于执行语句返回false后手机PDOException信息
+ *      4.调整error()方法，用于获取最后一次执行异常的PDOException信息
+ *  2020-10-14 :
+ *      1.新增 setSingle()        : 用于设置field 单字段获取时是否是键值对
+ *      2.新增 getSingle()        : 用于获取当前single属性
+ *  2019-06-17 :
+ *      1.新增 hasTable()        : 用于判断是否含有该表
  *  2019-05-08 :
  *      1.修复事务相关方法回滚及提交失败
  *      2.调整事务相关方法实现内容
  *      3.增加 inTran 属性可视化是否在事务内
- *  2019-06-17 :
- *      1.新增 hasTable()        : 用于判断是否含有该表
- *
- *  2020-10-14 :
- *      1.新增 setSingle()        : 用于设置field 单字段获取时是否是键值对
- *      2.新增 getSingle()        : 用于获取当前single属性
+ *  2018-11-14 :
+ *      1.优化、调整方法结构
+ *      2.新增 command()         : 命令集方法
+ *      2.新增 reconnect()       : 用于重连，请在 closeConnection()后调用
+ *  2018-11-13 :
+ *      1.修复长连接异常BUG
+ *      2.修复事务相关BUG
+ *  2018-10-18 :
+ *      1.调整 exec()            : WorkerMan 长连接适配
+ *      2.新增 connection()      : 连接方法
+ *      3.新增 closeConnection() : 关闭连接
  *
  * @package Api\Core\Db
  */
@@ -63,10 +66,9 @@ class Medoo {
      */
     public $pdo;
     /**
-     * @var \PDOStatement
+     * @var PDOStatement
      */
     protected $statement;
-
     protected $type;
     protected $prefix;
     protected $dsn;
@@ -80,6 +82,7 @@ class Medoo {
     protected $option      = []; # config->option
     protected $inTran      = false;
     protected $single      = false;
+    protected $error       = [];
 
     public function __construct(array $options) {
         $this->options = $options;
@@ -102,7 +105,7 @@ class Medoo {
         switch ($this->type) {
             case 'mysql':
                 // Make MySQL using standard quoted identifier
-                $this->commands[] = 'SET SQL_MODE=ANSI_QUOTES';
+                //                $this->commands[] = 'SET SQL_MODE=ANSI_QUOTES';
                 break;
             case 'mssql':
                 // Keep MSSQL QUOTED_IDENTIFIER is ON for standard quoting
@@ -317,15 +320,13 @@ class Medoo {
             $this->connection();
             $this->command();
         }
-//        $this->connection();
-//        $this->command();
     }
 
     public function connection() {
         # 设置抛出异常
         $this->option = $this->option + [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ];
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ];
 
         $this->pdo = new PDO(
             $this->dsn,
@@ -387,6 +388,7 @@ class Medoo {
                 }
                 $this->statement->execute();
             }
+
         } catch (PDOException $e) {
             # 服务端断开时重连一次
             if (Tools::isGoneAwayError($e)) {
@@ -401,14 +403,17 @@ class Medoo {
                         $this->statement->execute();
                     }
                 } catch (PDOException $ex) {
+                    $this->_error($ex);
                     $this->rollback();
                     return false;
                 }
             } else {
+                $this->_error($e);
                 $this->rollback();
                 return false;
             }
         }
+        $this->_error(false);
         return $this->statement;
     }
 
@@ -486,7 +491,7 @@ class Medoo {
     }
 
     protected function tableQuote($table) {
-        return '"' . $this->prefix . $table . '"';
+        return '`' . $this->prefix . $table . '`';
     }
 
     protected function mapKey() {
@@ -515,10 +520,10 @@ class Medoo {
 
     protected function columnQuote($string) {
         if (strpos($string, '.') !== false) {
-            return '"' . $this->prefix . str_replace('.', '"."', $string) . '"';
+            return '`' . $this->prefix . str_replace('.', '`.`', $string) . '`';
         }
 
-        return '"' . $string . '"';
+        return '`' . $string . '`';
     }
 
     protected function columnPush(&$columns, &$map) {
@@ -1378,7 +1383,7 @@ class Medoo {
         return $this->select($table, $join, $columns, $where);
     }
 
-    private function aggregate($type, $table, $join = null, $column = null, $where = null) {
+    public function aggregate($type, $table, $join = null, $column = null, $where = null) {
         $map = [];
 
         $query = $this->exec($this->selectContext($table, $map, $join, $column, $where, strtoupper($type)), $map);
@@ -1429,10 +1434,6 @@ class Medoo {
         return $this->inTran;
     }
 
-    private function _setInTran(){
-        return $this->inTran = $this->pdo->inTransaction();
-    }
-
     public function beginTransaction($throw = false) {
         if($this->_setInTran()){
             if ($throw) throw new Exception('Connection: Db transaction is ready started.');
@@ -1453,13 +1454,6 @@ class Medoo {
         }
     }
 
-    private function _beginTransaction() {
-        if($res = $this->pdo->beginTransaction()){
-            $this->_setInTran();
-        }
-        return $res;
-    }
-
     public function rollback($throw = false) {
         if (!$this->_setInTran()) {
             if($throw) throw new Exception('Connection: Db is not in transaction.');
@@ -1468,26 +1462,12 @@ class Medoo {
         return $this->_rollback();
     }
 
-    protected function _rollback(){
-        if($res = $this->pdo->rollBack()){
-            $this->_setInTran();
-        }
-        return $res;
-    }
-
     public function commit($throw = false) {
         if (!$this->_setInTran()) {
             if($throw) throw new Exception('Connection: Db is not in transaction.');
             return false;
         }
         return $this->_commit();
-    }
-
-    private function _commit(){
-        if($res = $this->pdo->commit()){
-            $this->_setInTran();
-        }
-        return $res;
     }
 
     public function action($actions) {
@@ -1534,8 +1514,11 @@ class Medoo {
         return $this;
     }
 
-    public function error() {
-        return $this->statement ? $this->statement->errorInfo() : null;
+    public function error($error = []) {
+        if($this->statement instanceof PDOStatement){
+            return $this->statement->errorInfo();
+        }
+        return $this->error;
     }
 
     public function last() {
@@ -1568,5 +1551,39 @@ class Medoo {
         $output['dsn'] = $this->dsn;
 
         return $output;
+    }
+
+    private function _error($exception = null){
+        $this->error = ($exception instanceof PDOException) ? [
+            'message' => $exception->getMessage(),
+            'code'    => $exception->getCode(),
+            'info'    => $exception->errorInfo,
+            'trace'   => $exception->getTraceAsString()
+        ] : [];
+    }
+
+    private function _setInTran(){
+        return $this->inTran = $this->pdo->inTransaction();
+    }
+
+    private function _beginTransaction() {
+        if($res = $this->pdo->beginTransaction()){
+            $this->_setInTran();
+        }
+        return $res;
+    }
+
+    private function _rollback(){
+        if($res = $this->pdo->rollBack()){
+            $this->_setInTran();
+        }
+        return $res;
+    }
+
+    private function _commit(){
+        if($res = $this->pdo->commit()){
+            $this->_setInTran();
+        }
+        return $res;
     }
 }
