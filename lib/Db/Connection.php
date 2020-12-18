@@ -81,6 +81,8 @@ class Connection{
             if(extension_loaded('PDO')){
                 try{
                     $this->_medoo = new Medoo($this->_config);
+                    $this->_active = true;
+                    $this->_error = '';
                 }catch (\PDOException $e){
                     $this->_active = false;
                     $this->_error = "db server exception : {$e->getMessage()}";
@@ -88,8 +90,6 @@ class Connection{
                     $this->_active = false;
                     $this->_error = "exception : {$e->getMessage()}";
                 }
-                $this->_active = true;
-                $this->_error = '';
             }else{
                 $this->_active = false;
                 $this->_error = 'not support: PDO';
