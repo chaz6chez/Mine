@@ -44,6 +44,10 @@ class QueueBaseLib extends QueueAbstract {
         $this->_declare = $declare;
     }
 
+    public static function requeue(){
+        return AMQP_REQUEUE;
+    }
+
     /**
      * @param float $timeout
      * @return \AMQPConnection
