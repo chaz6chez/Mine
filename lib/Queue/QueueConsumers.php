@@ -190,9 +190,9 @@ class QueueConsumers extends Worker{
             $this->_log($exception, 'ACK',Define::CONFIG_QUEUE . '_ack');
         }
     }
-    protected function _nack(){
+    protected function _nack($flag = null){
         try {
-            $this->getQueue()->nack($this->getEven()->getDeliveryTag(), QueueBaseLib::requeue());
+            $this->getQueue()->nack($this->getEven()->getDeliveryTag(), $flag ? $flag : QueueBaseLib::requeue());
         }catch(\Exception $exception){
             $this->_log($exception, 'NACK',Define::CONFIG_QUEUE . '_nack');
         }
