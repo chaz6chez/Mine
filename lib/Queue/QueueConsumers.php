@@ -9,6 +9,7 @@ namespace Mine\Queue;
 use Mine\Core\Config;
 use Mine\Core\Response;
 use Mine\Definition\Define;
+use Mine\Helper\Exception;
 use Mine\Helper\Tools;
 use Workerman\Lib\Timer;
 use Workerman\Worker;
@@ -278,6 +279,9 @@ class QueueConsumers extends Worker{
                             }
                         }
                     }
+                }catch(Exception $exception){
+                    $this->_nack();
+                    return;
                 }catch(\Exception $exception){
                     $this->_log($exception,'SERVICE EXCEPTION');
                     $this->_nack();
