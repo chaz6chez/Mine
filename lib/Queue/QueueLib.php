@@ -195,7 +195,7 @@ class QueueLib extends QueueAbstract {
                 ]))){
                     return [false, 'Route Params Illegal'];
                 }
-                return $this->publish($message);
+                return $this->publish($message, true);
             }
         }catch(\Exception $exception){
             return [false, "Server Exception [{$exception->getMessage()}]"];

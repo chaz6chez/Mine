@@ -381,7 +381,7 @@ class Medoo {
 
         try {
             $this->reconnect();
-            $this->statement = $this->pdo->prepare($this->queryString);
+            $this->statement = @$this->pdo->prepare($this->queryString);
             if ($this->statement) {
                 foreach ($map as $key => $value) {
                     $this->statement->bindValue($key, $value[0], $value[1]);
