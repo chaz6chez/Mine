@@ -348,6 +348,9 @@ class Redis extends Driver {
      */
     public function call($throw = false){
         try{
+            if(!($this->handler instanceof \Redis)){
+                return false;
+            }
             $this->handler->ping('');
         }catch (\RedisException $e){
             $this->_log($e);
