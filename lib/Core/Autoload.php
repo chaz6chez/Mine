@@ -36,6 +36,13 @@ final class Autoload{
     }
 
     /**
+     * 注销
+     */
+    public function unregister(){
+        spl_autoload_unregister([$this, 'autoload']);
+    }
+
+    /**
      * 加载
      * @param $className
      */

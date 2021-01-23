@@ -18,6 +18,7 @@ if (!defined('GLOBAL_START')){
 }
 use Workerman\Worker;
 use Mine\Core\CoreServer;
+use Example\Common\Aspect\AwesomeAspectKernel;
 # API server
 $webServer = new CoreServer('Http://0.0.0.0:82');
 $webServer->name = 'app_server';
@@ -34,6 +35,15 @@ $webServer->reusePort = true;
 # 定义根目录
 $GLOBALS['SERVER_NAME'] = 'm0.test.com';
 $webServer->addRoot($GLOBALS['SERVER_NAME'], PUBLIC_PATH);
+
+AwesomeAspectKernel::getInstance()->init([
+    'debug'    => true,
+    'appDir'   => __DIR__ . '/../examples',
+    'cacheDir' => __DIR__ . '/../cache',
+//    'includePaths'    => [
+//        __DIR__ . '/../examples/Common/Controller',
+//    ],
+]);
 
 if (!defined('GLOBAL_START')){
     $GLOBALS['SERVER_NAME'] = '127.0.0.1';

@@ -393,8 +393,8 @@ class Medoo {
             # 服务端断开时重连一次
             if (Tools::isGoneAwayError($e)) {
                 $this->closeConnection();
-                $this->reconnect();
                 try {
+                    $this->reconnect();
                     $this->statement = $this->pdo->prepare($this->queryString);
                     if ($this->statement) {
                         foreach ($map as $key => $value) {
@@ -407,11 +407,15 @@ class Medoo {
                     $this->rollback();
                     return false;
                 }
-            } else {
-                $this->_error($e);
-                $this->rollback();
-                return false;
             }
+            # 连接错误
+            if(Tools::isConnectionError($e)){
+                $this->closeConnection();
+            }
+
+            $this->_error($e);
+            $this->rollback();
+            return false;
         }
         $this->_error(false);
         return $this->statement;
@@ -1434,37 +1438,44 @@ class Medoo {
         return $this->inTran;
     }
 
-    public function beginTransaction($throw = false) {
-        if($this->_setInTran()){
-            if ($throw) throw new Exception('Connection: Db transaction is ready started.');
-            return false;
-        }
-        try {
-            return $this->_beginTransaction();
-        } catch (PDOException $e) {
-            # 服务端断开时重连一次
-            if (Tools::isGoneAwayError($e)) {
-                $this->closeConnection();
-                $this->reconnect();
+    public function beginTransaction() {
+        if(!$this->_setInTran()){
+            try {
                 return $this->_beginTransaction();
-            } else {
-                if($throw) throw new Exception($e->getMessage(),$e->getCode());
+            } catch (PDOException $e) {
+                # 服务端主动断开时重连一次
+                if (Tools::isGoneAwayError($e)) {
+                    $this->closeConnection();
+                    try {
+                        return $this->_beginTransaction();
+                    }catch (PDOException $e) {
+                        $this->_error($e);
+                        return false;
+                    }
+                }
+                # 连接错误
+                if(Tools::isConnectionError($e)){
+                    $this->closeConnection();
+                }
+
+                $this->_error($e);
                 return false;
             }
         }
+        return true;
     }
 
-    public function rollback($throw = false) {
+    public function rollback() {
         if (!$this->_setInTran()) {
-            if($throw) throw new Exception('Connection: Db is not in transaction.');
+            $this->_error(new PDOException('Connection: Db is not in transaction.','-1'));
             return false;
         }
         return $this->_rollback();
     }
 
-    public function commit($throw = false) {
+    public function commit() {
         if (!$this->_setInTran()) {
-            if($throw) throw new Exception('Connection: Db is not in transaction.');
+            $this->_error(new PDOException('Connection: Db is not in transaction.', '-1'));
             return false;
         }
         return $this->_commit();
@@ -1472,25 +1483,21 @@ class Medoo {
 
     public function action($actions) {
         if (is_callable($actions)) {
-            $this->_beginTransaction();
-
             try {
+                $this->_beginTransaction();
                 $result = $actions($this);
-
                 if ($result === false) {
                     $this->_rollback();
                 } else {
                     $this->_commit();
                 }
-            } catch (\Exception $e) {
+            } catch (PDOException $e) {
+                $this->_error($e);
                 $this->_rollBack();
-
-                throw new Exception($e->getMessage(),$e->getCode());
+                return false;
             }
-
             return $result;
         }
-
         return false;
     }
 
@@ -1563,10 +1570,15 @@ class Medoo {
     }
 
     private function _setInTran(){
+        if(!$this->pdo instanceof PDO){
+            return $this->inTran = false;
+        }
         return $this->inTran = $this->pdo->inTransaction();
     }
 
+
     private function _beginTransaction() {
+        $this->reconnect();
         if($res = $this->pdo->beginTransaction()){
             $this->_setInTran();
         }
@@ -1574,6 +1586,11 @@ class Medoo {
     }
 
     private function _rollback(){
+        if(!$this->pdo instanceof PDO){
+            $this->_error(new PDOException('Connection: Db not connected.','-2'));
+            $this->_setInTran();
+            return false;
+        }
         if($res = $this->pdo->rollBack()){
             $this->_setInTran();
         }
@@ -1581,6 +1598,11 @@ class Medoo {
     }
 
     private function _commit(){
+        if(!$this->pdo instanceof PDO){
+            $this->_error(new PDOException('Connection: Db not connected.','-2'));
+            $this->_setInTran();
+            return false;
+        }
         if($res = $this->pdo->commit()){
             $this->_setInTran();
         }

@@ -169,6 +169,15 @@ class Tools{
     }
 
     /**
+     * 判断MYSQL连接异常
+     * @param \PDOException $e
+     * @return bool
+     */
+    public static function isConnectionError(\PDOException $e) : bool {
+        return (strpos($e->errorInfo[1],'2') === 0 and strlen($e->errorInfo[1]) === 4);
+    }
+
+    /**
      * 判断REDIS是否超时
      * @param \RedisException $e
      * @return bool

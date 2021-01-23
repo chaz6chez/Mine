@@ -6,7 +6,6 @@
 # -------------------------- #
 namespace Mine\Core;
 
-
 use Mine\Helper\Arr;
 use Mine\Helper\Tools;
 
@@ -141,7 +140,6 @@ final class Route{
 
         $GLOBALS['API_MODULE'] = Tools::CamelToLower($this->_mode);
         self::$_API_MODULE = $GLOBALS['API_MODULE'];
-
         $obj = new $c();
         $methodName = $this->_action;
         $obj->$methodName();
