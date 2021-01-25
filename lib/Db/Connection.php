@@ -515,29 +515,11 @@ class Connection{
 
     /**
      * 开启事务
-     * @param bool $throw
-     * @return array
+     * @return bool
      */
-    public function beginTransaction($throw = true) {
-        if(!$this->checker()) return [false,$this->_error];
-        try{
-            if($res = $this->_medoo->beginTransaction($throw)){
-                $this->_transactionCount++;
-                return [
-                    true,
-                    $res
-                ];
-            }
-            return [
-                false,
-                $res
-            ];
-        }catch (Exception $e){
-            return [
-                false,
-                "{$e->getCode()}|{$e->getMessage()}"
-            ];
-        }
+    public function beginTransaction() {
+        if(!$this->checker()) return false;
+        return $this->_medoo->beginTransaction();
     }
 
     /**
@@ -549,56 +531,20 @@ class Connection{
 
     /**
      * 事务回滚
-     * @param bool $throw
-     * @return array
+     * @return bool
      */
-    public function rollback($throw = true) {
-        if(!$this->checker()) return [false,$this->_error];
-        try{
-            if($res = $this->_medoo->rollback($throw)){
-                $this->_transactionCount = 0;
-                return [
-                    true,
-                    $res
-                ];
-            }
-            return [
-                false,
-                $res
-            ];
-        }catch (Exception $e){
-            return [
-                false,
-                "{$e->getCode()}|{$e->getMessage()}"
-            ];
-        }
+    public function rollback() {
+        if(!$this->checker()) return false;
+        return $this->_medoo->rollback();
     }
 
     /**
      * 执行事务提交
-     * @param bool $throw
-     * @return array
+     * @return bool
      */
-    public function commit($throw = true) {
-        if(!$this->checker()) return [false,$this->_error];
-        try{
-            if($res = $this->_medoo->commit($throw)){
-                $this->_transactionCount = 0;
-                return [
-                    true,
-                    $res
-                ];
-            }
-            return [
-                false,
-                $res
-            ];
-        }catch (Exception $e){
-            return [
-                false,
-                "{$e->getCode()}|{$e->getMessage()}"
-            ];
-        }
+    public function commit() {
+        if(!$this->checker()) return false;
+        return $this->_medoo->commit();
     }
 
     /**
