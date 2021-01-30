@@ -19,7 +19,7 @@ abstract class QueueRoute extends Instance {
 
     protected function _init() {
         parent::_init();
-        QueueBaseLib::ext();
+        QueueAbstract::ext();
     }
 
     final public function getChannelCount() : int{
@@ -63,9 +63,18 @@ abstract class QueueRoute extends Instance {
 
     /**
      * 入口
-     * @param \AMQPEnvelope $even
-     * @param \AMQPQueue $queue
+     * @param QueueLib $client
      * @return mixed
      */
-    abstract function entrance(\AMQPEnvelope $even, \AMQPQueue $queue);
+    abstract function entrance(QueueLib $client);
+
+    /**
+     * publish
+     * @param QueueLib $client
+     * @param array $data
+     * @param string $method
+     * @return mixed
+     */
+    abstract function publish(QueueLib $client, array $data, string $method = self::ENTRANCE);
+
 }

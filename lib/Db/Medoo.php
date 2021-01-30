@@ -404,7 +404,9 @@ class Medoo {
                     }
                 } catch (PDOException $ex) {
                     $this->_error($ex);
-                    $this->rollback();
+                    if($this->_setInTran()){
+                        $this->rollback();
+                    }
                     return false;
                 }
             }
@@ -414,7 +416,9 @@ class Medoo {
             }
 
             $this->_error($e);
-            $this->rollback();
+            if($this->_setInTran()){
+                $this->rollback();
+            }
             return false;
         }
         $this->_error(false);
