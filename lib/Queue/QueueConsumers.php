@@ -11,8 +11,6 @@ use Mine\Core\Response;
 use Mine\Definition\Define;
 use Mine\Helper\Exception;
 use Mine\Helper\Tools;
-use Mine\Queue\Exception\NackException;
-use Mine\Queue\Exception\RequeueException;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use Workerman\Lib\Timer;
@@ -190,14 +188,14 @@ class QueueConsumers extends Worker{
 
     protected function _ack(){
         try {
-            $this->client->channel()->basic_ack($this->getMessage()->get('delivery_tag'));
+            $this->getMessage()->get('channel')->basic_ack($this->getMessage()->get('delivery_tag'));
         }catch(\Exception $exception){
             $this->_log($exception, 'ACK',Define::CONFIG_QUEUE . '_ack');
         }
     }
     protected function _nack($requeue = true){
         try {
-            $this->client->channel()->basic_nack($this->getMessage()->get('delivery_tag'),false, $requeue);
+            $this->getMessage()->get('channel')->basic_nack($this->getMessage()->get('delivery_tag'),false, $requeue);
         }catch(\Exception $exception){
             $this->_log($exception, 'NACK',Define::CONFIG_QUEUE . '_nack');
         }
@@ -280,15 +278,12 @@ class QueueConsumers extends Worker{
                             }
                         }
                     }
-                }catch(NackException $exception){
-                    $this->_nack(false);
-                    return;
-                }catch(RequeueException $exception){
-                    $this->_nack(true);
+                }catch(Exception $exception){
+                    $this->_nack();
                     return;
                 }catch(\Exception $exception){
                     $this->_log($exception,'SERVICE EXCEPTION');
-                    $this->_nack(true);
+                    $this->_nack();
                     return;
                 }
                 $this->_ack();
