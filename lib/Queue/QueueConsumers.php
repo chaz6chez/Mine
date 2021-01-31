@@ -287,9 +287,6 @@ class QueueConsumers extends Worker{
                 }catch(NackException $exception){
                     $this->_nack();
                     return;
-                }catch(Exception $exception){
-                    $this->_nack();
-                    return;
                 }catch(\Exception $exception){
                     $this->_log($exception,'SERVICE EXCEPTION');
                     $this->_nack();

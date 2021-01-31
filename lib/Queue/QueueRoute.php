@@ -94,7 +94,6 @@ abstract class QueueRoute extends Instance {
 
     /**
      * publish
-     * @param QueueLib $client
      * @param array $data
      * @param string $method
      * @return mixed

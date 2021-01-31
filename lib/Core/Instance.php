@@ -88,7 +88,7 @@ abstract class Instance{
      * 获取时间
      * @return int|mixed
      */
-    protected static function now(){
+    public static function now(){
         return self::$_time = isset($GLOBALS['NOW_TIME']) ? $GLOBALS['NOW_TIME'] : time();
     }
 
