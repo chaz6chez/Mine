@@ -1,6 +1,9 @@
 <?php
 namespace Mine\Queue;
 
+use Mine\Core\Config;
+use Mine\Definition\Define;
+
 /**
  * 基于 amqp 拓展开发的amqp库
  *
@@ -21,6 +24,7 @@ class QueueBaseLib extends QueueAbstract {
      * @var \AMQPExchange
      */
     protected $_exchange;
+    protected $_route_key = null;
     /**
      * @var \AMQPQueue
      */
@@ -31,6 +35,12 @@ class QueueBaseLib extends QueueAbstract {
      */
     protected $_exception;
 
+    public function setRouteKey(string $routeKey){
+        $this->_route_key = $routeKey;
+    }
+    public function getRouteKey(){
+        return $this->_route_key;
+    }
     public function getExchange(){
         return $this->_exchange;
     }
@@ -119,7 +129,7 @@ class QueueBaseLib extends QueueAbstract {
             $this->_queue->setFlags(AMQP_DURABLE);
             $this->_queue->declareQueue();
         }
-        $this->_queue->bind($this->_exchange_name);
+        $this->_queue->bind($this->_exchange_name, $this->_route_key);
         return $this->_queue;
     }
 
@@ -143,6 +153,69 @@ class QueueBaseLib extends QueueAbstract {
             return true;
         }
         return false;
+    }
+
+    public function publish($message, $close_connect = false){
+        try{
+            $this->createQueue();
+            $this->_exchange->publish(
+                is_array($message) ? self::encode($message) : (string)$message,
+                $this->_route_key,
+                AMQP_NOPARAM,
+                [
+                    'content_type' => 'text/plain',
+                    'delivery_mode' => self::DELIVERY_MODE_PERSISTENT
+                ]
+            );
+            if($close_connect){
+                $this->closeConnection();
+            }
+        }catch(\Exception $exception){
+            return [false,$exception->getMessage() .':'. $exception->getCode()];
+        }
+        return [true,null];
+    }
+
+    /**
+     * 基于 QueueRoute 发布消息
+     * @param string $server_name
+     * @param string $method
+     * @param array $params
+     * @return array
+     */
+    public function publishUseRoute(string $server_name, string $method = QueueRoute::ENTRANCE, array $params = []){
+        $config = Config::get(Define::CONFIG_QUEUE);
+        if(
+            !isset($config[$server_name]) or
+            !isset($config[$server_name]['route'])
+        ){
+            return [false,"Server Not Found [{$server_name}]"];
+        }
+        $route = $config[$server_name]['route'];
+        if(
+            !class_exists($route) or
+            !is_subclass_of($route, QueueRoute::class)
+        ){
+            return [false,"Server Illegal [{$server_name}]"];
+        }
+        try {
+            $route = call_user_func([$route, 'instance']);
+            if($route instanceof QueueRoute){
+                $this->_queue_name = $route->getQueueName();
+                $this->_exchange_type = $route->getExchangeType();
+                $this->_exchange_name = $route->getExchangeName();
+                if(!$route->verify($message = self::encode([
+                    'method' => $method,
+                    'params' => $params
+                ]))){
+                    return [false, 'Route Params Illegal'];
+                }
+                return $this->publish($message, true);
+            }
+        }catch(\Exception $exception){
+            return [false, "Server Exception [{$exception->getMessage()}]"];
+        }
+        return [false, 'Server Exception'];
     }
 
     /**

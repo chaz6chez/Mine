@@ -11,6 +11,15 @@ abstract class QueueRoute extends Instance {
     protected $_exchange_type;
     protected $_queue_name;
 
+    /**
+     * @var \AMQPEnvelope
+     */
+    protected $_event;
+    /**
+     * @var \AMQPQueue
+     */
+    protected $_queue;
+
     private $_method = self::ENTRANCE;
     private $_params = [];
 
@@ -54,6 +63,22 @@ abstract class QueueRoute extends Instance {
         $this->_params = $params;
     }
 
+    final public function setQueue(\AMQPQueue $queue) {
+        $this->_queue = $queue;
+    }
+
+    final public function getQueue() {
+        return $this->_queue;
+    }
+
+    final public function setEvent(\AMQPEnvelope $envelope) {
+        $this->_event = $envelope;
+    }
+
+    final public function getEvent() {
+        return $this->_event;
+    }
+
     final public function verify(string $body) : bool {
         $body = QueueAbstract::decode($body);
         $this->_method = isset($body['method']) ? $body['method'] : null;
@@ -63,10 +88,9 @@ abstract class QueueRoute extends Instance {
 
     /**
      * 入口
-     * @param QueueLib $client
      * @return mixed
      */
-    abstract function entrance(QueueLib $client);
+    abstract function entrance();
 
     /**
      * publish
@@ -75,6 +99,6 @@ abstract class QueueRoute extends Instance {
      * @param string $method
      * @return mixed
      */
-    abstract function publish(QueueLib $client, array $data, string $method = self::ENTRANCE);
+    abstract function publish(array $data, string $method = self::ENTRANCE);
 
 }

@@ -11,8 +11,8 @@ abstract class QueueAbstract extends Instance {
     const EXCHANGE_TYPE_TOPIC  = 'topic';
     const EXCHANGE_TYPE_HEADER = 'header';
 
-    const MESSAGE_DURABLE_YES  = 2;
-    const MESSAGE_DURABLE_NO   = 1;
+    const DELIVERY_MODE_NON_PERSISTENT = 1;
+    const DELIVERY_MODE_PERSISTENT     = 2;
 
     public $_queue_name    = 'SEND';
     public $_exchange_name = 'SEND';

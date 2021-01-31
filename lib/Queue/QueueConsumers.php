@@ -11,8 +11,8 @@ use Mine\Core\Response;
 use Mine\Definition\Define;
 use Mine\Helper\Exception;
 use Mine\Helper\Tools;
-use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Message\AMQPMessage;
+use Mine\Queue\Exception\NackException;
+use Mine\Queue\Exception\RequeueException;
 use Workerman\Lib\Timer;
 use Workerman\Worker;
 
@@ -31,16 +31,16 @@ class QueueConsumers extends Worker{
     protected $config = [];
 
     /**
-     * @var AMQPMessage
+     * @var \AMQPEnvelope
      */
-    protected $_message;
+    protected $_even;
     /**
-     * @var AMQPChannel
+     * @var \AMQPQueue
      */
-    protected $_channel;
+    protected $_queue;
 
     /**
-     * @var QueueLib
+     * @var QueueBaseLib
      */
     protected $client = null;
 
@@ -107,11 +107,11 @@ class QueueConsumers extends Worker{
     protected function _connection(){
         try {
             static::safeEcho(" > <w>Connection checking ...</w> \r\n");
-            $client = QueueLib::factory();
+            $client = QueueBaseLib::factory();
             if(!$client->connection()->isConnected()){
                 $this->_exit('Queue Server Connection Failed');
             }
-            $client->closeConnection();
+            $client->connection()->disconnect();
             static::safeEcho(" > <w>Connection succeeded ...</w> \r\n");
         }catch(\Exception $exception){
             $this->_exit('Queue Server Connection Failed : ' . $exception->getMessage(), $exception->getCode());
@@ -188,14 +188,14 @@ class QueueConsumers extends Worker{
 
     protected function _ack(){
         try {
-            $this->getMessage()->get('channel')->basic_ack($this->getMessage()->get('delivery_tag'));
+            $this->getQueue()->ack($this->getEven()->getDeliveryTag());
         }catch(\Exception $exception){
             $this->_log($exception, 'ACK',Define::CONFIG_QUEUE . '_ack');
         }
     }
-    protected function _nack($requeue = true){
+    protected function _nack($flag = null){
         try {
-            $this->getMessage()->get('channel')->basic_nack($this->getMessage()->get('delivery_tag'),false, $requeue);
+            $this->getQueue()->nack($this->getEven()->getDeliveryTag(), $flag ? $flag : QueueBaseLib::requeue());
         }catch(\Exception $exception){
             $this->_log($exception, 'NACK',Define::CONFIG_QUEUE . '_nack');
         }
@@ -207,11 +207,11 @@ class QueueConsumers extends Worker{
     public static function getName() : string {
         return self::$_name;
     }
-    public function getMessage(){
-        return $this->_message;
+    public function getEven(){
+        return $this->_even;
     }
-    public function getChannel(){
-        return $this->_channel;
+    public function getQueue(){
+        return $this->_queue;
     }
 
     /**
@@ -229,15 +229,18 @@ class QueueConsumers extends Worker{
      */
     public function onWorkerStart($worker){
         Tools::SafeEcho("Rabbit Server Start",$worker->id);
-        $this->client = QueueLib::instance();
+        $this->client = QueueBaseLib::instance();
         try{
-            $this->client->_exchange_name = $this->route->getExchangeName();
-            $this->client->_exchange_type = $this->route->getExchangeType();
-            $this->client->_queue_name    = $this->route->getQueueName();
-            $this->client->queue();
-            $this->_channel               = $this->client->channel();
+            $this->_queue = $this->client->createQueue(
+                $this->route->getExchangeName(),
+                $this->route->getExchangeType(),
+                $this->route->getQueueName()
+            );
+            if($this->_queue === false){
+                $this->_exit($this->client->getException()->getMessage(),$this->client->getException()->getCode());
+            }
             if($this->route->getChannelCount() > 0){
-                $this->getChannel()->basic_qos(null,$this->route->getChannelCount(),true);
+                $this->_queue->getChannel()->qos(null,$this->route->getChannelCount());
             }
             $this->timer = Timer::add($this->interval, function(){
                 $this->_restart();
@@ -255,17 +258,17 @@ class QueueConsumers extends Worker{
      */
     public function queueConsume(){
         try{
-            $this->_message = $this->getChannel()->basic_get($this->client->_queue_name);
+            $this->_even = $this->getQueue()->get();
         }catch (\Exception $exception){
             Tools::SafeEcho("Consumers Error : {$exception->getMessage()}[{$exception->getCode()}]",$this->id);
             return;
         }
-        if($this->getMessage()){
-            if($this->route->verify($this->getMessage()->getBody())){
+        if($this->getEven()){
+            if($this->route->verify($this->getEven()->getBody())){
                 try {
                     $res = call_user_func(
                         [$this->route, $this->route->getMethod()],
-                        $this->client
+                        $this->getEven(), $this->getQueue()
                     );
                     if($res instanceof Response){
                         if($res->hasError()){
@@ -278,6 +281,12 @@ class QueueConsumers extends Worker{
                             }
                         }
                     }
+                }catch(RequeueException $exception){
+                    $this->_ack();
+                    return;
+                }catch(NackException $exception){
+                    $this->_nack();
+                    return;
                 }catch(Exception $exception){
                     $this->_nack();
                     return;
@@ -290,7 +299,7 @@ class QueueConsumers extends Worker{
                 return;
             }
             # 非路由消息日志保存
-            $this->_log($this->getMessage()->getBody(), 'NOT ROUTE',Define::CONFIG_QUEUE . '_route');
+            $this->_log($this->getEven()->getBody(), 'NOT ROUTE',Define::CONFIG_QUEUE . '_route');
             $this->_ack();
             return;
         }
@@ -305,8 +314,7 @@ class QueueConsumers extends Worker{
         if($this->timer){
             Timer::del($this->timer);
         }
-        if($this->client instanceof QueueLib){
-            $this->client->closeChannel();
+        if($this->client instanceof QueueBaseLib){
             $this->client->closeConnection();
         }
         Tools::SafeEcho("Rabbit Server Stop ",$worker->id);
